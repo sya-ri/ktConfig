@@ -6,12 +6,14 @@ import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 plugins {
     id("dev.s7a.gradle.minecraft.server") version "2.0.0" apply false
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    kotlin("plugin.serialization") version "1.7.20" apply false
 }
 
 subprojects {
     apply(plugin = "net.minecrell.plugin-yml.bukkit")
     apply(plugin = "dev.s7a.gradle.minecraft.server")
     apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
 
     dependencies {
         compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
