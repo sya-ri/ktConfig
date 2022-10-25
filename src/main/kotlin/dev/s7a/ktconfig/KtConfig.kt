@@ -46,11 +46,11 @@ fun <T : Any> JavaPlugin.ktConfig(serializer: KSerializer<T>, fileName: String, 
  * @param yaml Yaml used for parse (default: `Yaml.default`)
  * @param T Config type
  * @return Config data or [default]
+ * @since 1.0.0
  */
 fun <T : Any> ktConfig(serializer: KSerializer<T>, file: File, default: T, yaml: Yaml = Yaml.default): T {
     return ktConfig(serializer, file, yaml) ?: default.apply {
-        file.parentFile?.mkdirs()
-        file.writeText(Yaml.default.encodeToString(serializer, this))
+        saveKtConfig(serializer, file, this, yaml)
     }
 }
 
@@ -64,6 +64,7 @@ fun <T : Any> ktConfig(serializer: KSerializer<T>, file: File, default: T, yaml:
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
+ * @since 1.0.0
  */
 fun <T : Any> JavaPlugin.ktConfig(serializer: KSerializer<T>, fileName: String, default: T, yaml: Yaml = Yaml.default): T {
     return ktConfig(serializer, dataFolder.resolve(fileName), default, yaml)
@@ -76,6 +77,7 @@ fun <T : Any> JavaPlugin.ktConfig(serializer: KSerializer<T>, fileName: String, 
  * @param yaml Yaml used for parse (default: `Yaml.default`)
  * @param T Config type marked @Serializable
  * @return Config data or null
+ * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfig(file: File, yaml: Yaml = Yaml.default): T? {
     return ktConfig(serializer(), file, yaml = yaml)
@@ -89,6 +91,7 @@ inline fun <reified T : Any> ktConfig(file: File, yaml: Yaml = Yaml.default): T?
  * @param T Config type marked @Serializable
  * @receiver [JavaPlugin]
  * @return Config data or null
+ * @since 1.0.0
  */
 inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, yaml: Yaml = Yaml.default): T? {
     return ktConfig(serializer(), fileName, yaml = yaml)
@@ -102,6 +105,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, yaml: Yaml = 
  * @param yaml Yaml used for parse (default: `Yaml.default`)
  * @param T Config type marked @Serializable
  * @return Config data or [default]
+ * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfig(file: File, default: T, yaml: Yaml = Yaml.default): T {
     return ktConfig(serializer(), file, default, yaml)
@@ -116,7 +120,64 @@ inline fun <reified T : Any> ktConfig(file: File, default: T, yaml: Yaml = Yaml.
  * @param T Config type marked @Serializable
  * @receiver [JavaPlugin]
  * @return Config data or [default]
+ * @since 1.0.0
  */
 inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, default: T, yaml: Yaml = Yaml.default): T {
     return ktConfig(serializer(), fileName, default, yaml)
+}
+
+/**
+ * Save config to file.
+ *
+ * @param serializer [KSerializer]<[T]>
+ * @param file File
+ * @param content Config data
+ * @param yaml Yaml used for parse (default: `Yaml.default`)
+ * @param T Config type
+ * @since 1.0.0
+ */
+fun <T : Any> saveKtConfig(serializer: KSerializer<T>, file: File, content: T, yaml: Yaml = Yaml.default) {
+    file.parentFile?.mkdirs()
+    file.writeText(yaml.encodeToString(serializer, content))
+}
+
+/**
+ * Save config to file.
+ *
+ * @param serializer [KSerializer]<[T]>
+ * @param fileName File path in plugin data folder
+ * @param content Config data
+ * @param yaml Yaml used for parse (default: `Yaml.default`)
+ * @param T Config type
+ * @receiver [JavaPlugin]
+ * @since 1.0.0
+ */
+fun <T : Any> JavaPlugin.saveKtConfig(serializer: KSerializer<T>, fileName: String, content: T, yaml: Yaml = Yaml.default) {
+    saveKtConfig(serializer, dataFolder.resolve(fileName), content, yaml)
+}
+
+/**
+ * Save config to file.
+ *
+ * @param file File
+ * @param content Config data
+ * @param yaml Yaml used for parse (default: `Yaml.default`)
+ * @param T Config type marked @Serializable
+ * @since 1.0.0
+ */
+inline fun <reified T : Any> saveKtConfig(file: File, content: T, yaml: Yaml = Yaml.default) {
+    saveKtConfig(serializer(), file, content, yaml)
+}
+
+/**
+ * Save config to file.
+ *
+ * @param fileName File path in plugin data folder
+ * @param content Config data
+ * @param yaml Yaml used for parse (default: `Yaml.default`)
+ * @param T Config type marked @Serializable
+ * @since 1.0.0
+ */
+inline fun <reified T : Any> JavaPlugin.saveKtConfig(fileName: String, content: T, yaml: Yaml = Yaml.default) {
+    saveKtConfig(serializer(), fileName, content, yaml)
 }
