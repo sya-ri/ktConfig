@@ -9,7 +9,7 @@ import kotlinx.serialization.encoding.Encoder
 import org.bukkit.Bukkit
 import org.bukkit.Location
 
-class LocationSerializer : KSerializer<Location> {
+object LocationSerializer : KSerializer<Location> {
     override val descriptor = PrimitiveSerialDescriptor("org.bukkit.Location", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Location {
