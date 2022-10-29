@@ -5,7 +5,6 @@ plugins {
     id("net.minecrell.plugin-yml.bukkit") version "0.5.2" apply false
     id("org.jetbrains.dokka") version "1.7.20"
     id("org.jmailen.kotlinter") version "3.12.0"
-    kotlin("plugin.serialization") version "1.7.20"
     id("dev.s7a.gradle.minecraft.server") version "2.0.0" apply false
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
 }
@@ -16,7 +15,6 @@ version = "1.0.0-SNAPSHOT"
 allprojects {
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
-    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
 
     repositories {
         mavenCentral()
@@ -38,7 +36,7 @@ dependencies {
     } else {
         compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
     }
-    api("com.charleskorn.kaml:kaml:0.49.0")
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation("com.github.seeseemelk:MockBukkit-v1.19:2.131.0")
 }
