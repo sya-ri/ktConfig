@@ -38,7 +38,7 @@ dependencies {
     }
     api("com.charleskorn.kaml:kaml:0.49.0")
     testImplementation(kotlin("test"))
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.19:2.129.0")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.19:2.131.0")
 }
 
 tasks.test {
