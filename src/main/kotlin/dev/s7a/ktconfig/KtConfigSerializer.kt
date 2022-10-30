@@ -8,6 +8,7 @@ import kotlin.reflect.full.primaryConstructor
 
 object KtConfigSerializer {
     fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
+        if (contains(path).not()) return null
         val arguments = type.arguments
         return when (type.classifier) {
             String::class -> getString(path)
