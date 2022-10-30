@@ -8,3 +8,7 @@ interface TestData<T> {
 inline fun <T, reified S : TestData<T>> assertParse(expected: T, actual: String) {
     assertEquals(expected, KtConfigParser.fromString<S>("data: $actual")?.data)
 }
+
+inline fun <T : Map<*, *>, reified S : TestData<T>> assertMapParse(expected: T, actual: String) {
+    assertParse<T, S>(expected, "\n${actual.lines().joinToString("\n") { "  $it" }}")
+}

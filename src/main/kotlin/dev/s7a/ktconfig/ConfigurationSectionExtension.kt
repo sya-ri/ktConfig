@@ -19,7 +19,7 @@ fun ConfigurationSection.getChar(path: String): Char? {
 fun ConfigurationSection.getByte(path: String): Byte? {
     return when (val value = get(path)) {
         is Byte -> value
-        is String -> java.lang.Byte.valueOf(value)
+        is String -> value.toByteOrNull()
         is Char -> value.code.toByte()
         is Number -> value.toByte()
         else -> null

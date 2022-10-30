@@ -1,5 +1,8 @@
 
+import dev.s7a.ktconfig.KtConfigParser
+import java.lang.reflect.InvocationTargetException
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class PrimitiveTypeTest {
     @Test
@@ -7,6 +10,19 @@ class PrimitiveTypeTest {
         class Data(override val data: String) : TestData<String>
 
         assertParse<String, Data>("hello", "hello")
+        // unquoted null is not string, throw InvocationTargetException
+        assertFailsWith<InvocationTargetException> {
+            KtConfigParser.fromString<Data>("data: null")
+        }
+        // quoted null is string
+        assertParse<String, Data>("null", "'null'")
+    }
+
+    @Test
+    fun nullable_string() {
+        class Data(override val data: String?) : TestData<String?>
+
+        assertParse<String?, Data>(null, "null")
     }
 
     @Test
