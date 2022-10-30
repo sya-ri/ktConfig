@@ -4,33 +4,33 @@ import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
 import kotlin.reflect.KType
 
-fun ConfigurationSection.getFloat(path: String): Float? {
+fun ConfigurationSection.getFloat(path: String): Float {
     val value = get(path)
-    return if (value is Number) value.toFloat() else null
+    return if (value is Number) value.toFloat() else 0F
 }
 
-fun ConfigurationSection.getChar(path: String): Char? {
+fun ConfigurationSection.getChar(path: String): Char {
     return when (val value = get(path)) {
         is Char -> value
-        is String -> value.singleOrNull()
+        is String -> value.singleOrNull() ?: 0.toChar()
         is Int -> value.toChar()
-        else -> null
+        else -> 0.toChar()
     }
 }
 
-fun ConfigurationSection.getByte(path: String): Byte? {
+fun ConfigurationSection.getByte(path: String): Byte {
     return when (val value = get(path)) {
         is Byte -> value
-        is String -> value.toByteOrNull()
+        is String -> value.toByteOrNull() ?: 0.toByte()
         is Char -> value.code.toByte()
         is Number -> value.toByte()
-        else -> null
+        else -> 0.toByte()
     }
 }
 
-fun ConfigurationSection.getShort(path: String): Short? {
+fun ConfigurationSection.getShort(path: String): Short {
     val value = get(path)
-    return if (value is Number) value.toShort() else null
+    return if (value is Number) value.toShort() else 0
 }
 
 fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
@@ -46,10 +46,10 @@ fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
         Long::class -> getLong(path)
         ULong::class -> getLong(path).toULong()
         Byte::class -> getByte(path)
-        UByte::class -> getByte(path)?.toUByte()
+        UByte::class -> getByte(path).toUByte()
         Char::class -> getChar(path)
         Short::class -> getShort(path)
-        UShort::class -> getShort(path)?.toUShort()
+        UShort::class -> getShort(path).toUShort()
         List::class -> {
             when (arguments[0].type?.classifier) {
                 String::class -> getStringList(path)

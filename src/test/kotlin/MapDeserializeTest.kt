@@ -119,11 +119,11 @@ class MapDeserializeTest {
         class Data(override val data: Map<UByte, String>) : TestData<Map<UByte, String>>
 
         assertMapParse<Map<UByte, String>, Data>(
-            mapOf(0.toUByte() to "ab", (-1).toUByte() to "c", 0x5E.toUByte() to "d"),
+            mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d"),
             """
                 0: ab
                 c: ignore
-                -1: c
+                ${UByte.MAX_VALUE}: c
                 0x5E: d
             """.trimIndent()
         )
@@ -162,11 +162,11 @@ class MapDeserializeTest {
         class Data(override val data: Map<UShort, String>) : TestData<Map<UShort, String>>
 
         assertMapParse<Map<UShort, String>, Data>(
-            mapOf(0.toUShort() to "ab", (-1).toUShort() to "c"),
+            mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c"),
             """
                 0: ab
                 c: ignore
-                -1: c
+                ${UShort.MAX_VALUE}: c
             """.trimIndent()
         )
     }

@@ -99,14 +99,12 @@ class PrimitiveTypeDeserializeTest {
     @Test
     fun char() {
         class Data(override val data: Char) : TestData<Char>
-        class NullableData(override val data: Char?) : TestData<Char?>
 
         assertParse<Char, Data>('a', "a")
         assertParse<Char, Data>(49.toChar(), "49")
         assertParse<Char, Data>('5', "'5'")
         assertParse<Char, Data>('あ', "あ")
-        assertParse<Char?, NullableData>(null, "")
-        assertParse<Char?, NullableData>(null, "ab")
+        assertParse<Char, Data>(0.toChar(), "ab")
     }
 
     @Test
