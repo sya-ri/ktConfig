@@ -12,24 +12,32 @@ object KtConfigSerializer {
         return when (type.classifier) {
             String::class -> getString(path)
             Int::class -> getInt(path)
+            UInt::class -> getInt(path).toUInt()
             Boolean::class -> getBoolean(path)
             Double::class -> getDouble(path)
             Float::class -> getFloat(path)
             Long::class -> getLong(path)
+            ULong::class -> getLong(path).toULong()
             Byte::class -> getByte(path)
+            UByte::class -> getByte(path)?.toUByte()
             Char::class -> getChar(path)
             Short::class -> getShort(path)
+            UShort::class -> getShort(path)?.toUShort()
             List::class -> {
                 when (arguments[0].type?.classifier) {
                     String::class -> getStringList(path)
                     Int::class -> getIntegerList(path)
+                    UInt::class -> getIntegerList(path).map(Int::toUInt)
                     Boolean::class -> getBooleanList(path)
                     Double::class -> getDoubleList(path)
                     Float::class -> getFloatList(path)
                     Long::class -> getLongList(path)
+                    ULong::class -> getLongList(path).map(Long::toULong)
                     Byte::class -> getByteList(path)
+                    UByte::class -> getByteList(path).map(Byte::toUByte)
                     Char::class -> getCharacterList(path)
                     Short::class -> getShortList(path)
+                    UShort::class -> getShortList(path).map(Short::toUShort)
                     else -> throw UnsupportedTypeException(type)
                 }
             }
@@ -42,14 +50,18 @@ object KtConfigSerializer {
                     when (arguments[0].type?.classifier) {
                         String::class -> keyString
                         Int::class -> keyString.toIntOrNull()
+                        UInt::class -> keyString.toUIntOrNull()
                         Boolean::class -> keyString.toBooleanStrictOrNull()
                         // The path separator is '.', so it cannot be converted correctly.
                         // Double::class -> keyString.toDoubleOrNull()
                         // Float::class -> keyString.toFloatOrNull()
                         Long::class -> keyString.toLongOrNull()
+                        ULong::class -> keyString.toULongOrNull()
                         Byte::class -> keyString.toByteOrNull()
+                        UByte::class -> keyString.toUByteOrNull()
                         Char::class -> keyString.singleOrNull()
                         Short::class -> keyString.toShortOrNull()
+                        UShort::class -> keyString.toUShortOrNull()
                         else -> throw UnsupportedTypeException(type)
                     }?.let {
                         keyString to it

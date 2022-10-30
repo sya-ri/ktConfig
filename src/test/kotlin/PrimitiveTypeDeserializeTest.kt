@@ -33,6 +33,15 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
+    fun uint() {
+        class Data(override val data: UInt) : TestData<UInt>
+
+        assertParse<UInt, Data>(5U, "5")
+        assertParse<UInt, Data>((-1).toUInt(), "-1")
+        assertParse<UInt, Data>(UInt.MAX_VALUE, "${UInt.MAX_VALUE}")
+    }
+
+    @Test
     fun boolean() {
         class Data(override val data: Boolean) : TestData<Boolean>
 
@@ -61,12 +70,30 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
+    fun ulong() {
+        class Data(override val data: ULong) : TestData<ULong>
+
+        assertParse<ULong, Data>(123U, "123")
+        assertParse<ULong, Data>(ULong.MAX_VALUE, "${ULong.MAX_VALUE}")
+    }
+
+    @Test
     fun byte() {
         class Data(override val data: Byte) : TestData<Byte>
 
         assertParse<Byte, Data>(5, "5")
         assertParse<Byte, Data>(128.toByte(), "128")
         assertParse<Byte, Data>(0x5E, "0x5E")
+    }
+
+    @Test
+    fun ubyte() {
+        class Data(override val data: UByte) : TestData<UByte>
+
+        assertParse<UByte, Data>(5U, "5")
+        assertParse<UByte, Data>(128.toUByte(), "128")
+        assertParse<UByte, Data>(0x5EU, "0x5E")
+        assertParse<UByte, Data>(UByte.MAX_VALUE, "${UByte.MAX_VALUE}")
     }
 
     @Test
@@ -104,6 +131,13 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
+    fun uint_list() {
+        class Data(override val data: List<UInt>) : TestData<List<UInt>>
+
+        assertParse<List<UInt>, Data>(listOf(1U, UInt.MAX_VALUE, UInt.MIN_VALUE), "[1, ${UInt.MAX_VALUE}, ${UInt.MIN_VALUE}]")
+    }
+
+    @Test
     fun boolean_list() {
         class Data(override val data: List<Boolean>) : TestData<List<Boolean>>
 
@@ -132,10 +166,24 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
+    fun ulong_list() {
+        class Data(override val data: List<ULong>) : TestData<List<ULong>>
+
+        assertParse<List<ULong>, Data>(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE), "[1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]")
+    }
+
+    @Test
     fun byte_list() {
         class Data(override val data: List<Byte>) : TestData<List<Byte>>
 
         assertParse<List<Byte>, Data>(listOf(5, 128.toByte(), 0x5E), "[5, 128, 0x5E]")
+    }
+
+    @Test
+    fun ubyte_list() {
+        class Data(override val data: List<UByte>) : TestData<List<UByte>>
+
+        assertParse<List<UByte>, Data>(listOf(5U, 128.toUByte(), 0x5EU, UByte.MAX_VALUE), "[5, 128, 0x5E, ${UByte.MAX_VALUE}]")
     }
 
     @Test
@@ -150,5 +198,12 @@ class PrimitiveTypeDeserializeTest {
         class Data(override val data: List<Short>) : TestData<List<Short>>
 
         assertParse<List<Short>, Data>(listOf(1, 20, 31), "[1, 20, 31]")
+    }
+
+    @Test
+    fun ushort_list() {
+        class Data(override val data: List<UShort>) : TestData<List<UShort>>
+
+        assertParse<List<UShort>, Data>(listOf(1U, 20U, 31U, UShort.MAX_VALUE), "[1, 20, 31, ${UShort.MAX_VALUE}]")
     }
 }
