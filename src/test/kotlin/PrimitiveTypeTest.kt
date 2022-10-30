@@ -1,7 +1,7 @@
 
 import kotlin.test.Test
 
-class PrimitiveClassTest {
+class PrimitiveTypeTest {
     @Test
     fun string() {
         class Data(override val data: String) : TestData<String>
