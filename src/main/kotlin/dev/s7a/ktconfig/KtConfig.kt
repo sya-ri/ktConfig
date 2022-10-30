@@ -14,7 +14,7 @@ import java.io.File
 inline fun <reified T : Any> ktConfig(file: File): T? {
     val text = if (file.exists()) file.readText() else return null
     if (text.isBlank()) return null
-    return KtConfigParser.fromString(text)
+    return KtConfigSerializer.deserialize(text)
 }
 
 /**
@@ -69,7 +69,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, default: T): 
  */
 fun <T : Any> saveKtConfig(file: File, content: T) {
     file.parentFile?.mkdirs()
-    file.writeText(KtConfigParser.toString(content))
+    file.writeText(KtConfigSerializer.serialize(content))
 }
 
 /**

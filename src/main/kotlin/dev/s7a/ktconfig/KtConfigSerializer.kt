@@ -6,7 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
 
-object KtConfigParser {
+object KtConfigSerializer {
     fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
         val arguments = type.arguments
         return when (type.classifier) {
@@ -62,7 +62,7 @@ object KtConfigParser {
         }
     }
 
-    inline fun <reified T : Any> fromString(text: String): T? {
+    inline fun <reified T : Any> deserialize(text: String): T? {
         val constructor = T::class.primaryConstructor ?: return null
         val parameters = YamlConfiguration().run {
             loadFromString(text)
@@ -73,7 +73,7 @@ object KtConfigParser {
         return constructor.callBy(parameters)
     }
 
-    fun <T : Any> toString(content: T): String {
+    fun <T : Any> serialize(value: T): String {
         TODO()
     }
 }

@@ -1,6 +1,6 @@
 import kotlin.test.Test
 
-class MapTest {
+class MapDeserializeTest {
     @Test
     fun string_string_map() {
         class Data(override val data: Map<String, String>) : TestData<Map<String, String>>

@@ -1,4 +1,4 @@
-import dev.s7a.ktconfig.KtConfigParser
+import dev.s7a.ktconfig.KtConfigSerializer
 import kotlin.test.assertEquals
 
 interface TestData<T> {
@@ -6,7 +6,7 @@ interface TestData<T> {
 }
 
 inline fun <T, reified S : TestData<T>> assertParse(expected: T, actual: String) {
-    assertEquals(expected, KtConfigParser.fromString<S>("data: $actual")?.data)
+    assertEquals(expected, KtConfigSerializer.deserialize<S>("data: $actual")?.data)
 }
 
 inline fun <T : Map<*, *>, reified S : TestData<T>> assertMapParse(expected: T, actual: String) {
