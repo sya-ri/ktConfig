@@ -33,6 +33,31 @@ fun ConfigurationSection.getShort(path: String): Short {
     return if (value is Number) value.toShort() else 0
 }
 
+private fun parseKey(keyString: String, type: KType): Pair<String, Any?>? {
+    if (keyString == "null" && type.isMarkedNullable) {
+        return keyString to null
+    }
+    return when (type.classifier) {
+        String::class -> keyString
+        Int::class -> keyString.toIntOrNull()
+        UInt::class -> keyString.toUIntOrNull()
+        Boolean::class -> keyString.toBooleanStrictOrNull()
+        // The path separator is '.', so it cannot be converted correctly.
+        // Double::class -> keyString.toDoubleOrNull()
+        // Float::class -> keyString.toFloatOrNull()
+        Long::class -> keyString.toLongOrNull()
+        ULong::class -> keyString.toULongOrNull()
+        Byte::class -> keyString.toByteOrNull()
+        UByte::class -> keyString.toUByteOrNull()
+        Char::class -> keyString.singleOrNull()
+        Short::class -> keyString.toShortOrNull()
+        UShort::class -> keyString.toUShortOrNull()
+        else -> throw UnsupportedTypeException(type)
+    }?.let {
+        keyString to it
+    }
+}
+
 fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
     if (contains(path).not()) return null
     val arguments = type.arguments
@@ -69,30 +94,8 @@ fun ConfigurationSection.getFromType(path: String, type: KType): Any? {
             }
         }
         Map::class -> {
-            val type0 = arguments[0].type!!
             getConfigurationSection(path)?.getKeys(false)?.mapNotNull { keyString ->
-                if (keyString == "null" && type0.isMarkedNullable) {
-                    return@mapNotNull keyString to null
-                }
-                when (arguments[0].type?.classifier) {
-                    String::class -> keyString
-                    Int::class -> keyString.toIntOrNull()
-                    UInt::class -> keyString.toUIntOrNull()
-                    Boolean::class -> keyString.toBooleanStrictOrNull()
-                    // The path separator is '.', so it cannot be converted correctly.
-                    // Double::class -> keyString.toDoubleOrNull()
-                    // Float::class -> keyString.toFloatOrNull()
-                    Long::class -> keyString.toLongOrNull()
-                    ULong::class -> keyString.toULongOrNull()
-                    Byte::class -> keyString.toByteOrNull()
-                    UByte::class -> keyString.toUByteOrNull()
-                    Char::class -> keyString.singleOrNull()
-                    Short::class -> keyString.toShortOrNull()
-                    UShort::class -> keyString.toUShortOrNull()
-                    else -> throw UnsupportedTypeException(type)
-                }?.let {
-                    keyString to it
-                }
+                parseKey(keyString, arguments[0].type!!)
             }?.associate { (keyString, key) ->
                 key to getFromType("$path.$keyString", arguments[1].type!!)
             }
