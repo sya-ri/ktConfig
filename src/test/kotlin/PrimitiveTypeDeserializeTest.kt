@@ -216,4 +216,26 @@ class PrimitiveTypeDeserializeTest {
 
         assertEquals(listOf(1U, 20U, 31U, UShort.MAX_VALUE), ktConfigString<Data>("data: [1, 20, 31, ${UShort.MAX_VALUE}]")?.data)
     }
+
+    @Test
+    fun string_list_list() {
+        class Data(val data: List<List<String>>)
+
+        assertEquals(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")), ktConfigString<Data>("data: [[a, bc, def], [g], [], [hi]]")?.data)
+    }
+
+    @Test
+    fun string_list_list_list() {
+        class Data(val data: List<List<List<String>>>)
+
+        assertEquals(
+            listOf(
+                listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
+                listOf(),
+                listOf(listOf("j")),
+                listOf(listOf("k"), listOf("i"))
+            ),
+            ktConfigString<Data>("data: [[[a, bc, def], [g], [], [hi]], [], [[j]], [[k], [i]]]")?.data
+        )
+    }
 }
