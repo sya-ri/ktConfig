@@ -69,16 +69,6 @@ internal object KtConfigSerializer {
             }
             Short::class -> (value as? Number)?.toShort()
             UShort::class -> (value as? Number)?.toShort()?.toUShort()
-            Iterable::class, Collection::class, List::class, Set::class -> {
-                if (value !is List<*>) throw TypeMismatchException(type, value)
-                val type0 = type.arguments[0].type!!
-                value.map { deserialize(type0, it) }.run {
-                    when (classifier) {
-                        Set::class -> toSet()
-                        else -> this
-                    }
-                }
-            }
             Map::class -> {
                 val entries = when (value) {
                     is ConfigurationSection -> value.getValues(false).entries
@@ -98,6 +88,16 @@ internal object KtConfigSerializer {
             }
             is KClass<*> -> {
                 when {
+                    classifier.isSubclassOf(Iterable::class) -> {
+                        if (value !is List<*>) throw TypeMismatchException(type, value)
+                        val type0 = type.arguments[0].type!!
+                        value.map { deserialize(type0, it) }.run {
+                            when (classifier) {
+                                Set::class -> toSet()
+                                else -> this
+                            }
+                        }
+                    }
                     classifier.isSubclassOf(Enum::class) -> {
                         try {
                             @Suppress("UNCHECKED_CAST")
