@@ -2,206 +2,207 @@
 import dev.s7a.ktconfig.ktConfigString
 import java.lang.reflect.InvocationTargetException
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PrimitiveTypeDeserializeTest {
     @Test
     fun string() {
-        class Data(override val data: String) : TestData<String>
+        class Data(val data: String)
 
-        assertParse<String, Data>("hello", "hello")
+        assertEquals("hello", ktConfigString<Data>("data: hello")?.data)
         // unquoted null is not string, throw InvocationTargetException
         assertFailsWith<InvocationTargetException> {
             ktConfigString<Data>("data: null")
         }
         // quoted null is string
-        assertParse<String, Data>("null", "'null'")
+        assertEquals("null", ktConfigString<Data>("data: 'null'")?.data)
     }
 
     @Test
     fun nullable_string() {
-        class Data(override val data: String?) : TestData<String?>
+        class Data(val data: String?)
 
-        assertParse<String?, Data>(null, "null")
+        assertEquals(null, ktConfigString<Data>("data: null")?.data)
     }
 
     @Test
     fun int() {
-        class Data(override val data: Int) : TestData<Int>
+        class Data(val data: Int)
 
-        assertParse<Int, Data>(5, "5")
+        assertEquals(5, ktConfigString<Data>("data: 5")?.data)
     }
 
     @Test
     fun uint() {
-        class Data(override val data: UInt) : TestData<UInt>
+        class Data(val data: UInt)
 
-        assertParse<UInt, Data>(5U, "5")
-        assertParse<UInt, Data>((-1).toUInt(), "-1")
-        assertParse<UInt, Data>(UInt.MAX_VALUE, "${UInt.MAX_VALUE}")
+        assertEquals(5U, ktConfigString<Data>("data: 5")?.data)
+        assertEquals((-1).toUInt(), ktConfigString<Data>("data: -1")?.data)
+        assertEquals(UInt.MAX_VALUE, ktConfigString<Data>("data: ${UInt.MAX_VALUE}")?.data)
     }
 
     @Test
     fun boolean() {
-        class Data(override val data: Boolean) : TestData<Boolean>
+        class Data(val data: Boolean)
 
-        assertParse<Boolean, Data>(true, "true")
+        assertEquals(true, ktConfigString<Data>("data: true")?.data)
     }
 
     @Test
     fun double() {
-        class Data(override val data: Double) : TestData<Double>
+        class Data(val data: Double)
 
-        assertParse<Double, Data>(1.2, "1.2")
+        assertEquals(1.2, ktConfigString<Data>("data: 1.2")?.data)
     }
 
     @Test
     fun float() {
-        class Data(override val data: Float) : TestData<Float>
+        class Data(val data: Float)
 
-        assertParse<Float, Data>(1.2F, "1.2")
+        assertEquals(1.2F, ktConfigString<Data>("data: 1.2")?.data)
     }
 
     @Test
     fun long() {
-        class Data(override val data: Long) : TestData<Long>
+        class Data(val data: Long)
 
-        assertParse<Long, Data>(123, "123")
+        assertEquals(123, ktConfigString<Data>("data: 123")?.data)
     }
 
     @Test
     fun ulong() {
-        class Data(override val data: ULong) : TestData<ULong>
+        class Data(val data: ULong)
 
-        assertParse<ULong, Data>(123U, "123")
-        assertParse<ULong, Data>(ULong.MAX_VALUE, "${ULong.MAX_VALUE}")
+        assertEquals(123U, ktConfigString<Data>("data: 123")?.data)
+        assertEquals(ULong.MAX_VALUE, ktConfigString<Data>("data: ${ULong.MAX_VALUE}")?.data)
     }
 
     @Test
     fun byte() {
-        class Data(override val data: Byte) : TestData<Byte>
+        class Data(val data: Byte)
 
-        assertParse<Byte, Data>(5, "5")
-        assertParse<Byte, Data>(128.toByte(), "128")
-        assertParse<Byte, Data>(0x5E, "0x5E")
+        assertEquals(5, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(128.toByte(), ktConfigString<Data>("data: 128")?.data)
+        assertEquals(0x5E, ktConfigString<Data>("data: 0x5E")?.data)
     }
 
     @Test
     fun ubyte() {
-        class Data(override val data: UByte) : TestData<UByte>
+        class Data(val data: UByte)
 
-        assertParse<UByte, Data>(5U, "5")
-        assertParse<UByte, Data>(128.toUByte(), "128")
-        assertParse<UByte, Data>(0x5EU, "0x5E")
-        assertParse<UByte, Data>(UByte.MAX_VALUE, "${UByte.MAX_VALUE}")
+        assertEquals(5U, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(128.toUByte(), ktConfigString<Data>("data: 128")?.data)
+        assertEquals(0x5EU, ktConfigString<Data>("data: 0x5E")?.data)
+        assertEquals(UByte.MAX_VALUE, ktConfigString<Data>("data: ${UByte.MAX_VALUE}")?.data)
     }
 
     @Test
     fun char() {
-        class Data(override val data: Char) : TestData<Char>
+        class Data(val data: Char)
 
-        assertParse<Char, Data>('a', "a")
-        assertParse<Char, Data>(49.toChar(), "49")
-        assertParse<Char, Data>('5', "'5'")
-        assertParse<Char, Data>('あ', "あ")
-        assertParse<Char, Data>(0.toChar(), "ab")
+        assertEquals('a', ktConfigString<Data>("data: a")?.data)
+        assertEquals(49.toChar(), ktConfigString<Data>("data: 49")?.data)
+        assertEquals('5', ktConfigString<Data>("data: '5'")?.data)
+        assertEquals('あ', ktConfigString<Data>("data: あ")?.data)
+        assertEquals(0.toChar(), ktConfigString<Data>("data: ab")?.data)
     }
 
     @Test
     fun short() {
-        class Data(override val data: Short) : TestData<Short>
+        class Data(val data: Short)
 
-        assertParse<Short, Data>(123, "123")
+        assertEquals(123, ktConfigString<Data>("data: 123")?.data)
     }
 
     @Test
     fun string_list() {
-        class Data(override val data: List<String>) : TestData<List<String>>
+        class Data(val data: List<String>)
 
-        assertParse<List<String>, Data>(listOf("a", "bc", "def"), "[a, bc, def]")
+        assertEquals(listOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def]")?.data)
     }
 
     @Test
     fun int_list() {
-        class Data(override val data: List<Int>) : TestData<List<Int>>
+        class Data(val data: List<Int>)
 
-        assertParse<List<Int>, Data>(listOf(1, 20, 31), "[1, 20, 31]")
+        assertEquals(listOf(1, 20, 31), ktConfigString<Data>("data: [1, 20, 31]")?.data)
     }
 
     @Test
     fun uint_list() {
-        class Data(override val data: List<UInt>) : TestData<List<UInt>>
+        class Data(val data: List<UInt>)
 
-        assertParse<List<UInt>, Data>(listOf(1U, UInt.MAX_VALUE, UInt.MIN_VALUE), "[1, ${UInt.MAX_VALUE}, ${UInt.MIN_VALUE}]")
+        assertEquals(listOf(1U, UInt.MAX_VALUE, UInt.MIN_VALUE), ktConfigString<Data>("data: [1, ${UInt.MAX_VALUE}, ${UInt.MIN_VALUE}]")?.data)
     }
 
     @Test
     fun boolean_list() {
-        class Data(override val data: List<Boolean>) : TestData<List<Boolean>>
+        class Data(val data: List<Boolean>)
 
-        assertParse<List<Boolean>, Data>(listOf(true, false, true), "[true, false, true]")
+        assertEquals(listOf(true, false, true), ktConfigString<Data>("data: [true, false, true]")?.data)
     }
 
     @Test
     fun double_list() {
-        class Data(override val data: List<Double>) : TestData<List<Double>>
+        class Data(val data: List<Double>)
 
-        assertParse<List<Double>, Data>(listOf(0.5, 1.0, 32.5), "[.5, 1, 32.5]")
+        assertEquals(listOf(0.5, 1.0, 32.5), ktConfigString<Data>("data: [.5, 1, 32.5]")?.data)
     }
 
     @Test
     fun float_list() {
-        class Data(override val data: List<Float>) : TestData<List<Float>>
+        class Data(val data: List<Float>)
 
-        assertParse<List<Float>, Data>(listOf(0.5F, 1.0F, 32.5F), "[.5, 1, 32.5]")
+        assertEquals(listOf(0.5F, 1.0F, 32.5F), ktConfigString<Data>("data: [.5, 1, 32.5]")?.data)
     }
 
     @Test
     fun long_list() {
-        class Data(override val data: List<Long>) : TestData<List<Long>>
+        class Data(val data: List<Long>)
 
-        assertParse<List<Long>, Data>(listOf(1, 20, 31), "[1, 20, 31]")
+        assertEquals(listOf<Long>(1, 20, 31), ktConfigString<Data>("data: [1, 20, 31]")?.data)
     }
 
     @Test
     fun ulong_list() {
-        class Data(override val data: List<ULong>) : TestData<List<ULong>>
+        class Data(val data: List<ULong>)
 
-        assertParse<List<ULong>, Data>(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE), "[1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]")
+        assertEquals(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE), ktConfigString<Data>("data: [1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]")?.data)
     }
 
     @Test
     fun byte_list() {
-        class Data(override val data: List<Byte>) : TestData<List<Byte>>
+        class Data(val data: List<Byte>)
 
-        assertParse<List<Byte>, Data>(listOf(5, 128.toByte(), 0x5E), "[5, 128, 0x5E]")
+        assertEquals(listOf(5, 128.toByte(), 0x5E), ktConfigString<Data>("data: [5, 128, 0x5E]")?.data)
     }
 
     @Test
     fun ubyte_list() {
-        class Data(override val data: List<UByte>) : TestData<List<UByte>>
+        class Data(val data: List<UByte>)
 
-        assertParse<List<UByte>, Data>(listOf(5U, 128.toUByte(), 0x5EU, UByte.MAX_VALUE), "[5, 128, 0x5E, ${UByte.MAX_VALUE}]")
+        assertEquals(listOf(5U, 128.toUByte(), 0x5EU, UByte.MAX_VALUE), ktConfigString<Data>("data: [5, 128, 0x5E, ${UByte.MAX_VALUE}]")?.data)
     }
 
     @Test
     fun char_list() {
-        class Data(override val data: List<Char>) : TestData<List<Char>>
+        class Data(val data: List<Char>)
 
-        assertParse<List<Char>, Data>(listOf('a', 'B', '5'), "[a, B, '5']")
+        assertEquals(listOf('a', 'B', '5'), ktConfigString<Data>("data: [a, B, '5']")?.data)
     }
 
     @Test
     fun short_list() {
-        class Data(override val data: List<Short>) : TestData<List<Short>>
+        class Data(val data: List<Short>)
 
-        assertParse<List<Short>, Data>(listOf(1, 20, 31), "[1, 20, 31]")
+        assertEquals(listOf<Short>(1, 20, 31), ktConfigString<Data>("data: [1, 20, 31]")?.data)
     }
 
     @Test
     fun ushort_list() {
-        class Data(override val data: List<UShort>) : TestData<List<UShort>>
+        class Data(val data: List<UShort>)
 
-        assertParse<List<UShort>, Data>(listOf(1U, 20U, 31U, UShort.MAX_VALUE), "[1, 20, 31, ${UShort.MAX_VALUE}]")
+        assertEquals(listOf(1U, 20U, 31U, UShort.MAX_VALUE), ktConfigString<Data>("data: [1, 20, 31, ${UShort.MAX_VALUE}]")?.data)
     }
 }

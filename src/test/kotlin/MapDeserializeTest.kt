@@ -1,173 +1,211 @@
+import dev.s7a.ktconfig.ktConfigString
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MapDeserializeTest {
     @Test
     fun string_string_map() {
-        class Data(override val data: Map<String, String>) : TestData<Map<String, String>>
+        class Data(val data: Map<String, String>)
 
-        assertMapParse<Map<String, String>, Data>(
+        assertEquals(
             mapOf("a" to "b", "c" to "d", "null" to "e"),
-            """
-                a: b
-                c: d
-                null: e
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      a: b
+                      c: d
+                      null: e
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun nullable_string_string_map() {
-        class Data(override val data: Map<String?, String>) : TestData<Map<String?, String>>
+        class Data(val data: Map<String?, String>)
 
-        assertMapParse<Map<String?, String>, Data>(
+        assertEquals(
             mapOf("a" to "b", "c" to "d", null to "e"),
-            """
-                a: b
-                c: d
-                null: e
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      a: b
+                      c: d
+                      null: e
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun int_string_map() {
-        class Data(override val data: Map<Int, String>) : TestData<Map<Int, String>>
+        class Data(val data: Map<Int, String>)
 
-        assertMapParse<Map<Int, String>, Data>(
+        assertEquals(
             mapOf(0 to "ab", -1 to "c"),
-            """
-                0: ab
-                c: ignore
-                -1: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      -1: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun uint_string_map() {
-        class Data(override val data: Map<UInt, String>) : TestData<Map<UInt, String>>
+        class Data(val data: Map<UInt, String>)
 
-        assertMapParse<Map<UInt, String>, Data>(
+        assertEquals(
             mapOf(0U to "ab", UInt.MAX_VALUE to "c"),
-            """
-                0: ab
-                c: ignore
-                ${UInt.MAX_VALUE}: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      ${UInt.MAX_VALUE}: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun boolean_string_map() {
-        class Data(override val data: Map<Boolean, String>) : TestData<Map<Boolean, String>>
+        class Data(val data: Map<Boolean, String>)
 
-        assertMapParse<Map<Boolean, String>, Data>(
+        assertEquals(
             mapOf(true to "ab", false to "c"),
-            """
-                true: ab
-                c: ignore
-                false: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      true: ab
+                      c: ignore
+                      false: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun long_string_map() {
-        class Data(override val data: Map<Long, String>) : TestData<Map<Long, String>>
+        class Data(val data: Map<Long, String>)
 
-        assertMapParse<Map<Long, String>, Data>(
+        assertEquals(
             mapOf(0L to "ab", -1L to "c"),
-            """
-                0: ab
-                c: ignore
-                -1: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      -1: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun ulong_string_map() {
-        class Data(override val data: Map<ULong, String>) : TestData<Map<ULong, String>>
+        class Data(val data: Map<ULong, String>)
 
-        assertMapParse<Map<ULong, String>, Data>(
+        assertEquals(
             mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c"),
-            """
-                0: ab
-                c: ignore
-                ${ULong.MAX_VALUE}: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      ${ULong.MAX_VALUE}: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun byte_string_map() {
-        class Data(override val data: Map<Byte, String>) : TestData<Map<Byte, String>>
+        class Data(val data: Map<Byte, String>)
 
-        assertMapParse<Map<Byte, String>, Data>(
+        assertEquals(
             mapOf(0.toByte() to "ab", (-1).toByte() to "c", 0x5E.toByte() to "d"),
-            """
-                0: ab
-                c: ignore
-                -1: c
-                0x5E: d
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      -1: c
+                      0x5E: d
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun ubyte_string_map() {
-        class Data(override val data: Map<UByte, String>) : TestData<Map<UByte, String>>
+        class Data(val data: Map<UByte, String>)
 
-        assertMapParse<Map<UByte, String>, Data>(
+        assertEquals(
             mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d"),
-            """
-                0: ab
-                c: ignore
-                ${UByte.MAX_VALUE}: c
-                0x5E: d
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      ${UByte.MAX_VALUE}: c
+                      0x5E: d
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun char_string_map() {
-        class Data(override val data: Map<Char, String>) : TestData<Map<Char, String>>
+        class Data(val data: Map<Char, String>)
 
-        assertMapParse<Map<Char, String>, Data>(
+        assertEquals(
             mapOf('0' to "ab", 'd' to "e"),
-            """
-                0: ab
-                cc: ignore
-                d: e
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      cc: ignore
+                      d: e
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun short_string_map() {
-        class Data(override val data: Map<Short, String>) : TestData<Map<Short, String>>
+        class Data(val data: Map<Short, String>)
 
-        assertMapParse<Map<Short, String>, Data>(
+        assertEquals(
             mapOf(0.toShort() to "ab", (-1).toShort() to "c"),
-            """
-                0: ab
-                c: ignore
-                -1: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      -1: c
+                """.trimIndent()
+            )?.data
         )
     }
 
     @Test
     fun ushort_string_map() {
-        class Data(override val data: Map<UShort, String>) : TestData<Map<UShort, String>>
+        class Data(val data: Map<UShort, String>)
 
-        assertMapParse<Map<UShort, String>, Data>(
+        assertEquals(
             mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c"),
-            """
-                0: ab
-                c: ignore
-                ${UShort.MAX_VALUE}: c
-            """.trimIndent()
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      ${UShort.MAX_VALUE}: c
+                """.trimIndent()
+            )?.data
         )
     }
 }
