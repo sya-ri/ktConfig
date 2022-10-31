@@ -19,6 +19,19 @@ inline fun <reified T : Any> ktConfigString(text: String): T? {
 /**
  * Load config.
  *
+ * @param text Yaml data
+ * @param default Default config data
+ * @param T Config type
+ * @return Config data or [default]
+ * @since 1.0.0
+ */
+inline fun <reified T : Any> ktConfigString(text: String, default: T): T {
+    return ktConfigString(text) ?: default
+}
+
+/**
+ * Load config.
+ *
  * @param file File
  * @param T Config type
  * @return Config data or null

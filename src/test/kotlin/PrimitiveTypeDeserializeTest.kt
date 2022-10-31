@@ -21,6 +21,55 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
+    fun optional_string() {
+        data class Data(val value: String, val optional: String = "abc")
+
+        assertEquals(Data("a", "abc"), ktConfigString("", Data("a")))
+        assertEquals(
+            Data("a", "abc"),
+            ktConfigString(
+                """
+                    value: a
+                """.trimIndent()
+            )
+        )
+        assertEquals(
+            Data("a", "abc"),
+            ktConfigString(
+                """
+                    value: a
+                    ignore: value
+                """.trimIndent()
+            )
+        )
+        assertEquals(
+            Data("a", "b"),
+            ktConfigString(
+                """
+                    value: a
+                    optional: b
+                """.trimIndent()
+            )
+        )
+        assertEquals(
+            Data("a", "abc"),
+            ktConfigString(
+                """
+                    value: a
+                    optional: null
+                """.trimIndent()
+            )
+        )
+        assertFailsWith<TypeMismatchException> {
+            ktConfigString<Data>(
+                """
+                    value: null
+                """.trimIndent()
+            )
+        }
+    }
+
+    @Test
     fun nullable_string() {
         class Data(val data: String?)
 

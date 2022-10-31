@@ -3,11 +3,44 @@ package dev.s7a.ktconfig.internal
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+import kotlin.reflect.full.primaryConstructor
 
 internal object KtConfigSerializerInternal {
-    fun deserialize(type: KType, value: Any?): Any? {
-        return when (type.classifier) {
+    fun <T> KFunction<T>.callByValues(values: Map<String, Any?>): T? {
+        return parameters.mapNotNull { parameter ->
+            val value = values.get(parameter)
+            if (value == Unit) {
+                null
+            } else {
+                parameter to value
+            }
+        }.toMap().run(::callBy)
+    }
+
+    fun Map<String, Any?>.get(parameter: KParameter): Any? {
+        val name = parameter.name!!
+        val type = parameter.type
+        val value = if (contains(name)) {
+            deserialize(type, get(name))
+        } else {
+            if (parameter.isOptional) {
+                // Use default value: Unit
+            } else {
+                null
+            }
+        }
+        if (value == null && type.isMarkedNullable.not()) {
+            throw TypeMismatchException(type, null)
+        }
+        return value
+    }
+
+    private fun deserialize(type: KType, value: Any?): Any? {
+        return when (val classifier = type.classifier) {
             String::class -> value.toString()
             Int::class -> (value as? Number)?.toInt()
             UInt::class -> (value as? Number)?.toInt()?.toUInt()
@@ -49,6 +82,15 @@ internal object KtConfigSerializerInternal {
                         it to deserialize(type1, value)
                     }
                 }.toMap()
+            }
+            is KClass<*> -> {
+                val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type)
+                val values = when (value) {
+                    is ConfigurationSection -> value.getValues(false)
+                    is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
+                    else -> throw TypeMismatchException(type, value)
+                }
+                constructor.callByValues(values)
             }
             else -> throw UnsupportedTypeException(type)
         }
