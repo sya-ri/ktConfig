@@ -8,13 +8,14 @@ class MapDeserializeTest {
         class Data(val data: Map<String, String>)
 
         assertEquals(
-            mapOf("a" to "b", "c" to "d", "null" to "e"),
+            mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
             ktConfigString<Data>(
                 """
                     data:
                       a: b
                       c: d
                       null: e
+                      5: f
                 """.trimIndent()
             )?.data
         )
@@ -49,6 +50,26 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       -1: c
+                """.trimIndent()
+            )?.data
+        )
+    }
+
+    @Test
+    fun nullable_int_string_map() {
+        class Data(val data: Map<Int?, String>)
+
+        assertEquals(
+            mapOf(0 to "ab", -1 to "c", null to "e"),
+            ktConfigString<Data>(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      -1: c
+                      DDD: d
+                      null: e
+                      FFF: f
                 """.trimIndent()
             )?.data
         )

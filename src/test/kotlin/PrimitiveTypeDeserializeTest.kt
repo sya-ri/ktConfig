@@ -1,6 +1,6 @@
 
+import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.ktConfigString
-import java.lang.reflect.InvocationTargetException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -11,8 +11,9 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: String)
 
         assertEquals("hello", ktConfigString<Data>("data: hello")?.data)
+        assertEquals("5", ktConfigString<Data>("data: 5")?.data)
         // unquoted null is not string, throw InvocationTargetException
-        assertFailsWith<InvocationTargetException> {
+        assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>("data: null")
         }
         // quoted null is string
@@ -31,6 +32,7 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Int)
 
         assertEquals(5, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(5, ktConfigString<Data>("data: 5.8")?.data)
     }
 
     @Test
@@ -105,7 +107,16 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(49.toChar(), ktConfigString<Data>("data: 49")?.data)
         assertEquals('5', ktConfigString<Data>("data: '5'")?.data)
         assertEquals('あ', ktConfigString<Data>("data: あ")?.data)
-        assertEquals(0.toChar(), ktConfigString<Data>("data: ab")?.data)
+        assertFailsWith<TypeMismatchException> {
+            ktConfigString<Data>("data: ab")
+        }
+    }
+
+    @Test
+    fun nullable_char() {
+        class Data(val data: Char?)
+
+        assertEquals(null, ktConfigString<Data>("data: ab")?.data)
     }
 
     @Test
