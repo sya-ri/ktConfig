@@ -3,14 +3,25 @@ package dev.s7a.ktconfig.internal
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
 
-internal object KtConfigSerializerInternal {
-    fun <T> KFunction<T>.callByValues(values: Map<String, Any?>): T? {
+internal object KtConfigSerializer {
+    fun <T : Any> deserialize(clazz: KClass<T>, text: String): T? {
+        val constructor = clazz.primaryConstructor ?: return null
+        val values = YamlConfiguration().apply { loadFromString(text) }.getValues(false)
+        return constructor.callByValues(values)
+    }
+
+    fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
+        TODO()
+    }
+
+    private fun <T> KFunction<T>.callByValues(values: Map<String, Any?>): T? {
         return parameters.mapNotNull { parameter ->
             val value = values.get(parameter)
             if (value == Unit) {
@@ -21,7 +32,7 @@ internal object KtConfigSerializerInternal {
         }.toMap().run(::callBy)
     }
 
-    fun Map<String, Any?>.get(parameter: KParameter): Any? {
+    private fun Map<String, Any?>.get(parameter: KParameter): Any? {
         val name = parameter.name!!
         val type = parameter.type
         val value = if (contains(name)) {
