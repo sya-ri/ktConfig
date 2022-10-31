@@ -1,5 +1,5 @@
 
-import dev.s7a.ktconfig.KtConfigSerializer
+import dev.s7a.ktconfig.ktConfigString
 import java.lang.reflect.InvocationTargetException
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -12,7 +12,7 @@ class PrimitiveTypeDeserializeTest {
         assertParse<String, Data>("hello", "hello")
         // unquoted null is not string, throw InvocationTargetException
         assertFailsWith<InvocationTargetException> {
-            KtConfigSerializer.deserialize<Data>("data: null")
+            ktConfigString<Data>("data: null")
         }
         // quoted null is string
         assertParse<String, Data>("null", "'null'")

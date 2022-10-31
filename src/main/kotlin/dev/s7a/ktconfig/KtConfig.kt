@@ -6,15 +6,26 @@ import java.io.File
 /**
  * Load config.
  *
+ * @param text Yaml data
+ * @param T Config type
+ * @return Config data or null
+ * @since 1.0.0
+ */
+inline fun <reified T : Any> ktConfigString(text: String): T? {
+    if (text.isBlank()) return null
+    return KtConfigSerializer.deserialize(text)
+}
+
+/**
+ * Load config.
+ *
  * @param file File
  * @param T Config type
  * @return Config data or null
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfig(file: File): T? {
-    val text = if (file.exists()) file.readText() else return null
-    if (text.isBlank()) return null
-    return KtConfigSerializer.deserialize(text)
+inline fun <reified T : Any> ktConfigFile(file: File): T? {
+    return if (file.exists()) ktConfigString(file.readText()) else null
 }
 
 /**
@@ -26,8 +37,8 @@ inline fun <reified T : Any> ktConfig(file: File): T? {
  * @return Config data or null
  * @since 1.0.0
  */
-inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String): T? {
-    return ktConfig(dataFolder.resolve(fileName))
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String): T? {
+    return ktConfigFile(dataFolder.resolve(fileName))
 }
 
 /**
@@ -39,9 +50,9 @@ inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String): T? {
  * @return Config data or [default]
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfig(file: File, default: T): T {
-    return ktConfig(file) ?: default.apply {
-        saveKtConfig(file, this)
+inline fun <reified T : Any> ktConfigFile(file: File, default: T): T {
+    return ktConfigFile(file) ?: default.apply {
+        saveKtConfigFile(file, this)
     }
 }
 
@@ -55,8 +66,20 @@ inline fun <reified T : Any> ktConfig(file: File, default: T): T {
  * @return Config data or [default]
  * @since 1.0.0
  */
-inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, default: T): T {
-    return ktConfig(dataFolder.resolve(fileName), default)
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: T): T {
+    return ktConfigFile(dataFolder.resolve(fileName), default)
+}
+
+/**
+ * Save config to string.
+ *
+ * @param content Config data
+ * @param T Config type
+ * @return Yaml data
+ * @since 1.0.0
+ */
+fun <T : Any> saveKtConfigString(content: T): String {
+    return KtConfigSerializer.serialize(content)
 }
 
 /**
@@ -67,9 +90,9 @@ inline fun <reified T : Any> JavaPlugin.ktConfig(fileName: String, default: T): 
  * @param T Config type
  * @since 1.0.0
  */
-fun <T : Any> saveKtConfig(file: File, content: T) {
+fun <T : Any> saveKtConfigFile(file: File, content: T) {
     file.parentFile?.mkdirs()
-    file.writeText(KtConfigSerializer.serialize(content))
+    file.writeText(saveKtConfigString(content))
 }
 
 /**
@@ -81,6 +104,6 @@ fun <T : Any> saveKtConfig(file: File, content: T) {
  * @receiver [JavaPlugin]
  * @since 1.0.0
  */
-fun <T : Any> JavaPlugin.saveKtConfig(fileName: String, content: T) {
-    saveKtConfig(dataFolder.resolve(fileName), content)
+fun <T : Any> JavaPlugin.saveKtConfigFile(fileName: String, content: T) {
+    saveKtConfigFile(dataFolder.resolve(fileName), content)
 }
