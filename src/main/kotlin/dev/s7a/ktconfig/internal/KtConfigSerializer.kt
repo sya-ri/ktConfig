@@ -95,7 +95,7 @@ internal object KtConfigSerializer {
                 }.toMap()
             }
             is KClass<*> -> {
-                val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type)
+                val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
                 val values = when (value) {
                     is ConfigurationSection -> value.getValues(false)
                     is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
@@ -103,7 +103,7 @@ internal object KtConfigSerializer {
                 }
                 constructor.callByValues(values)
             }
-            else -> throw UnsupportedTypeException(type)
+            else -> throw UnsupportedTypeException(type, "value")
         }
     }
 
@@ -123,7 +123,7 @@ internal object KtConfigSerializer {
             Char::class -> key.singleOrNull()
             Short::class -> key.toShortOrNull()
             UShort::class -> key.toUShortOrNull()
-            else -> throw UnsupportedTypeException(type)
+            else -> throw UnsupportedTypeException(type, "key")
         }
     }
 }
