@@ -35,14 +35,10 @@ internal object KtConfigSerializer {
     private fun Map<String, Any?>.get(parameter: KParameter): Any? {
         val name = parameter.name!!
         val type = parameter.type
-        val value = if (contains(name)) {
-            deserialize(type, get(name))
-        } else {
-            if (parameter.isOptional) {
-                // Use default value: Unit
-            } else {
-                null
-            }
+        val value = when {
+            contains(name) -> deserialize(type, get(name))
+            parameter.isOptional -> {} // Use default value: Unit
+            else -> null
         }
         if (value == null && type.isMarkedNullable.not()) {
             throw TypeMismatchException(type, null)
