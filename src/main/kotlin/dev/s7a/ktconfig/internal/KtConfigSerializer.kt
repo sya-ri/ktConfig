@@ -8,6 +8,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
 internal object KtConfigSerializer {
@@ -96,13 +97,25 @@ internal object KtConfigSerializer {
                 }.toMap()
             }
             is KClass<*> -> {
-                val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
-                val values = when (value) {
-                    is ConfigurationSection -> value.getValues(false)
-                    is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
-                    else -> throw TypeMismatchException(type, value)
+                when {
+                    classifier.isSubclassOf(Enum::class) -> {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            java.lang.Enum.valueOf(classifier.java as Class<out Enum<*>>, value.toString())
+                        } catch (ex: IllegalArgumentException) {
+                            null
+                        }
+                    }
+                    else -> {
+                        val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
+                        val values = when (value) {
+                            is ConfigurationSection -> value.getValues(false)
+                            is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
+                            else -> throw TypeMismatchException(type, value)
+                        }
+                        constructor.callByValues(values)
+                    }
                 }
-                constructor.callByValues(values)
             }
             else -> throw UnsupportedTypeException(type, "value")
         }

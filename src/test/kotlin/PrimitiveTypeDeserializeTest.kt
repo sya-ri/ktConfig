@@ -4,6 +4,7 @@ import dev.s7a.ktconfig.ktConfigString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class PrimitiveTypeDeserializeTest {
     @Test
@@ -73,7 +74,7 @@ class PrimitiveTypeDeserializeTest {
     fun nullable_string() {
         class Data(val data: String?)
 
-        assertEquals(null, ktConfigString<Data>("data: null")?.data)
+        assertNull(ktConfigString<Data>("data: null")?.data)
     }
 
     @Test
@@ -165,7 +166,7 @@ class PrimitiveTypeDeserializeTest {
     fun nullable_char() {
         class Data(val data: Char?)
 
-        assertEquals(null, ktConfigString<Data>("data: ab")?.data)
+        assertNull(ktConfigString<Data>("data: ab")?.data)
     }
 
     @Test
@@ -321,5 +322,25 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Collection<String>)
 
         assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+    }
+
+    @JvmInline
+    value class InlineData(val data: String)
+
+    @Test
+    fun inline_string() {
+        assertEquals("hello", ktConfigString<InlineData>("data: hello")?.data)
+    }
+
+    enum class EnumValue {
+        Value1
+    }
+
+    @Test
+    fun enum() {
+        class Data(val data: EnumValue?)
+
+        assertEquals(EnumValue.Value1, ktConfigString<Data>("data: Value1")?.data)
+        assertNull(ktConfigString<Data>("data: value1")?.data)
     }
 }
