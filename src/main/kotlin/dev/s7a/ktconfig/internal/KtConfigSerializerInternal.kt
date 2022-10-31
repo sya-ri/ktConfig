@@ -34,14 +34,18 @@ internal object KtConfigSerializerInternal {
                 value.map { deserialize(type0, it) }
             }
             Map::class -> {
-                if (value !is ConfigurationSection) throw TypeMismatchException(type, value)
+                val entries = when (value) {
+                    is ConfigurationSection -> value.getValues(false).entries
+                    is Map<*, *> -> value.entries
+                    else -> throw TypeMismatchException(type, value)
+                }
                 val type0 = type.arguments[0].type!!
                 val type1 = type.arguments[1].type!!
-                value.getValues(false).entries.mapNotNull { (key, value) ->
+                entries.mapNotNull { (key, value) ->
                     if (key == "null" && type0.isMarkedNullable) {
                         return@mapNotNull null to deserialize(type1, value)
                     }
-                    deserializeKey(key, type0)?.let {
+                    deserializeKey(key.toString(), type0)?.let {
                         it to deserialize(type1, value)
                     }
                 }.toMap()

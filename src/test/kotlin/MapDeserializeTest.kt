@@ -229,4 +229,32 @@ class MapDeserializeTest {
             )?.data
         )
     }
+
+    @Test
+    fun string_string_map_list() {
+        class Data(val data: List<Map<String, String>>)
+
+        assertEquals(
+            listOf(
+                mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
+                mapOf("g" to "h"),
+                mapOf(),
+                mapOf("null" to "i"),
+                mapOf("j" to "k")
+            ),
+            ktConfigString<Data>(
+                """
+                    data:
+                      - a: b
+                        c: d
+                        null: e
+                        5: f
+                      - g: h
+                      - {}
+                      - null: i
+                      - j: k
+                """.trimIndent()
+            )?.data
+        )
+    }
 }
