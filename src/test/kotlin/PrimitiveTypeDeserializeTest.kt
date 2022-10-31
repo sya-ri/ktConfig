@@ -179,7 +179,7 @@ class PrimitiveTypeDeserializeTest {
     fun string_list() {
         class Data(val data: List<String>)
 
-        assertEquals(listOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def]")?.data)
+        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
     }
 
     @Test
@@ -286,5 +286,40 @@ class PrimitiveTypeDeserializeTest {
             ),
             ktConfigString<Data>("data: [[[a, bc, def], [g], [], [hi]], [], [[j]], [[k], [i]]]")?.data
         )
+    }
+
+    @Test
+    fun string_mutable_list() {
+        class Data(val data: MutableList<String>)
+
+        assertEquals(mutableListOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+    }
+
+    @Test
+    fun string_set() {
+        class Data(val data: Set<String>)
+
+        assertEquals(setOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+    }
+
+    @Test
+    fun string_mutable_set() {
+        class Data(val data: MutableSet<String>)
+
+        assertEquals(mutableSetOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+    }
+
+    @Test
+    fun string_iterable() {
+        class Data(val data: Iterable<String>)
+
+        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+    }
+
+    @Test
+    fun string_collection() {
+        class Data(val data: Collection<String>)
+
+        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
     }
 }
