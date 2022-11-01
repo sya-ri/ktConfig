@@ -55,6 +55,7 @@ message: You can use default values
   - [x] [Inline class](https://kotlinlang.org/docs/inline-classes.html)
   - [ ] [~~Generics~~](https://kotlinlang.org/docs/generics.html)
   - [ ] [~~Sealed class~~](https://kotlinlang.org/docs/sealed-classes.html)
-- Bukkit friendly
-  - Use [YamlConfiguration](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/configuration/file/YamlConfiguration.html) internally
-  - Support [ConfigurationSerializable](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/configuration/serialization/ConfigurationSerializable.html)
+- Bukkit & User friendly
+  - [x] Use [YamlConfiguration](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/configuration/file/YamlConfiguration.html) internally
+  - [x] Support [ConfigurationSerializable](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/configuration/serialization/ConfigurationSerializable.html)
+  - [ ] ~~Support comments using @Comment annotation~~
