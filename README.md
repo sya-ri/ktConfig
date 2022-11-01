@@ -47,6 +47,8 @@ message: You can use default values
     - [x] [Set](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/)
     - [x] [Map](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/)
     - [ ] [~~Array~~](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/)
+  - Other types
+    - [x] [UUID](https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html)
 - Support Kotlin features
   - [x] [Nullable](https://kotlinlang.org/docs/null-safety.html)
   - [x] [Class](https://kotlinlang.org/docs/classes.html)

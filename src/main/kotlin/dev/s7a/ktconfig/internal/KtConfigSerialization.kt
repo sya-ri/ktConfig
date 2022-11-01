@@ -5,6 +5,7 @@ import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -70,6 +71,7 @@ internal object KtConfigSerialization {
             }
             Short::class -> (value as? Number)?.toShort()
             UShort::class -> (value as? Number)?.toShort()?.toUShort()
+            UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 if (value !is List<*>) throw TypeMismatchException(type, value)
                 val type0 = type.arguments[0].type!!

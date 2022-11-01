@@ -1,6 +1,7 @@
 
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.ktConfigString
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -174,6 +175,14 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Short)
 
         assertEquals(123, ktConfigString<Data>("data: 123")?.data)
+    }
+
+    @Test
+    fun uuid() {
+        class Data(val data: UUID)
+
+        val uuid = UUID.randomUUID()
+        assertEquals(uuid, ktConfigString<Data>("data: $uuid")?.data)
     }
 
     @Test
