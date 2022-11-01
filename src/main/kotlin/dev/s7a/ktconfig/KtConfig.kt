@@ -1,6 +1,6 @@
 package dev.s7a.ktconfig
 
-import dev.s7a.ktconfig.internal.KtConfigSerializer
+import dev.s7a.ktconfig.internal.KtConfigSerialization
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import kotlin.reflect.KClass
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
  */
 fun <T : Any> ktConfigString(clazz: KClass<T>, text: String): T? {
     if (text.isBlank()) return null
-    return KtConfigSerializer.deserialize(clazz, text)
+    return KtConfigSerialization.deserialize(clazz, text)
 }
 
 /**
@@ -178,7 +178,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: 
  * @since 1.0.0
  */
 fun <T : Any> saveKtConfigString(clazz: KClass<T>, content: T): String {
-    return KtConfigSerializer.serialize(clazz, content)
+    return KtConfigSerialization.serialize(clazz, content)
 }
 
 /**

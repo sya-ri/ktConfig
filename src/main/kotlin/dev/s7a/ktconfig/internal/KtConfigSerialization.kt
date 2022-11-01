@@ -12,7 +12,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
-internal object KtConfigSerializer {
+internal object KtConfigSerialization {
     fun <T : Any> deserialize(clazz: KClass<T>, text: String): T? {
         val constructor = clazz.primaryConstructor ?: return null
         val values = YamlConfiguration().apply { loadFromString(text) }.getValues(false)
