@@ -70,17 +70,19 @@ internal object KtConfigSerializer {
             }
             Short::class -> (value as? Number)?.toShort()
             UShort::class -> (value as? Number)?.toShort()?.toUShort()
-            Iterable::class, Collection::class, List::class, Set::class -> {
+            Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 if (value !is List<*>) throw TypeMismatchException(type, value)
                 val type0 = type.arguments[0].type!!
                 value.map { deserialize(type0, it) }.run {
                     when (classifier) {
                         Set::class -> toSet()
+                        HashSet::class -> toHashSet()
+                        LinkedHashSet::class -> LinkedHashSet(this)
                         else -> this
                     }
                 }
             }
-            Map::class -> {
+            Map::class, HashMap::class, LinkedHashMap::class -> {
                 val entries = when (value) {
                     is ConfigurationSection -> value.getValues(false).entries
                     is Map<*, *> -> value.entries

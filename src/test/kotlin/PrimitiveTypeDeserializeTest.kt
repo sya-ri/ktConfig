@@ -289,41 +289,6 @@ class PrimitiveTypeDeserializeTest {
         )
     }
 
-    @Test
-    fun string_mutable_list() {
-        class Data(val data: MutableList<String>)
-
-        assertEquals(mutableListOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
-    }
-
-    @Test
-    fun string_set() {
-        class Data(val data: Set<String>)
-
-        assertEquals(setOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
-    }
-
-    @Test
-    fun string_mutable_set() {
-        class Data(val data: MutableSet<String>)
-
-        assertEquals(mutableSetOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
-    }
-
-    @Test
-    fun string_iterable() {
-        class Data(val data: Iterable<String>)
-
-        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
-    }
-
-    @Test
-    fun string_collection() {
-        class Data(val data: Collection<String>)
-
-        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
-    }
-
     @JvmInline
     value class InlineData(val data: String)
 
