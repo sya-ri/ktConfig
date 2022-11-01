@@ -4,6 +4,7 @@ import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.configuration.serialization.ConfigurationSerializable
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -88,6 +89,9 @@ internal object KtConfigSerializer {
             }
             is KClass<*> -> {
                 when {
+                    classifier.isSubclassOf(ConfigurationSerializable::class) -> {
+                        value
+                    }
                     classifier.isSubclassOf(Iterable::class) -> {
                         if (value !is List<*>) throw TypeMismatchException(type, value)
                         val type0 = type.arguments[0].type!!
