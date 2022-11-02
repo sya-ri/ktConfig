@@ -15,14 +15,23 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 internal object KtConfigSerialization {
+    /**
+     * Change the path separator to be able to use Double or Float as key
+     */
+    private const val pathSeparator = 0x00.toChar()
+
     fun <T : Any> deserialize(clazz: KClass<T>, text: String): T? {
         val constructor = clazz.primaryConstructor ?: return null
-        val values = YamlConfiguration().apply { loadFromString(text) }.getValues(false)
+        val values = YamlConfiguration().apply {
+            options().pathSeparator(pathSeparator)
+            loadFromString(text)
+        }.getValues(false)
         return constructor.callByValues(values)
     }
 
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
         return YamlConfiguration().apply {
+            options().pathSeparator(pathSeparator)
             clazz.memberProperties.forEach {
                 set(it.name, serialize(it.returnType, it.get(value)))
             }
@@ -212,9 +221,8 @@ internal object KtConfigSerialization {
             Int::class -> key.toIntOrNull()
             UInt::class -> key.toUIntOrNull()
             Boolean::class -> key.toBooleanStrictOrNull()
-            // The path separator is '.', so it cannot be converted correctly.
-            // Double::class -> keyString.toDoubleOrNull()
-            // Float::class -> keyString.toFloatOrNull()
+            Double::class -> key.toDoubleOrNull()
+            Float::class -> key.toFloatOrNull()
             Long::class -> key.toLongOrNull()
             ULong::class -> key.toULongOrNull()
             Byte::class -> key.toByteOrNull()
@@ -282,9 +290,8 @@ internal object KtConfigSerialization {
             Int::class -> key
             UInt::class -> key.toLong()
             Boolean::class -> key.toBooleanStrictOrNull()
-            // The path separator is '.', so it cannot be converted correctly.
-            // Double::class -> keyString.toDoubleOrNull()
-            // Float::class -> keyString.toFloatOrNull()
+            Double::class -> key.toDoubleOrNull()
+            Float::class -> key.toFloatOrNull()
             Long::class -> key
             ULong::class -> key.toLongOrNull()?.takeUnless { it < 0 } ?: key
             Byte::class -> key

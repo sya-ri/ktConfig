@@ -101,6 +101,40 @@ class MapSerializeTest {
     }
 
     @Test
+    fun float_string_map() {
+        data class Data(val data: Map<Float, String>)
+
+        assertEquals(
+            """
+                data:
+                  0.5: ab
+                  1.0: c
+                  3.4028235E38: d
+                  1.4E-45: e
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(mapOf(0.5F to "ab", 1.0F to "c", Float.MAX_VALUE to "d", Float.MIN_VALUE to "e")))
+        )
+    }
+
+    @Test
+    fun double_string_map() {
+        data class Data(val data: Map<Double, String>)
+
+        assertEquals(
+            """
+                data:
+                  0.5: ab
+                  1.0: c
+                  1.7976931348623157E308: d
+                  4.9E-324: e
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(mapOf(0.5 to "ab", 1.0 to "c", Double.MAX_VALUE to "d", Double.MIN_VALUE to "e")))
+        )
+    }
+
+    @Test
     fun long_string_map() {
         data class Data(val data: Map<Long, String>)
 
