@@ -79,7 +79,7 @@ class PrimitiveTypeDeserializeTest {
 
     @Test
     fun int() {
-        data class Data(val data: Int)
+        data class Data(val data: Int?)
 
         assertEquals(Data(5), ktConfigString("data: 5"))
         assertEquals(Data(5), ktConfigString("data: '5'"))
@@ -88,49 +88,56 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: 2147483648")) // overflow
         assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: -2147483648"))
         assertEquals(Data(Int.MAX_VALUE), ktConfigString("data: -2147483649")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun uint() {
-        data class Data(val data: UInt)
+        data class Data(val data: UInt?)
 
         assertEquals(Data(5U), ktConfigString("data: 5"))
         assertEquals(Data(5U), ktConfigString("data: '5'"))
         assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: 4294967295"))
         assertEquals(Data(UInt.MIN_VALUE), ktConfigString("data: 4294967296")) // overflow
         assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun boolean() {
-        data class Data(val data: Boolean)
+        data class Data(val data: Boolean?)
 
         assertEquals(Data(true), ktConfigString("data: true"))
+        assertEquals(Data(true), ktConfigString("data: 'true'"))
+        assertEquals(Data(null), ktConfigString("data: tr"))
+        assertEquals(Data(null), ktConfigString("data: 1"))
     }
 
     @Test
     fun double() {
-        data class Data(val data: Double)
+        data class Data(val data: Double?)
 
         assertEquals(Data(1.2), ktConfigString("data: 1.2"))
         assertEquals(Data(1.2), ktConfigString("data: '1.2'"))
         assertEquals(Data(Double.MAX_VALUE), ktConfigString("data: 1.7976931348623157E308"))
         assertEquals(Data(Double.MIN_VALUE), ktConfigString("data: 4.9E-324"))
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun float() {
-        data class Data(val data: Float)
+        data class Data(val data: Float?)
 
         assertEquals(Data(1.2F), ktConfigString("data: 1.2"))
         assertEquals(Data(1.2F), ktConfigString("data: '1.2'"))
         assertEquals(Data(Float.MAX_VALUE), ktConfigString("data: 3.4028235E38"))
         assertEquals(Data(Float.MIN_VALUE), ktConfigString("data: 1.4E-45"))
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun long() {
-        data class Data(val data: Long)
+        data class Data(val data: Long?)
 
         assertEquals(Data(123), ktConfigString("data: 123"))
         assertEquals(Data(123), ktConfigString("data: '123'"))
@@ -138,28 +145,24 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: 9223372036854775808")) // overflow
         assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: -9223372036854775808"))
         assertEquals(Data(Long.MAX_VALUE), ktConfigString("data: -9223372036854775809")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun ulong() {
-        data class Data(val data: ULong)
+        data class Data(val data: ULong?)
 
         assertEquals(Data(123U), ktConfigString("data: 123"))
         assertEquals(Data(123U), ktConfigString("data: '123'"))
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: '18446744073709551615'"))
-        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: -1")) // underflow
-    }
-
-    @Test
-    fun nullable_ulong() {
-        data class Data(val data: ULong?)
-
         assertEquals(Data(null), ktConfigString("data: '18446744073709551616'")) // overflow: toULongOrNull returns null
+        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun byte() {
-        data class Data(val data: Byte)
+        data class Data(val data: Byte?)
 
         assertEquals(Data(5), ktConfigString("data: 5"))
         assertEquals(Data(5), ktConfigString("data: '5'"))
@@ -169,11 +172,12 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: 128")) // overflow
         assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: -128"))
         assertEquals(Data(Byte.MAX_VALUE), ktConfigString("data: -129")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun ubyte() {
-        data class Data(val data: UByte)
+        data class Data(val data: UByte?)
 
         assertEquals(Data(5U), ktConfigString("data: 5"))
         assertEquals(Data(5U), ktConfigString("data: '5'"))
@@ -182,31 +186,23 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: 255"))
         assertEquals(Data(UByte.MIN_VALUE), ktConfigString("data: 256")) // overflow
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun char() {
-        data class Data(val data: Char)
+        data class Data(val data: Char?)
 
         assertEquals(Data('a'), ktConfigString("data: a"))
         assertEquals(Data(49.toChar()), ktConfigString("data: 49"))
         assertEquals(Data('5'), ktConfigString("data: '5'"))
         assertEquals(Data('あ'), ktConfigString("data: あ"))
-        assertFailsWith<TypeMismatchException> {
-            ktConfigString<Data>("data: ab")
-        }
-    }
-
-    @Test
-    fun nullable_char() {
-        data class Data(val data: Char?)
-
-        assertEquals(Data(null), ktConfigString<Data>("data: ab"))
+        assertEquals(Data(null), ktConfigString("data: ab"))
     }
 
     @Test
     fun short() {
-        data class Data(val data: Short)
+        data class Data(val data: Short?)
 
         assertEquals(Data(123), ktConfigString("data: 123"))
         assertEquals(Data(123), ktConfigString("data: '123'"))
@@ -214,32 +210,44 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: 32768")) // overflow
         assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: -32768"))
         assertEquals(Data(Short.MAX_VALUE), ktConfigString("data: -32769")) // underflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun ushort() {
-        data class Data(val data: UShort)
+        data class Data(val data: UShort?)
 
         assertEquals(Data(123U), ktConfigString("data: 123"))
         assertEquals(Data(123U), ktConfigString("data: '123'"))
         assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: 65535"))
         assertEquals(Data(UShort.MIN_VALUE), ktConfigString("data: 65536")) // overflow
+        assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
     @Test
     fun uuid() {
-        data class Data(val data: UUID)
+        data class Data(val data: UUID?)
 
         val uuid = UUID.randomUUID()
         assertEquals(Data(uuid), ktConfigString("data: $uuid"))
+        assertEquals(Data(null), ktConfigString("data: aaaaaaaaaaaaaaaaaaa"))
     }
 
     @Test
     fun string_list() {
-        data class Data(val data: List<String>)
+        data class Data(val data: List<String>?)
 
         assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
         assertEquals(Data(listOf("a")), ktConfigString("data: a"))
+        assertEquals(
+            Data(listOf("[a]")),
+            ktConfigString(
+                """
+                    data:
+                     - - a
+                """.trimIndent()
+            )
+        )
     }
 
     @Test
@@ -281,7 +289,7 @@ class PrimitiveTypeDeserializeTest {
     fun long_list() {
         data class Data(val data: List<Long>)
 
-        assertEquals(Data(listOf<Long>(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
+        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
     }
 
     @Test
