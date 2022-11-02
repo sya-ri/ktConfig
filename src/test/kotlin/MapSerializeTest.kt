@@ -1,4 +1,5 @@
 import dev.s7a.ktconfig.saveKtConfigString
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -208,6 +209,21 @@ class MapSerializeTest {
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c")))
+        )
+    }
+
+    @Test
+    fun uuid_string_map() {
+        data class Data(val data: Map<UUID, String>)
+
+        val uuid = UUID.randomUUID()
+        assertEquals(
+            """
+                data:
+                  $uuid: ab
+
+            """.trimIndent(),
+            saveKtConfigString(Data(mapOf(uuid to "ab")))
         )
     }
 

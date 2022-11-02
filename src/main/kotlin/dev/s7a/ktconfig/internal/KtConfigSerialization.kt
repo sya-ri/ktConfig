@@ -222,6 +222,7 @@ internal object KtConfigSerialization {
             Char::class -> key.singleOrNull()
             Short::class -> key.toShortOrNull()
             UShort::class -> key.toUShortOrNull()
+            UUID::class -> runCatching { UUID.fromString(key) }.getOrNull()
             else -> throw UnsupportedTypeException(type, "key")
         }
     }
@@ -291,6 +292,7 @@ internal object KtConfigSerialization {
             Char::class -> key
             Short::class -> key
             UShort::class -> key.toInt()
+            UUID::class -> key
             else -> throw UnsupportedTypeException(type, "key")
         }
     }
