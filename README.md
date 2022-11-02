@@ -68,4 +68,6 @@ message: You can use default values
 
 ## Links
 
+- [Examples](examples)
+- [API Document](https://gh.s7a.dev/ktConfig)
 - [License](LICENSE)
