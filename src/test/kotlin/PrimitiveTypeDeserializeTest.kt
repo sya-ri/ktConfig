@@ -83,7 +83,12 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Int)
 
         assertEquals(5, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(5, ktConfigString<Data>("data: '5'")?.data)
         assertEquals(5, ktConfigString<Data>("data: 5.8")?.data)
+        assertEquals(Int.MAX_VALUE, ktConfigString<Data>("data: 2147483647")?.data)
+        assertEquals(Int.MIN_VALUE, ktConfigString<Data>("data: 2147483648")?.data) // overflow
+        assertEquals(Int.MIN_VALUE, ktConfigString<Data>("data: -2147483648")?.data)
+        assertEquals(Int.MAX_VALUE, ktConfigString<Data>("data: -2147483649")?.data) // underflow
     }
 
     @Test
@@ -91,8 +96,10 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: UInt)
 
         assertEquals(5U, ktConfigString<Data>("data: 5")?.data)
-        assertEquals((-1).toUInt(), ktConfigString<Data>("data: -1")?.data)
-        assertEquals(UInt.MAX_VALUE, ktConfigString<Data>("data: ${UInt.MAX_VALUE}")?.data)
+        assertEquals(5U, ktConfigString<Data>("data: '5'")?.data)
+        assertEquals(UInt.MAX_VALUE, ktConfigString<Data>("data: 4294967295")?.data)
+        assertEquals(UInt.MIN_VALUE, ktConfigString<Data>("data: 4294967296")?.data) // overflow
+        assertEquals(UInt.MAX_VALUE, ktConfigString<Data>("data: -1")?.data) // underflow
     }
 
     @Test
@@ -107,6 +114,9 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Double)
 
         assertEquals(1.2, ktConfigString<Data>("data: 1.2")?.data)
+        assertEquals(1.2, ktConfigString<Data>("data: '1.2'")?.data)
+        assertEquals(Double.MAX_VALUE, ktConfigString<Data>("data: 1.7976931348623157E308")?.data)
+        assertEquals(Double.MIN_VALUE, ktConfigString<Data>("data: 4.9E-324")?.data)
     }
 
     @Test
@@ -114,6 +124,9 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Float)
 
         assertEquals(1.2F, ktConfigString<Data>("data: 1.2")?.data)
+        assertEquals(1.2F, ktConfigString<Data>("data: '1.2'")?.data)
+        assertEquals(Float.MAX_VALUE, ktConfigString<Data>("data: 3.4028235E38")?.data)
+        assertEquals(Float.MIN_VALUE, ktConfigString<Data>("data: 1.4E-45")?.data)
     }
 
     @Test
@@ -121,6 +134,11 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Long)
 
         assertEquals(123, ktConfigString<Data>("data: 123")?.data)
+        assertEquals(123, ktConfigString<Data>("data: '123'")?.data)
+        assertEquals(Long.MAX_VALUE, ktConfigString<Data>("data: 9223372036854775807")?.data)
+        assertEquals(Long.MIN_VALUE, ktConfigString<Data>("data: 9223372036854775808")?.data) // overflow
+        assertEquals(Long.MIN_VALUE, ktConfigString<Data>("data: -9223372036854775808")?.data)
+        assertEquals(Long.MAX_VALUE, ktConfigString<Data>("data: -9223372036854775809")?.data) // underflow
     }
 
     @Test
@@ -128,7 +146,16 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: ULong)
 
         assertEquals(123U, ktConfigString<Data>("data: 123")?.data)
-        assertEquals(ULong.MAX_VALUE, ktConfigString<Data>("data: ${ULong.MAX_VALUE}")?.data)
+        assertEquals(123U, ktConfigString<Data>("data: '123'")?.data)
+        assertEquals(ULong.MAX_VALUE, ktConfigString<Data>("data: '18446744073709551615'")?.data)
+        assertEquals(ULong.MAX_VALUE, ktConfigString<Data>("data: -1")?.data) // underflow
+    }
+
+    @Test
+    fun nullable_ulong() {
+        class Data(val data: ULong?)
+
+        assertNull(ktConfigString<Data>("data: '18446744073709551616'")?.data) // overflow: toULongOrNull returns null
     }
 
     @Test
@@ -136,8 +163,13 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Byte)
 
         assertEquals(5, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(5, ktConfigString<Data>("data: '5'")?.data)
         assertEquals(128.toByte(), ktConfigString<Data>("data: 128")?.data)
         assertEquals(0x5E, ktConfigString<Data>("data: 0x5E")?.data)
+        assertEquals(Byte.MAX_VALUE, ktConfigString<Data>("data: 127")?.data)
+        assertEquals(Byte.MIN_VALUE, ktConfigString<Data>("data: 128")?.data) // overflow
+        assertEquals(Byte.MIN_VALUE, ktConfigString<Data>("data: -128")?.data)
+        assertEquals(Byte.MAX_VALUE, ktConfigString<Data>("data: -129")?.data) // underflow
     }
 
     @Test
@@ -145,9 +177,12 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: UByte)
 
         assertEquals(5U, ktConfigString<Data>("data: 5")?.data)
+        assertEquals(5U, ktConfigString<Data>("data: '5'")?.data)
         assertEquals(128.toUByte(), ktConfigString<Data>("data: 128")?.data)
         assertEquals(0x5EU, ktConfigString<Data>("data: 0x5E")?.data)
-        assertEquals(UByte.MAX_VALUE, ktConfigString<Data>("data: ${UByte.MAX_VALUE}")?.data)
+        assertEquals(UByte.MAX_VALUE, ktConfigString<Data>("data: 255")?.data)
+        assertEquals(UByte.MIN_VALUE, ktConfigString<Data>("data: 256")?.data) // overflow
+        assertEquals(UByte.MAX_VALUE, ktConfigString<Data>("data: -1")?.data) // underflow
     }
 
     @Test
@@ -175,6 +210,21 @@ class PrimitiveTypeDeserializeTest {
         class Data(val data: Short)
 
         assertEquals(123, ktConfigString<Data>("data: 123")?.data)
+        assertEquals(123, ktConfigString<Data>("data: '123'")?.data)
+        assertEquals(Short.MAX_VALUE, ktConfigString<Data>("data: 32767")?.data)
+        assertEquals(Short.MIN_VALUE, ktConfigString<Data>("data: 32768")?.data) // overflow
+        assertEquals(Short.MIN_VALUE, ktConfigString<Data>("data: -32768")?.data)
+        assertEquals(Short.MAX_VALUE, ktConfigString<Data>("data: -32769")?.data) // underflow
+    }
+
+    @Test
+    fun ushort() {
+        class Data(val data: UShort)
+
+        assertEquals(123U, ktConfigString<Data>("data: 123")?.data)
+        assertEquals(123U, ktConfigString<Data>("data: '123'")?.data)
+        assertEquals(UShort.MAX_VALUE, ktConfigString<Data>("data: 65535")?.data)
+        assertEquals(UShort.MIN_VALUE, ktConfigString<Data>("data: 65536")?.data) // overflow
     }
 
     @Test
