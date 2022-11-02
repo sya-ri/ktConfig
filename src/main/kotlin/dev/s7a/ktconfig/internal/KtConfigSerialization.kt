@@ -11,6 +11,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 internal object KtConfigSerialization {
@@ -21,7 +22,11 @@ internal object KtConfigSerialization {
     }
 
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
-        TODO()
+        return YamlConfiguration().apply {
+            clazz.memberProperties.forEach {
+                set(it.name, serialize(it.returnType, it.get(value)))
+            }
+        }.saveToString()
     }
 
     private fun <T> KFunction<T>.callByValues(values: Map<String, Any?>): T? {
@@ -162,7 +167,7 @@ internal object KtConfigSerialization {
                     if (key == "null" && type0.isMarkedNullable) {
                         return@mapNotNull null to deserialize(type1, value)
                     }
-                    deserializeKey(key.toString(), type0)?.let {
+                    deserializeKey(type0, key.toString())?.let {
                         it to deserialize(type1, value)
                     }
                 }.toMap()
@@ -195,7 +200,7 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun deserializeKey(key: String, type: KType): Any? {
+    private fun deserializeKey(type: KType, key: String): Any? {
         return when (type.classifier) {
             String::class -> key
             Int::class -> key.toIntOrNull()
@@ -211,6 +216,75 @@ internal object KtConfigSerialization {
             Char::class -> key.singleOrNull()
             Short::class -> key.toShortOrNull()
             UShort::class -> key.toUShortOrNull()
+            else -> throw UnsupportedTypeException(type, "key")
+        }
+    }
+
+    private fun serialize(type: KType, value: Any?): Any? {
+        if (value == null) return null
+        return when (val classifier = type.classifier) {
+            String::class -> value
+            Int::class -> value
+            UInt::class -> (value as UInt).toLong()
+            Boolean::class -> value
+            Double::class -> value
+            Float::class -> value
+            Long::class -> value
+            ULong::class -> (value as ULong).toLong().takeUnless { it < 0 } ?: value.toString()
+            Byte::class -> value
+            UByte::class -> (value as UByte).toShort()
+            Char::class -> value
+            Short::class -> value
+            UShort::class -> (value as UShort).toInt()
+            UUID::class -> value.toString()
+            Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
+                val type0 = type.arguments[0].type!!
+                (value as Iterable<*>).map { serialize(type0, it) }
+            }
+            Map::class, HashMap::class, LinkedHashMap::class -> {
+                val type0 = type.arguments[0].type!!
+                val type1 = type.arguments[1].type!!
+                (value as Map<*, *>).map { serializeKey(type0, it.key.toString()) to serialize(type1, it.value) }.toMap()
+            }
+            is KClass<*> -> {
+                when {
+                    classifier.isSubclassOf(ConfigurationSerializable::class) -> {
+                        value
+                    }
+                    classifier.isSubclassOf(Enum::class) -> {
+                        try {
+                            (value as Enum<*>).name
+                        } catch (ex: IllegalArgumentException) {
+                            null
+                        }
+                    }
+                    else -> {
+                        classifier.memberProperties.associate {
+                            it.name to serialize(it.returnType, it.call(value))
+                        }
+                    }
+                }
+            }
+            else -> value
+        }
+    }
+
+    private fun serializeKey(type: KType, key: String): Any? {
+        return when (type.classifier) {
+            String::class -> key
+            Int::class -> key
+            UInt::class -> key.toLong()
+            Boolean::class -> key.toBooleanStrictOrNull()
+            // The path separator is '.', so it cannot be converted correctly.
+            // Double::class -> keyString.toDoubleOrNull()
+            // Float::class -> keyString.toFloatOrNull()
+            Long::class -> key
+            ULong::class -> key.toLongOrNull()?.takeUnless { it < 0 } ?: key
+            Byte::class -> key
+            UByte::class -> key.toShort()
+            Char::class -> key
+            Short::class -> key
+            UShort::class -> key.toInt()
             else -> throw UnsupportedTypeException(type, "key")
         }
     }
