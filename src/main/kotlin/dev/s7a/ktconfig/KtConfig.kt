@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.reflect.KClass
 
 /**
- * Load config.
+ * Load config from [text].
  *
  * @param clazz [KClass]<[T]>
  * @param text Yaml data
@@ -20,7 +20,7 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, text: String): T? {
 }
 
 /**
- * Load config.
+ * Load config from [text].
  *
  * @param text Yaml data
  * @param T Config type
@@ -32,7 +32,7 @@ inline fun <reified T : Any> ktConfigString(text: String): T? {
 }
 
 /**
- * Load config.
+ * Load config from [text]. If [text] is empty, return [default].
  *
  * @param clazz [KClass]<[T]>
  * @param text Yaml data
@@ -46,7 +46,7 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, text: String, default: T): T {
 }
 
 /**
- * Load config.
+ * Load config from [text]. If [text] is empty, return [default].
  *
  * @param text Yaml data
  * @param default Default config data
@@ -59,7 +59,7 @@ inline fun <reified T : Any> ktConfigString(text: String, default: T): T {
 }
 
 /**
- * Load config.
+ * Load config from [file].
  *
  * @param clazz [KClass]<[T]>
  * @param file File
@@ -72,7 +72,7 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, file: File): T? {
 }
 
 /**
- * Load config.
+ * Load config from [file].
  *
  * @param file File
  * @param T Config type
@@ -84,7 +84,7 @@ inline fun <reified T : Any> ktConfigFile(file: File): T? {
 }
 
 /**
- * Load config.
+ * Load config from [JavaPlugin.dataFolder]/[fileName].
  *
  * @param clazz [KClass]<[T]>
  * @param fileName File path in plugin data folder
@@ -98,7 +98,7 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, fileName: String): T? {
 }
 
 /**
- * Load config.
+ * Load config from [JavaPlugin.dataFolder]/[fileName].
  *
  * @param fileName File path in plugin data folder
  * @param T Config type
@@ -111,7 +111,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String): T? {
 }
 
 /**
- * Load config.
+ * Load config from [file]. If [file] doesn't exist or is empty, save [default].
  *
  * @param clazz [KClass]<[T]>
  * @param file File
@@ -127,7 +127,7 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, file: File, default: T): T {
 }
 
 /**
- * Load config.
+ * Load config from [file]. If [file] doesn't exist or is empty, save [default].
  *
  * @param file File
  * @param default Default config data
@@ -140,7 +140,7 @@ inline fun <reified T : Any> ktConfigFile(file: File, default: T): T {
 }
 
 /**
- * Load config.
+ * Load config from [JavaPlugin.dataFolder]/[fileName]. If the file doesn't exist or is empty, save [default].
  *
  * @param clazz [KClass]<[T]>
  * @param fileName File path in plugin data folder
@@ -155,7 +155,7 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, fileName: String, defaul
 }
 
 /**
- * Load config.
+ * Load config from [JavaPlugin.dataFolder]/[fileName]. If the file doesn't exist or is empty, save [default].
  *
  * @param fileName File path in plugin data folder
  * @param default Default config data
@@ -194,7 +194,7 @@ inline fun <reified T : Any> saveKtConfigString(content: T): String {
 }
 
 /**
- * Save config to file.
+ * Save config to [file].
  *
  * @param clazz [KClass]<[T]>
  * @param file File
@@ -208,7 +208,7 @@ fun <T : Any> saveKtConfigFile(clazz: KClass<T>, file: File, content: T) {
 }
 
 /**
- * Save config to file.
+ * Save config to [file].
  *
  * @param file File
  * @param content Config data
@@ -220,7 +220,7 @@ inline fun <reified T : Any> saveKtConfigFile(file: File, content: T) {
 }
 
 /**
- * Save config to file.
+ * Save config to [JavaPlugin.dataFolder]/[fileName].
  *
  * @param clazz [KClass]<[T]>
  * @param fileName File path in plugin data folder
@@ -234,7 +234,7 @@ fun <T : Any> JavaPlugin.saveKtConfigFile(clazz: KClass<T>, fileName: String, co
 }
 
 /**
- * Save config to file.
+ * Save config to [JavaPlugin.dataFolder]/[fileName].
  *
  * @param fileName File path in plugin data folder
  * @param content Config data
