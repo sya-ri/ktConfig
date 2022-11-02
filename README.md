@@ -22,7 +22,7 @@ class Main : JavaPlugin() {
 message: You can use default values
 ```
 
-## Features
+## 🧭 Features
 
 - Support types
   - Common types
@@ -66,7 +66,7 @@ message: You can use default values
   - [ ] ~~Support comments using @Comment annotation~~
   - [x] Don't need to put the default yaml file in resources
 
-## Links
+## 🔗 Links
 
 - [Examples](examples)
 - [API Document](https://gh.s7a.dev/ktConfig)
