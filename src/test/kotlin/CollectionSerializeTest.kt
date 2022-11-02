@@ -1,4 +1,4 @@
-import dev.s7a.ktconfig.ktConfigString
+
 import dev.s7a.ktconfig.saveKtConfigString
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,16 +42,15 @@ class CollectionSerializeTest {
         data class Data(val data: HashMap<String, String>)
 
         assertEquals(
-            hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
-            ktConfigString<Data>(
-                """
-                    data:
-                      a: b
-                      c: d
-                      null: e
-                      5: f
-                """.trimIndent()
-            )?.data
+            """
+                data:
+                  a: b
+                  c: d
+                  'null': e
+                  '5': f
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
         )
     }
 
