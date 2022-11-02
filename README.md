@@ -24,7 +24,7 @@ message: You can use default values
 
 ## Features
 
-- Support Kotlin types
+- Support types
   - Common types
     - [x] [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/) 🔑
     - [x] [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/) 🔑
@@ -49,6 +49,10 @@ message: You can use default values
     - [ ] [~~Array~~](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/)
   - Other types
     - [x] [UUID](https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html) 🔑
+    - [x] [ConfigurationSerializable](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/configuration/serialization/ConfigurationSerializable.html)
+      - [ItemStack](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/inventory/ItemStack.html)
+      - [Location](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Location.html)
+      - ... all support!!
 - Support Kotlin features
   - [x] [Nullable](https://kotlinlang.org/docs/null-safety.html)
   - [x] [Class](https://kotlinlang.org/docs/classes.html)
@@ -59,6 +63,5 @@ message: You can use default values
   - [ ] [~~Sealed class~~](https://kotlinlang.org/docs/sealed-classes.html)
 - Bukkit & User friendly
   - [x] Use [YamlConfiguration](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/configuration/file/YamlConfiguration.html) internally
-  - [x] Support [ConfigurationSerializable](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/configuration/serialization/ConfigurationSerializable.html)
   - [ ] ~~Support comments using @Comment annotation~~
   - [x] Don't need to put the default yaml file in resources
