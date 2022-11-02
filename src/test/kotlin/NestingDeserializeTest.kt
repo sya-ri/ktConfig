@@ -5,17 +5,17 @@ import kotlin.test.assertEquals
 class NestingDeserializeTest {
     @Test
     fun another() {
-        class Data1(val data: String)
-        class Data2(val data1: Data1)
+        data class Data1(val data: String)
+        data class Data2(val data1: Data1)
 
         assertEquals(
-            "hello",
-            ktConfigString<Data2>(
+            Data2(Data1("hello")),
+            ktConfigString(
                 """
                     data1:
                       data: hello
                 """.trimIndent()
-            )?.data1?.data
+            )
         )
     }
 

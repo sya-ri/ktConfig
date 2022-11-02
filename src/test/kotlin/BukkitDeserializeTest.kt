@@ -6,11 +6,11 @@ import kotlin.test.assertEquals
 class BukkitDeserializeTest {
     @Test
     fun location() {
-        class Data(val data: Location)
+        data class Data(val data: Location)
 
         assertEquals(
-            Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F),
-            ktConfigString<Data>(
+            Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F)),
+            ktConfigString(
                 """
                     data:
                       ==: org.bukkit.Location
@@ -20,7 +20,7 @@ class BukkitDeserializeTest {
                       yaw: 10.5
                       pitch: -42.6
                 """.trimIndent()
-            )?.data
+            )
         )
     }
 }

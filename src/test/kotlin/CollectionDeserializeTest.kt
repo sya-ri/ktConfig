@@ -5,21 +5,21 @@ import kotlin.test.assertEquals
 class CollectionDeserializeTest {
     @Test
     fun string_mutable_list() {
-        class Data(val data: MutableList<String>)
+        data class Data(val data: MutableList<String>)
 
-        assertEquals(mutableListOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(mutableListOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_set() {
-        class Data(val data: Set<String>)
+        data class Data(val data: Set<String>)
 
-        assertEquals(setOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(setOf("a", "bc", "def")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_string_hash_map() {
-        class Data(val data: HashMap<String, String>)
+        data class Data(val data: HashMap<String, String>)
 
         assertEquals(
             hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
@@ -37,7 +37,7 @@ class CollectionDeserializeTest {
 
     @Test
     fun string_string_linked_hash_map() {
-        class Data(val data: LinkedHashMap<String, String>)
+        data class Data(val data: LinkedHashMap<String, String>)
 
         assertEquals(
             linkedMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
@@ -55,36 +55,36 @@ class CollectionDeserializeTest {
 
     @Test
     fun string_hash_set() {
-        class Data(val data: HashSet<String>)
+        data class Data(val data: HashSet<String>)
 
-        assertEquals(hashSetOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(hashSetOf("a", "bc", "def")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_linked_hash_set() {
-        class Data(val data: LinkedHashSet<String>)
+        data class Data(val data: LinkedHashSet<String>)
 
-        assertEquals(linkedSetOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(linkedSetOf("a", "bc", "def")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_mutable_set() {
-        class Data(val data: MutableSet<String>)
+        data class Data(val data: MutableSet<String>)
 
-        assertEquals(mutableSetOf("a", "bc", "def"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(mutableSetOf("a", "bc", "def")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_iterable() {
-        class Data(val data: Iterable<String>)
+        data class Data(val data: Iterable<String>)
 
-        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
     }
 
     @Test
     fun string_collection() {
-        class Data(val data: Collection<String>)
+        data class Data(val data: Collection<String>)
 
-        assertEquals(listOf("a", "bc", "def", "bc"), ktConfigString<Data>("data: [a, bc, def, bc]")?.data)
+        assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
     }
 }
