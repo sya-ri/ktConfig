@@ -239,6 +239,7 @@ class PrimitiveTypeDeserializeTest {
         data class Data(val data: List<String>)
 
         assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
+        assertEquals(Data(listOf("a")), ktConfigString("data: a"))
     }
 
     @Test

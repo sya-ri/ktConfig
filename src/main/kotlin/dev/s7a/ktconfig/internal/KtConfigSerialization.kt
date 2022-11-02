@@ -144,14 +144,20 @@ internal object KtConfigSerialization {
             }
             UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
-                if (value !is List<*>) throw TypeMismatchException(type, value)
                 val type0 = type.arguments[0].type!!
-                value.map { deserialize(type0, it) }.run {
-                    when (classifier) {
-                        Set::class -> toSet()
-                        HashSet::class -> toHashSet()
-                        LinkedHashSet::class -> LinkedHashSet(this)
-                        else -> this
+                when (value) {
+                    is List<*> -> {
+                        value.map { deserialize(type0, it) }.run {
+                            when (classifier) {
+                                Set::class -> toSet()
+                                HashSet::class -> toHashSet()
+                                LinkedHashSet::class -> LinkedHashSet(this)
+                                else -> this
+                            }
+                        }
+                    }
+                    else -> {
+                        listOf(deserialize(type0, value))
                     }
                 }
             }
