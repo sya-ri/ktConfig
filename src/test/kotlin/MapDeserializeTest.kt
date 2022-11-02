@@ -253,7 +253,7 @@ class MapDeserializeTest {
                         5: f
                       - g: h
                       - {}
-                      - null: i
+                      - 'null': i
                       - j: k
                 """.trimIndent()
             )
