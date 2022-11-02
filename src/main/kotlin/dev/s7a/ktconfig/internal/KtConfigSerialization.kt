@@ -1,6 +1,8 @@
 package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.Comment
+import dev.s7a.ktconfig.KtConfigSerializer
+import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setComment
@@ -19,6 +21,7 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 import kotlin.reflect.KTypeProjection
+import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
@@ -111,6 +114,9 @@ internal object KtConfigSerialization {
     }
 
     private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
+        type.findSerializer()?.let {
+            return it.deserialize(deserialize(projectionMap, it.type, value))
+        }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
             Int::class -> {
@@ -324,6 +330,9 @@ internal object KtConfigSerialization {
 
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
+        type.findSerializer()?.let {
+            return it.serialize(serialize(projectionMap, section, it.type, value))
+        }
         return when (val classifier = type.classifier) {
             String::class -> value
             Int::class -> value
@@ -400,5 +409,11 @@ internal object KtConfigSerialization {
             UUID::class -> key.toString()
             else -> throw UnsupportedTypeException(type, "key")
         }
+    }
+
+    private fun KType.findSerializer(): KtConfigSerializer? {
+        val serializer = findAnnotation<UseSerializer>()?.with ?: return null
+        println(serializer)
+        return serializer.objectInstance ?: serializer.createInstance()
     }
 }
