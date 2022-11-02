@@ -52,15 +52,69 @@ internal object KtConfigSerialization {
     private fun deserialize(type: KType, value: Any?): Any? {
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
-            Int::class -> (value as? Number)?.toInt()
-            UInt::class -> (value as? Number)?.toInt()?.toUInt()
-            Boolean::class -> value as Boolean
-            Double::class -> (value as? Number)?.toDouble()
-            Float::class -> (value as? Number)?.toFloat()
-            Long::class -> (value as? Number)?.toLong()
-            ULong::class -> (value as? Number)?.toLong()?.toULong()
-            Byte::class -> (value as? Number)?.toByte()
-            UByte::class -> (value as? Number)?.toByte()?.toUByte()
+            Int::class -> {
+                when (value) {
+                    is Number -> value.toInt()
+                    is String -> value.toIntOrNull()
+                    else -> null
+                }
+            }
+            UInt::class -> {
+                when (value) {
+                    is Number -> value.toInt().toUInt()
+                    is String -> value.toUIntOrNull()
+                    else -> null
+                }
+            }
+            Boolean::class -> {
+                when (value) {
+                    is Boolean -> value
+                    is String -> value.toBooleanStrictOrNull()
+                    else -> null
+                }
+            }
+            Double::class -> {
+                when (value) {
+                    is Number -> value.toDouble()
+                    is String -> value.toDoubleOrNull()
+                    else -> null
+                }
+            }
+            Float::class -> {
+                when (value) {
+                    is Number -> value.toFloat()
+                    is String -> value.toFloatOrNull()
+                    else -> null
+                }
+            }
+            Long::class -> {
+                when (value) {
+                    is Number -> value.toLong()
+                    is String -> value.toLongOrNull()
+                    else -> null
+                }
+            }
+            ULong::class -> {
+                when (value) {
+                    is Number -> value.toLong().toULong()
+                    is String -> value.toULongOrNull()
+                    else -> null
+                }
+            }
+            Byte::class -> {
+                when (value) {
+                    is Number -> value.toByte()
+                    is String -> value.toByteOrNull()
+                    else -> null
+                }
+            }
+            UByte::class -> {
+                when (value) {
+                    is Number -> value.toByte().toUByte()
+                    is String -> value.toUByteOrNull()
+                    else -> null
+                }
+            }
             Char::class -> {
                 when (value) {
                     is Char -> value
@@ -69,8 +123,20 @@ internal object KtConfigSerialization {
                     else -> null
                 }
             }
-            Short::class -> (value as? Number)?.toShort()
-            UShort::class -> (value as? Number)?.toShort()?.toUShort()
+            Short::class -> {
+                when (value) {
+                    is Number -> value.toShort()
+                    is String -> value.toShortOrNull()
+                    else -> null
+                }
+            }
+            UShort::class -> {
+                when (value) {
+                    is Number -> value.toShort().toUShort()
+                    is String -> value.toUShortOrNull()
+                    else -> null
+                }
+            }
             UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 if (value !is List<*>) throw TypeMismatchException(type, value)
