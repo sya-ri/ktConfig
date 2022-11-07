@@ -189,6 +189,17 @@ internal object KtConfigSerialization {
             }
             is KClass<*> -> {
                 when {
+                    classifier.java.isArray -> {
+                        val type0 = type.arguments[0].type!!
+                        when (value) {
+                            is List<*> -> {
+                                value.map { deserialize(type0, it) }
+                            }
+                            else -> {
+                                listOf(deserialize(type0, value))
+                            }
+                        }.toTypedArray()
+                    }
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> {
                         value
                     }

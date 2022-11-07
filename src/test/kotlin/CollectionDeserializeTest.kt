@@ -87,4 +87,26 @@ class CollectionDeserializeTest {
 
         assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
     }
+
+    @Test
+    fun string_array() {
+        data class Data(val data: Array<String>) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as Data
+
+                if (!data.contentEquals(other.data)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return data.contentHashCode()
+            }
+        }
+
+        assertEquals(Data(arrayOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
+    }
 }
