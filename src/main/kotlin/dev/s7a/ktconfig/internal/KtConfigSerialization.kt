@@ -156,17 +156,17 @@ internal object KtConfigSerialization {
                 val type0 = type.arguments[0].type!!
                 when (value) {
                     is List<*> -> {
-                        value.map { deserialize(type0, it) }.run {
-                            when (classifier) {
-                                Set::class -> toSet()
-                                HashSet::class -> toHashSet()
-                                LinkedHashSet::class -> LinkedHashSet(this)
-                                else -> this
-                            }
-                        }
+                        value.map { deserialize(type0, it) }
                     }
                     else -> {
                         listOf(deserialize(type0, value))
+                    }
+                }.run {
+                    when (classifier) {
+                        Set::class -> toSet()
+                        HashSet::class -> toHashSet()
+                        LinkedHashSet::class -> LinkedHashSet(this)
+                        else -> this
                     }
                 }
             }
