@@ -66,7 +66,7 @@ message: You can use default values
   - [ ] [~~Sealed class~~](https://kotlinlang.org/docs/sealed-classes.html)
 - Bukkit & User friendly
   - [x] Use [YamlConfiguration](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/configuration/file/YamlConfiguration.html) internally
-  - [ ] ~~Support comments using @Comment annotation~~
+  - [x] Support comments using @Comment annotation
   - [x] Don't need to put the default yaml file in resources
 
 ## 🔗 Links
