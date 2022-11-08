@@ -1,10 +1,12 @@
 package dev.s7a.ktconfig.simpleconfig
 
+import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.ktConfigFile
 import org.bukkit.plugin.java.JavaPlugin
 
 @Suppress("unused")
 class Main : JavaPlugin() {
+    @Comment("config.yml")
     data class SimpleConfig(
         val message: String = "You can use default values"
     )

@@ -6,7 +6,8 @@
 Spigot config library for Kotlin handled using class constructor.
 
 ```kotlin
-class Main : JavaPlugin() {
+class Main : JavaPlugin() { 
+    @Comment("config.yml")
     data class SimpleConfig(
         val message: String = "You can use default values"
     )
@@ -19,6 +20,8 @@ class Main : JavaPlugin() {
 ```
 
 ```yaml
+# config.yml
+
 message: You can use default values
 ```
 

@@ -1,5 +1,6 @@
 package dev.s7a.ktconfig.internal
 
+import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.ConfigurationSection
@@ -10,6 +11,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -31,7 +33,8 @@ internal object KtConfigSerialization {
 
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
         return YamlConfiguration().apply {
-            options().pathSeparator(pathSeparator)
+            val comment = clazz.findAnnotation<Comment>()?.lines?.toList()
+            options().pathSeparator(pathSeparator).setHeader(comment)
             clazz.memberProperties.forEach {
                 set(it.name, serialize(it.returnType, it.get(value)))
             }
