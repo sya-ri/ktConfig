@@ -3,6 +3,7 @@ package dev.s7a.ktconfig.internal
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
+import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderComment
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
@@ -34,7 +35,7 @@ internal object KtConfigSerialization {
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
         return YamlConfiguration().apply {
             val comment = clazz.findAnnotation<Comment>()?.lines?.toList()
-            options().pathSeparator(pathSeparator).setHeader(comment)
+            options().pathSeparator(pathSeparator).setHeaderComment(comment)
             clazz.memberProperties.forEach {
                 set(it.name, serialize(it.returnType, it.get(value)))
             }
