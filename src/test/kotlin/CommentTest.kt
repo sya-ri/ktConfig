@@ -6,12 +6,13 @@ import kotlin.test.assertEquals
 class CommentTest {
     @Test
     fun header() {
-        @Comment("comment")
+        @Comment("line1", "line2")
         data class Data(val data: String)
 
         assertEquals(
             """
-                # comment
+                # line1
+                # line2
                 
                 data: hello
                 

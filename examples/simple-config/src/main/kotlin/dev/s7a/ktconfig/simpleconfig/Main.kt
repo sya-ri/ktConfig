@@ -6,7 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 @Suppress("unused")
 class Main : JavaPlugin() {
-    @Comment("config.yml")
+    @Comment("config.yml", "This is header comments")
     data class SimpleConfig(
         val message: String = "You can use default values"
     )
