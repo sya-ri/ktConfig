@@ -3,8 +3,10 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
+import SimpleConfigSource from "@site/src/components/examples/SimpleConfigSource";
 
 import styles from './index.module.css';
+import SimpleConfigYaml from "@site/src/components/examples/SimpleConfigYaml";
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -29,7 +31,21 @@ export default function Home(): JSX.Element {
   return (
     <Layout>
       <HomepageHeader />
-      <main></main>
+      <main>
+        <div className="container">
+          <div className="text--center margin-vert--lg">
+            <h3>You can read and write config files just by defining a class constructor.</h3>
+          </div>
+          <div className="row">
+            <div className="col">
+              <SimpleConfigSource />
+            </div>
+            <div className="col">
+              <SimpleConfigYaml />
+            </div>
+          </div>
+        </div>
+      </main>
     </Layout>
   );
 }
