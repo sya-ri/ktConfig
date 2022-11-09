@@ -2,7 +2,7 @@ package dev.s7a.ktconfig.internal
 
 import org.bukkit.configuration.file.YamlConfigurationOptions
 
-object YamlConfigurationOptionsReflection {
+internal object YamlConfigurationOptionsReflection {
     private fun interface SetHeaderCommentMethod {
         fun apply(options: YamlConfigurationOptions, comments: List<String>)
     }
