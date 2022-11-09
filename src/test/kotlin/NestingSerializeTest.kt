@@ -27,7 +27,6 @@ class NestingSerializeTest {
             """
                 data:
                   data:
-                    data: null
                     int: 302
                   int: 21
                 int: 1

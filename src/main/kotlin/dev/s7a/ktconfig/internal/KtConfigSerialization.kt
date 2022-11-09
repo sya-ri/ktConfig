@@ -3,6 +3,7 @@ package dev.s7a.ktconfig.internal
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
+import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setComment
 import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderComment
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -37,12 +38,22 @@ internal object KtConfigSerialization {
         return findAnnotation<Comment>()?.lines?.toList()
     }
 
+    private fun ConfigurationSection.set(clazz: KClass<*>, value: Any) {
+        clazz.memberProperties.forEach {
+            serialize(createSection(it.name), it.returnType, it.call(value)).run {
+                if (this !is Unit) {
+                    // Unit is that should be ignored
+                    set(it.name, this)
+                }
+            }
+            setComment(it.name, it.findComment())
+        }
+    }
+
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
         return YamlConfiguration().apply {
             options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
-            clazz.memberProperties.forEach {
-                set(it.name, serialize(it.returnType, it.get(value)))
-            }
+            set(clazz, value)
         }.saveToString()
     }
 
@@ -243,7 +254,7 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun serialize(type: KType, value: Any?): Any? {
+    private fun serialize(section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
         return when (val classifier = type.classifier) {
             String::class -> value
@@ -262,12 +273,12 @@ internal object KtConfigSerialization {
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
-                (value as Iterable<*>).map { serialize(type0, it) }
+                (value as Iterable<*>).map { serialize(section, type0, it) }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = type.arguments[0].type!!
                 val type1 = type.arguments[1].type!!
-                (value as Map<*, *>).map { serializeKey(type0, it.key.toString()) to serialize(type1, it.value) }.toMap()
+                (value as Map<*, *>).map { serializeKey(type0, it.key.toString()) to serialize(section.createSection(it.key.toString()), type1, it.value) }.toMap()
             }
             is KClass<*> -> {
                 when {
@@ -282,9 +293,8 @@ internal object KtConfigSerialization {
                         }
                     }
                     else -> {
-                        classifier.memberProperties.associate {
-                            it.name to serialize(it.returnType, it.call(value))
-                        }
+                        section.set(classifier, value)
+                        // Return Unit so ignores the result
                     }
                 }
             }

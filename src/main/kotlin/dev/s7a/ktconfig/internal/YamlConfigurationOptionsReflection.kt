@@ -1,5 +1,6 @@
 package dev.s7a.ktconfig.internal
 
+import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfigurationOptions
 
 internal object YamlConfigurationOptionsReflection {
@@ -7,20 +8,34 @@ internal object YamlConfigurationOptionsReflection {
         fun apply(options: YamlConfigurationOptions, comments: List<String>)
     }
 
+    private fun interface SetValueCommentMethod {
+        fun apply(section: ConfigurationSection, path: String, comment: List<String>?)
+    }
+
     private val setHeaderCommentMethod: SetHeaderCommentMethod
+    private val setValueCommentMethod: SetValueCommentMethod
 
     init {
-        val clazz = YamlConfigurationOptions::class.java
+        val optionsClass = YamlConfigurationOptions::class.java
         setHeaderCommentMethod = try {
-            val method = clazz.getMethod("setHeader", List::class.java)
+            val method = optionsClass.getMethod("setHeader", List::class.java)
             SetHeaderCommentMethod { options, comments ->
                 method.invoke(options, comments)
             }
         } catch (_: NoSuchMethodException) {
-            val method = clazz.getMethod("header", String::class.java)
+            val method = optionsClass.getMethod("header", String::class.java)
             SetHeaderCommentMethod { options, comments ->
                 method.invoke(options, comments.joinToString("\n"))
             }
+        }
+        val sectionClass = ConfigurationSection::class.java
+        setValueCommentMethod = try {
+            val method = sectionClass.getMethod("setComments", String::class.java, List::class.java)
+            SetValueCommentMethod { section, path, comments ->
+                method.invoke(section, path, comments)
+            }
+        } catch (_: NoSuchMethodException) {
+            SetValueCommentMethod { _, _, _ -> } // Unsupported old version
         }
     }
 
@@ -28,5 +43,9 @@ internal object YamlConfigurationOptionsReflection {
         if (comment != null) {
             setHeaderCommentMethod.apply(this, comment)
         }
+    }
+
+    fun ConfigurationSection.setComment(path: String, comment: List<String>?) {
+        setValueCommentMethod.apply(this, path, comment)
     }
 }

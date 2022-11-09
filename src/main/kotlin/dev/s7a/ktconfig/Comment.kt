@@ -5,5 +5,5 @@ package dev.s7a.ktconfig
  *
  * @since 1.0.0
  */
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 annotation class Comment(vararg val lines: String)
