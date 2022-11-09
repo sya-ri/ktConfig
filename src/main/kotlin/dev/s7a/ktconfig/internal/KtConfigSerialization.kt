@@ -8,6 +8,7 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 import java.util.UUID
+import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -32,10 +33,13 @@ internal object KtConfigSerialization {
         return constructor.callByValues(values)
     }
 
+    private fun KAnnotatedElement.findComment(): List<String>? {
+        return findAnnotation<Comment>()?.lines?.toList()
+    }
+
     fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
         return YamlConfiguration().apply {
-            val comment = clazz.findAnnotation<Comment>()?.lines?.toList()
-            options().pathSeparator(pathSeparator).setHeaderComment(comment)
+            options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
             clazz.memberProperties.forEach {
                 set(it.name, serialize(it.returnType, it.get(value)))
             }
