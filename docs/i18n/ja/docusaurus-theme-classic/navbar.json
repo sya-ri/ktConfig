@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": "ktConfig",
+    "description": "The title in the navbar"
+  },
+  "item.label.Docs": {
+    "message": "ドキュメント",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Blog": {
+    "message": "ブログ",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.API Document": {
+    "message": "API ドキュメント",
+    "description": "Navbar item with label API Document"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

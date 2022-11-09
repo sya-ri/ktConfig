@@ -7,6 +7,7 @@ import SimpleConfigSource from "@site/src/components/examples/SimpleConfigSource
 import SimpleConfigYaml from "@site/src/components/examples/SimpleConfigYaml";
 
 import styles from './index.module.css';
+import Translate from "@docusaurus/Translate";
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -19,7 +20,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            Get started
+            <Translate>Get started</Translate>
           </Link>
         </div>
       </div>
@@ -34,7 +35,11 @@ export default function Home(): JSX.Element {
       <main>
         <div className="container">
           <div className="text--center margin-vert--lg">
-            <h3>You can read and write config files just by defining a class constructor.</h3>
+            <h3>
+              <Translate>
+                You can read and write config files just by defining a class constructor.
+              </Translate>
+            </h3>
           </div>
           <div className="row">
             <div className="col">
