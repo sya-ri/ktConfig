@@ -28,10 +28,11 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/sya-ri/ktConfig/tree/master/docs/',
+          editLocalizedFiles: true
         },
         blog: {
-          showReadingTime: false,
           editUrl: 'https://github.com/sya-ri/ktConfig/tree/master/docs/',
+          editLocalizedFiles: true
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
