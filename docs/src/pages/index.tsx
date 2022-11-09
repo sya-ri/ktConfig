@@ -4,9 +4,9 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import SimpleConfigSource from "@site/src/components/examples/SimpleConfigSource";
+import SimpleConfigYaml from "@site/src/components/examples/SimpleConfigYaml";
 
 import styles from './index.module.css';
-import SimpleConfigYaml from "@site/src/components/examples/SimpleConfigYaml";
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();

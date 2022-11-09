@@ -62,6 +62,11 @@ const config = {
             position: 'left'
           },
           {
+            href: 'https://gh.s7a.dev/ktConfig',
+            label: 'API Document',
+            position: 'right',
+          },
+          {
             href: 'https://github.com/sya-ri/ktConfig',
             label: 'GitHub',
             position: 'right',
