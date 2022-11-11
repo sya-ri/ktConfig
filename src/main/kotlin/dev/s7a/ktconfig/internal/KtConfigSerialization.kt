@@ -14,6 +14,8 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
@@ -25,22 +27,28 @@ internal object KtConfigSerialization {
      */
     private const val pathSeparator = 0x00.toChar()
 
-    fun <T : Any> deserialize(clazz: KClass<T>, text: String): T? {
+    private fun projectionMap(clazz: KClass<*>, type: KType): Map<KTypeParameter, KTypeProjection> {
+        return clazz.typeParameters.mapIndexed { index, parameter ->
+            parameter to type.arguments[index]
+        }.toMap()
+    }
+
+    fun <T : Any> deserialize(clazz: KClass<T>, type: KType, text: String): T? {
         val constructor = clazz.primaryConstructor ?: return null
         val values = YamlConfiguration().apply {
             options().pathSeparator(pathSeparator)
             loadFromString(text)
         }.getValues(false)
-        return constructor.callByValues(values)
+        return constructor.callByValues(projectionMap(clazz, type), values)
     }
 
     private fun KAnnotatedElement.findComment(): List<String>? {
         return findAnnotation<Comment>()?.lines?.toList()
     }
 
-    private fun ConfigurationSection.set(clazz: KClass<*>, value: Any) {
+    private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
         clazz.memberProperties.forEach {
-            serialize(createSection(it.name), it.returnType, it.call(value)).run {
+            serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
                 if (this !is Unit) {
                     // Unit is that should be ignored
                     set(it.name, this)
@@ -50,16 +58,16 @@ internal object KtConfigSerialization {
         }
     }
 
-    fun <T : Any> serialize(clazz: KClass<T>, value: T): String {
+    fun <T : Any> serialize(clazz: KClass<T>, type: KType, value: T): String {
         return YamlConfiguration().apply {
             options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
-            set(clazz, value)
+            set(clazz, type, value)
         }.saveToString()
     }
 
-    private fun <T> KFunction<T>.callByValues(values: Map<String, Any?>): T? {
+    private fun <T> KFunction<T>.callByValues(projectionMap: Map<KTypeParameter, KTypeProjection>, values: Map<String, Any?>): T? {
         return parameters.mapNotNull { parameter ->
-            val value = values.get(parameter)
+            val value = values.get(projectionMap, parameter)
             if (value == Unit) {
                 null
             } else {
@@ -68,11 +76,11 @@ internal object KtConfigSerialization {
         }.toMap().run(::callBy)
     }
 
-    private fun Map<String, Any?>.get(parameter: KParameter): Any? {
+    private fun Map<String, Any?>.get(projectionMap: Map<KTypeParameter, KTypeProjection>, parameter: KParameter): Any? {
         val name = parameter.name!!
         val type = parameter.type
         val value = when {
-            contains(name) -> deserialize(type, get(name))
+            contains(name) -> deserialize(projectionMap, type, get(name))
             parameter.isOptional -> {} // Use default value: Unit
             else -> null
         }
@@ -82,7 +90,7 @@ internal object KtConfigSerialization {
         return value
     }
 
-    private fun deserialize(type: KType, value: Any?): Any? {
+    private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
             Int::class -> {
@@ -175,10 +183,10 @@ internal object KtConfigSerialization {
                 val type0 = type.arguments[0].type!!
                 when (value) {
                     is List<*> -> {
-                        value.map { deserialize(type0, it) }
+                        value.map { deserialize(projectionMap, type0, it) }
                     }
                     else -> {
-                        listOf(deserialize(type0, value))
+                        listOf(deserialize(projectionMap, type0, value))
                     }
                 }.run {
                     when (classifier) {
@@ -199,10 +207,10 @@ internal object KtConfigSerialization {
                 val type1 = type.arguments[1].type!!
                 entries.mapNotNull { (key, value) ->
                     if (key == "null" && type0.isMarkedNullable) {
-                        return@mapNotNull null to deserialize(type1, value)
+                        return@mapNotNull null to deserialize(projectionMap, type1, value)
                     }
                     deserializeKey(type0, key.toString())?.let {
-                        it to deserialize(type1, value)
+                        it to deserialize(projectionMap, type1, value)
                     }
                 }.toMap()
             }
@@ -226,9 +234,12 @@ internal object KtConfigSerialization {
                             is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
                             else -> throw TypeMismatchException(type, value)
                         }
-                        constructor.callByValues(values)
+                        constructor.callByValues(projectionMap(classifier, type), values)
                     }
                 }
+            }
+            is KTypeParameter -> {
+                deserialize(projectionMap, projectionMap[classifier]!!.type!!, value)
             }
             else -> throw UnsupportedTypeException(type, "value")
         }
@@ -254,7 +265,7 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun serialize(section: ConfigurationSection, type: KType, value: Any?): Any? {
+    private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
         return when (val classifier = type.classifier) {
             String::class -> value
@@ -273,12 +284,14 @@ internal object KtConfigSerialization {
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
-                (value as Iterable<*>).map { serialize(section, type0, it) }
+                (value as Iterable<*>).map { serialize(projectionMap, section, type0, it) }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = type.arguments[0].type!!
                 val type1 = type.arguments[1].type!!
-                (value as Map<*, *>).map { serializeKey(type0, it.key.toString()) to serialize(section.createSection(it.key.toString()), type1, it.value) }.toMap()
+                (value as Map<*, *>).map {
+                    serializeKey(type0, it.key.toString()) to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value)
+                }.toMap()
             }
             is KClass<*> -> {
                 when {
@@ -293,10 +306,13 @@ internal object KtConfigSerialization {
                         }
                     }
                     else -> {
-                        section.set(classifier, value)
+                        section.set(classifier, type, value)
                         // Return Unit so ignores the result
                     }
                 }
+            }
+            is KTypeParameter -> {
+                serialize(projectionMap, section, projectionMap[classifier]!!.type!!, value)
             }
             else -> value
         }

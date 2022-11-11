@@ -63,7 +63,7 @@ message: You can use default values
   - [x] [Data class](https://kotlinlang.org/docs/data-classes.html)
   - [x] [Enum class](https://kotlinlang.org/docs/enum-classes.html)
   - [x] [Inline class](https://kotlinlang.org/docs/inline-classes.html)
-  - [ ] [~~Generics~~](https://kotlinlang.org/docs/generics.html)
+  - [x] [Generics](https://kotlinlang.org/docs/generics.html)
   - [ ] [~~Sealed class~~](https://kotlinlang.org/docs/sealed-classes.html)
 - Bukkit & User friendly
   - [x] Use [YamlConfiguration](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/configuration/file/YamlConfiguration.html) internally
