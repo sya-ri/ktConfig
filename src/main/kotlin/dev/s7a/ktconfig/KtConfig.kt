@@ -19,7 +19,7 @@ import kotlin.reflect.typeOf
  */
 fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String): T? {
     if (text.isBlank()) return null
-    return KtConfigSerialization.deserialize(clazz, type, text)
+    return KtConfigSerialization.fromString(clazz, type, text)
 }
 
 /**
@@ -187,7 +187,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: 
  * @since 1.0.0
  */
 fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T): String {
-    return KtConfigSerialization.serialize(clazz, type, content)
+    return KtConfigSerialization.toString(clazz, type, content)
 }
 
 /**

@@ -27,13 +27,7 @@ internal object KtConfigSerialization {
      */
     private const val pathSeparator = 0x00.toChar()
 
-    private fun projectionMap(clazz: KClass<*>, type: KType): Map<KTypeParameter, KTypeProjection> {
-        return clazz.typeParameters.mapIndexed { index, parameter ->
-            parameter to type.arguments[index]
-        }.toMap()
-    }
-
-    fun <T : Any> deserialize(clazz: KClass<T>, type: KType, text: String): T? {
+    fun <T : Any> fromString(clazz: KClass<T>, type: KType, text: String): T? {
         val constructor = clazz.primaryConstructor ?: return null
         val values = YamlConfiguration().apply {
             options().pathSeparator(pathSeparator)
@@ -42,27 +36,21 @@ internal object KtConfigSerialization {
         return constructor.callByValues(projectionMap(clazz, type), values)
     }
 
-    private fun KAnnotatedElement.findComment(): List<String>? {
-        return findAnnotation<Comment>()?.lines?.toList()
-    }
-
-    private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
-        clazz.memberProperties.forEach {
-            serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
-                if (this !is Unit) {
-                    // Unit is that should be ignored
-                    set(it.name, this)
-                }
-            }
-            setComment(it.name, it.findComment())
-        }
-    }
-
-    fun <T : Any> serialize(clazz: KClass<T>, type: KType, value: T): String {
+    fun <T : Any> toString(clazz: KClass<T>, type: KType, value: T): String {
         return YamlConfiguration().apply {
             options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
             set(clazz, type, value)
         }.saveToString()
+    }
+
+    private fun projectionMap(clazz: KClass<*>, type: KType): Map<KTypeParameter, KTypeProjection> {
+        return clazz.typeParameters.mapIndexed { index, parameter ->
+            parameter to type.arguments[index]
+        }.toMap()
+    }
+
+    private fun KAnnotatedElement.findComment(): List<String>? {
+        return findAnnotation<Comment>()?.lines?.toList()
     }
 
     private fun <T> KFunction<T>.callByValues(projectionMap: Map<KTypeParameter, KTypeProjection>, values: Map<String, Any?>): T? {
@@ -88,6 +76,18 @@ internal object KtConfigSerialization {
             throw TypeMismatchException(type, null)
         }
         return value
+    }
+
+    private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
+        clazz.memberProperties.forEach {
+            serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
+                if (this !is Unit) {
+                    // Unit is that should be ignored
+                    set(it.name, this)
+                }
+            }
+            setComment(it.name, it.findComment())
+        }
     }
 
     private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
