@@ -20,6 +20,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 
 internal object KtConfigSerialization {
     /**
@@ -54,6 +55,7 @@ internal object KtConfigSerialization {
     }
 
     private fun <T> KFunction<T>.callByValues(projectionMap: Map<KTypeParameter, KTypeProjection>, values: Map<String, Any?>): T? {
+        isAccessible = true
         return parameters.mapNotNull { parameter ->
             val value = values.get(projectionMap, parameter)
             if (value == Unit) {
@@ -80,6 +82,7 @@ internal object KtConfigSerialization {
 
     private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
         clazz.memberProperties.forEach {
+            it.isAccessible = true
             serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
                 if (this !is Unit) {
                     // Unit is that should be ignored

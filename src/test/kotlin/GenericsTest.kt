@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GenericsTest {
-    data class Data<T>(val data: T)
+    private data class Data<T>(val data: T)
 
     @Test
     fun serialize() {
