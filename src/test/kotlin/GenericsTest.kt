@@ -12,6 +12,7 @@ class GenericsTest {
         assertEquals("data: 5\n", saveKtConfigString(Data(5)))
         assertEquals("data: 2.3\n", saveKtConfigString(Data(2.3)))
         assertEquals("data: 255\n", saveKtConfigString(Data(UByte.MAX_VALUE)))
+        assertEquals("", saveKtConfigString(Data<Boolean?>(null)))
     }
 
     @Test
@@ -20,5 +21,6 @@ class GenericsTest {
         assertEquals(Data(5), ktConfigString("data: 5"))
         assertEquals(Data(2.3), ktConfigString("data: 2.3"))
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: 255"))
+        assertEquals(Data<Boolean?>(null), ktConfigString("data: other"))
     }
 }

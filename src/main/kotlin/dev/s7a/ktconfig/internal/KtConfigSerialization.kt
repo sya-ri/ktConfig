@@ -69,12 +69,13 @@ internal object KtConfigSerialization {
     private fun Map<String, Any?>.get(projectionMap: Map<KTypeParameter, KTypeProjection>, parameter: KParameter): Any? {
         val name = parameter.name!!
         val type = parameter.type
+        val actualType = projectionMap[type.classifier]?.type ?: type
         val value = when {
-            contains(name) -> deserialize(projectionMap, type, get(name))
+            contains(name) -> deserialize(projectionMap, actualType, get(name))
             parameter.isOptional -> {} // Use default value: Unit
             else -> null
         }
-        if (value == null && type.isMarkedNullable.not()) {
+        if (value == null && actualType.isMarkedNullable.not()) {
             throw TypeMismatchException(type, null)
         }
         return value
