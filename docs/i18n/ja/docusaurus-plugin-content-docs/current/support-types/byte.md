@@ -34,7 +34,7 @@ byte: 130
 
 ```kotlin title="Config.kt"
 data class Config(
-    val map: Map<String, String>
+    val map: Map<Byte, String>
 )
 ```
 

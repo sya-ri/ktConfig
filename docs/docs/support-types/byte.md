@@ -34,7 +34,7 @@ Also, it can be used as a key type for [Map](map.md).
 
 ```kotlin title="Config.kt"
 data class Config(
-    val map: Map<String, String>
+    val map: Map<Byte, String>
 )
 ```
 
