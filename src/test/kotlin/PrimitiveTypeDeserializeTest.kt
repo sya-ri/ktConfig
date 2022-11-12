@@ -88,6 +88,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: 2147483648")) // overflow
         assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: -2147483648"))
         assertEquals(Data(Int.MAX_VALUE), ktConfigString("data: -2147483649")) // underflow
+        assertEquals(Data(Int.MAX_VALUE), ktConfigString("data: '2147483647'"))
+        assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: '2147483648'")) // overflow
+        assertEquals(Data(Int.MIN_VALUE), ktConfigString("data: '-2147483648'"))
+        assertEquals(Data(Int.MAX_VALUE), ktConfigString("data: '-2147483649'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -100,6 +104,9 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: 4294967295"))
         assertEquals(Data(UInt.MIN_VALUE), ktConfigString("data: 4294967296")) // overflow
         assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: '4294967295'"))
+        assertEquals(Data(UInt.MIN_VALUE), ktConfigString("data: '4294967296'")) // overflow
+        assertEquals(Data(UInt.MAX_VALUE), ktConfigString("data: '-1'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -145,6 +152,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: 9223372036854775808")) // overflow
         assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: -9223372036854775808"))
         assertEquals(Data(Long.MAX_VALUE), ktConfigString("data: -9223372036854775809")) // underflow
+        assertEquals(Data(Long.MAX_VALUE), ktConfigString("data: '9223372036854775807'"))
+        assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: '9223372036854775808'")) // overflow
+        assertEquals(Data(Long.MIN_VALUE), ktConfigString("data: '-9223372036854775808'"))
+        assertEquals(Data(Long.MAX_VALUE), ktConfigString("data: '-9223372036854775809'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -154,9 +165,12 @@ class PrimitiveTypeDeserializeTest {
 
         assertEquals(Data(123U), ktConfigString("data: 123"))
         assertEquals(Data(123U), ktConfigString("data: '123'"))
+        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: 18446744073709551615"))
+        assertEquals(Data(null), ktConfigString("data: 18446744073709551616")) // overflow: toULongOrNull returns null
+        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: -1")) // underflow
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: '18446744073709551615'"))
         assertEquals(Data(null), ktConfigString("data: '18446744073709551616'")) // overflow: toULongOrNull returns null
-        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: '-1'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -172,6 +186,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: 128")) // overflow
         assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: -128"))
         assertEquals(Data(Byte.MAX_VALUE), ktConfigString("data: -129")) // underflow
+        assertEquals(Data(Byte.MAX_VALUE), ktConfigString("data: '127'"))
+        assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: '128'")) // overflow
+        assertEquals(Data(Byte.MIN_VALUE), ktConfigString("data: '-128'"))
+        assertEquals(Data(Byte.MAX_VALUE), ktConfigString("data: '-129'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -186,6 +204,9 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: 255"))
         assertEquals(Data(UByte.MIN_VALUE), ktConfigString("data: 256")) // overflow
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: '255'"))
+        assertEquals(Data(UByte.MIN_VALUE), ktConfigString("data: '256'")) // overflow
+        assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: '-1'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -210,6 +231,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: 32768")) // overflow
         assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: -32768"))
         assertEquals(Data(Short.MAX_VALUE), ktConfigString("data: -32769")) // underflow
+        assertEquals(Data(Short.MAX_VALUE), ktConfigString("data: '32767'"))
+        assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: '32768'")) // overflow
+        assertEquals(Data(Short.MIN_VALUE), ktConfigString("data: '-32768'"))
+        assertEquals(Data(Short.MAX_VALUE), ktConfigString("data: '-32769'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -221,6 +246,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(123U), ktConfigString("data: '123'"))
         assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: 65535"))
         assertEquals(Data(UShort.MIN_VALUE), ktConfigString("data: 65536")) // overflow
+        assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: -1")) // underflow
+        assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: '65535'"))
+        assertEquals(Data(UShort.MIN_VALUE), ktConfigString("data: '65536'")) // overflow
+        assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: -1")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }
 
@@ -324,7 +353,7 @@ class PrimitiveTypeDeserializeTest {
     fun short_list() {
         data class Data(val data: List<Short>)
 
-        assertEquals(Data(listOf<Short>(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
+        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
     }
 
     @Test

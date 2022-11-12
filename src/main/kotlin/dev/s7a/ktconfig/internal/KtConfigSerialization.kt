@@ -100,14 +100,14 @@ internal object KtConfigSerialization {
             Int::class -> {
                 when (value) {
                     is Number -> value.toInt()
-                    is String -> value.toIntOrNull()
+                    is String -> value.toLongOrNull()?.toInt()
                     else -> null
                 }
             }
             UInt::class -> {
                 when (value) {
                     is Number -> value.toInt().toUInt()
-                    is String -> value.toUIntOrNull()
+                    is String -> value.toLongOrNull()?.toUInt()
                     else -> null
                 }
             }
@@ -135,28 +135,28 @@ internal object KtConfigSerialization {
             Long::class -> {
                 when (value) {
                     is Number -> value.toLong()
-                    is String -> value.toLongOrNull()
+                    is String -> value.toDoubleOrNull()?.toLong()
                     else -> null
                 }
             }
             ULong::class -> {
                 when (value) {
                     is Number -> value.toLong().toULong()
-                    is String -> value.toULongOrNull()
+                    is String -> value.toDoubleOrNull()?.toULong()
                     else -> null
                 }
             }
             Byte::class -> {
                 when (value) {
                     is Number -> value.toByte()
-                    is String -> value.toByteOrNull()
+                    is String -> value.toShortOrNull()?.toByte()
                     else -> null
                 }
             }
             UByte::class -> {
                 when (value) {
                     is Number -> value.toByte().toUByte()
-                    is String -> value.toUByteOrNull()
+                    is String -> value.toShortOrNull()?.toUByte()
                     else -> null
                 }
             }
@@ -171,14 +171,14 @@ internal object KtConfigSerialization {
             Short::class -> {
                 when (value) {
                     is Number -> value.toShort()
-                    is String -> value.toShortOrNull()
+                    is String -> value.toIntOrNull()?.toShort()
                     else -> null
                 }
             }
             UShort::class -> {
                 when (value) {
                     is Number -> value.toShort().toUShort()
-                    is String -> value.toUShortOrNull()
+                    is String -> value.toIntOrNull()?.toUShort()
                     else -> null
                 }
             }
@@ -252,18 +252,18 @@ internal object KtConfigSerialization {
     private fun deserializeKey(type: KType, key: String): Any? {
         return when (type.classifier) {
             String::class -> key
-            Int::class -> key.toIntOrNull()
-            UInt::class -> key.toUIntOrNull()
+            Int::class -> key.toLongOrNull()?.toInt()
+            UInt::class -> key.toLongOrNull()?.toUInt()
             Boolean::class -> key.toBooleanStrictOrNull()
             Double::class -> key.toDoubleOrNull()
             Float::class -> key.toFloatOrNull()
-            Long::class -> key.toLongOrNull()
-            ULong::class -> key.toULongOrNull()
-            Byte::class -> key.toByteOrNull()
-            UByte::class -> key.toUByteOrNull()
+            Long::class -> key.toDoubleOrNull()?.toLong()
+            ULong::class -> key.toDoubleOrNull()?.toULong()
+            Byte::class -> key.toShortOrNull()?.toByte()
+            UByte::class -> key.toShortOrNull()?.toUByte()
             Char::class -> key.singleOrNull()
-            Short::class -> key.toShortOrNull()
-            UShort::class -> key.toUShortOrNull()
+            Short::class -> key.toIntOrNull()?.toShort()
+            UShort::class -> key.toIntOrNull()?.toUShort()
             UUID::class -> runCatching { UUID.fromString(key) }.getOrNull()
             else -> throw UnsupportedTypeException(type, "key")
         }
