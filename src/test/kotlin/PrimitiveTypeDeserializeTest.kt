@@ -166,10 +166,10 @@ class PrimitiveTypeDeserializeTest {
         assertEquals(Data(123U), ktConfigString("data: 123"))
         assertEquals(Data(123U), ktConfigString("data: '123'"))
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: 18446744073709551615"))
-        assertEquals(Data(null), ktConfigString("data: 18446744073709551616")) // overflow: toULongOrNull returns null
+        assertEquals(Data(ULong.MIN_VALUE), ktConfigString("data: 18446744073709551616")) // overflow
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: -1")) // underflow
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: '18446744073709551615'"))
-        assertEquals(Data(null), ktConfigString("data: '18446744073709551616'")) // overflow: toULongOrNull returns null
+        assertEquals(Data(ULong.MIN_VALUE), ktConfigString("data: '18446744073709551616'")) // overflow
         assertEquals(Data(ULong.MAX_VALUE), ktConfigString("data: '-1'")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
     }

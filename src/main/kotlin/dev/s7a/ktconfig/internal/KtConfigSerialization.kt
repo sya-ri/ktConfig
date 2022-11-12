@@ -8,6 +8,7 @@ import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderCom
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
+import java.math.BigInteger
 import java.util.UUID
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
@@ -135,14 +136,14 @@ internal object KtConfigSerialization {
             Long::class -> {
                 when (value) {
                     is Number -> value.toLong()
-                    is String -> value.toDoubleOrNull()?.toLong()
+                    is String -> runCatching { BigInteger(value).toLong() }.getOrNull()
                     else -> null
                 }
             }
             ULong::class -> {
                 when (value) {
                     is Number -> value.toLong().toULong()
-                    is String -> value.toDoubleOrNull()?.toULong()
+                    is String -> runCatching { BigInteger(value).toLong().toULong() }.getOrNull()
                     else -> null
                 }
             }
@@ -257,8 +258,8 @@ internal object KtConfigSerialization {
             Boolean::class -> key.toBooleanStrictOrNull()
             Double::class -> key.toDoubleOrNull()
             Float::class -> key.toFloatOrNull()
-            Long::class -> key.toDoubleOrNull()?.toLong()
-            ULong::class -> key.toDoubleOrNull()?.toULong()
+            Long::class -> runCatching { BigInteger(key).toLong() }.getOrNull()
+            ULong::class -> runCatching { BigInteger(key).toLong().toULong() }.getOrNull()
             Byte::class -> key.toShortOrNull()?.toByte()
             UByte::class -> key.toShortOrNull()?.toUByte()
             Char::class -> key.singleOrNull()
