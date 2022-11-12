@@ -8,6 +8,16 @@ import kotlin.test.assertFailsWith
 
 class PrimitiveTypeDeserializeTest {
     @Test
+    fun any() {
+        data class Data(val data: Any)
+
+        assertEquals(Data("hello"), ktConfigString("data: hello"))
+        assertEquals(Data(5), ktConfigString("data: 5"))
+        assertEquals(Data("5"), ktConfigString("data: '5'"))
+        assertEquals(Data(true), ktConfigString("data: true"))
+    }
+
+    @Test
     fun string() {
         data class Data(val data: String)
 

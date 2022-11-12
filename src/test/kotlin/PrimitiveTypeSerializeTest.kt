@@ -6,6 +6,15 @@ import kotlin.test.assertEquals
 
 class PrimitiveTypeSerializeTest {
     @Test
+    fun any() {
+        data class Data(val data: Any)
+
+        assertEquals("data: hello\n", saveKtConfigString(Data("hello")))
+        assertEquals("data: 5\n", saveKtConfigString(Data(5)))
+        assertEquals("data: true\n", saveKtConfigString(Data(true)))
+    }
+
+    @Test
     fun string() {
         data class Data(val data: String)
 

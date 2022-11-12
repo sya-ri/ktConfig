@@ -97,6 +97,7 @@ internal object KtConfigSerialization {
 
     private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
         return when (val classifier = type.classifier) {
+            Any::class -> value
             String::class -> value.toString()
             Int::class -> {
                 when (value) {
@@ -273,6 +274,7 @@ internal object KtConfigSerialization {
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
         return when (val classifier = type.classifier) {
+            Any::class -> value
             String::class -> value
             Int::class -> value
             UInt::class -> (value as UInt).toLong()
