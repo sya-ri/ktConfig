@@ -4,8 +4,8 @@ sidebar_position: 2.01
 
 # String
 
-[String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/) is a character strings of arbitrary length.
-If set to something other than String, it will be converted using `toString`.
+[String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/) は任意の長さの文字列です。
+もしも、String 以外を設定した場合、`toString` によって文字列に変換されます。
 
 ```kotlin title="Config.kt"
 data class Config(
@@ -26,7 +26,7 @@ string:
   - list2
 ```
 
-Also, it can be used as a key type for [Map](map.md).
+また、[Map](map.md) のキーとして利用できます。
 
 ```kotlin title="Config.kt"
 data class Config(
