@@ -2,5 +2,9 @@
   "version.label": {
     "message": "次へ",
     "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Support types": {
+    "message": "対応している型",
+    "description": "The label for category Support types in sidebar tutorialSidebar"
   }
 }
