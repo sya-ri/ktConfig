@@ -301,7 +301,7 @@ internal object KtConfigSerialization {
                 val type0 = type.arguments[0].type!!
                 val type1 = type.arguments[1].type!!
                 (value as Map<*, *>).map {
-                    serializeKey(type0, it.key.toString()) to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value)
+                    serializeKey(type0, it.key) to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value)
                 }.toMap()
             }
             is KClass<*> -> {
@@ -329,22 +329,23 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun serializeKey(type: KType, key: String): Any? {
+    private fun serializeKey(type: KType, key: Any?): Any? {
+        if (key == null) return null
         return when (type.classifier) {
             String::class -> key
             Int::class -> key
-            UInt::class -> key.toLong()
-            Boolean::class -> key.toBooleanStrictOrNull()
-            Double::class -> key.toDoubleOrNull()
-            Float::class -> key.toFloatOrNull()
+            UInt::class -> (key as UInt).toLong()
+            Boolean::class -> key
+            Double::class -> key
+            Float::class -> key
             Long::class -> key
-            ULong::class -> key.toLongOrNull()?.takeUnless { it < 0 } ?: key
+            ULong::class -> BigInteger(key.toString())
             Byte::class -> key
-            UByte::class -> key.toShort()
+            UByte::class -> (key as UByte).toShort()
             Char::class -> key
             Short::class -> key
-            UShort::class -> key.toInt()
-            UUID::class -> key
+            UShort::class -> (key as UShort).toInt()
+            UUID::class -> key.toString()
             else -> throw UnsupportedTypeException(type, "key")
         }
     }

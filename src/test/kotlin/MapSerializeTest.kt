@@ -30,7 +30,7 @@ class MapSerializeTest {
                 data:
                   a: b
                   c: d
-                  'null': e
+                  null: e
                 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", null to "e")))
@@ -44,10 +44,10 @@ class MapSerializeTest {
         assertEquals(
             """
                 data:
-                  '0': ab
-                  '-1': c
-                  '2147483647': d
-                  '-2147483648': e
+                  0: ab
+                  -1: c
+                  2147483647: d
+                  -2147483648: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0 to "ab", -1 to "c", Int.MAX_VALUE to "d", Int.MIN_VALUE to "e")))
@@ -61,9 +61,9 @@ class MapSerializeTest {
         assertEquals(
             """
                 data:
-                  '0': ab
-                  '-1': c
-                  'null': e
+                  0: ab
+                  -1: c
+                  null: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0 to "ab", -1 to "c", null to "e")))
@@ -141,10 +141,10 @@ class MapSerializeTest {
         assertEquals(
             """
                 data:
-                  '0': ab
-                  '-1': c
-                  '9223372036854775807': d
-                  '-9223372036854775808': e
+                  0: ab
+                  -1: c
+                  9223372036854775807: d
+                  -9223372036854775808: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0L to "ab", -1L to "c", Long.MAX_VALUE to "d", Long.MIN_VALUE to "e")))
@@ -159,7 +159,7 @@ class MapSerializeTest {
             """
                 data:
                   0: ab
-                  '18446744073709551615': c
+                  18446744073709551615: c
                 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c")))
@@ -173,10 +173,10 @@ class MapSerializeTest {
         assertEquals(
             """
                 data:
-                  '0': ab
-                  '94': d
-                  '127': e
-                  '-128': f
+                  0: ab
+                  94: d
+                  127: e
+                  -128: f
                 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toByte() to "ab", 0x5E.toByte() to "d", Byte.MAX_VALUE to "e", Byte.MIN_VALUE to "f")))
@@ -221,10 +221,10 @@ class MapSerializeTest {
         assertEquals(
             """
                 data:
-                  '0': ab
-                  '-1': c
-                  '32767': d
-                  '-32768': e
+                  0: ab
+                  -1: c
+                  32767: d
+                  -32768: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c", Short.MAX_VALUE to "d", Short.MIN_VALUE to "e")))
