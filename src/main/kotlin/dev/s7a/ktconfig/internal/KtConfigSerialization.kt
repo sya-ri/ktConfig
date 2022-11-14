@@ -22,6 +22,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.javaField
 
 internal object KtConfigSerialization {
     /**
@@ -84,6 +85,11 @@ internal object KtConfigSerialization {
 
     private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
         clazz.memberProperties.forEach {
+            if (it.javaField == null) {
+                // Ignore custom getters
+                // https://discuss.kotlinlang.org/t/reflection-and-properties-checking-for-custom-getters-setters/22457/2
+                return@forEach
+            }
             it.isAccessible = true
             serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
                 if (this !is Unit) {
