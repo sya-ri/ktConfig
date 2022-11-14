@@ -5,6 +5,75 @@ import kotlin.test.assertEquals
 
 class CollectionSerializeTest {
     @Test
+    fun string_list() {
+        data class Data(val data: List<String>)
+
+        assertEquals("data: []\n", saveKtConfigString(Data(listOf())))
+        assertEquals(
+            """
+                data:
+                - a
+                - bc
+                - d
+                - bc
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(listOf("a", "bc", "d", "bc")))
+        )
+    }
+
+    @Test
+    fun string_list_list() {
+        data class Data(val data: List<List<String>>)
+
+        assertEquals(
+            """
+                data:
+                - - a
+                  - bc
+                  - def
+                - - g
+                - []
+                - - hi
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))))
+        )
+    }
+
+    @Test
+    fun string_list_list_list() {
+        data class Data(val data: List<List<List<String>>>)
+
+        assertEquals(
+            """
+                data:
+                - - - a
+                    - bc
+                    - def
+                  - - g
+                  - []
+                  - - hi
+                - []
+                - - - j
+                - - - k
+                  - - i
+                
+            """.trimIndent(),
+            saveKtConfigString(
+                Data(
+                    listOf(
+                        listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
+                        listOf(),
+                        listOf(listOf("j")),
+                        listOf(listOf("k"), listOf("i"))
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
     fun string_mutable_list() {
         data class Data(val data: MutableList<String>)
 

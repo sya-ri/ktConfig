@@ -1,12 +1,13 @@
 
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.ktConfigString
+import org.bukkit.Location
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PrimitiveTypeDeserializeTest {
+class TypeDeserializeTest {
     @Test
     fun string() {
         data class Data(val data: String)
@@ -263,127 +264,22 @@ class PrimitiveTypeDeserializeTest {
     }
 
     @Test
-    fun string_list() {
-        data class Data(val data: List<String>?)
+    fun location() {
+        data class Data(val data: Location)
 
-        assertEquals(Data(listOf("a", "bc", "def", "bc")), ktConfigString("data: [a, bc, def, bc]"))
-        assertEquals(Data(listOf("a")), ktConfigString("data: a"))
         assertEquals(
-            Data(listOf("[a]")),
+            Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F)),
             ktConfigString(
                 """
                     data:
-                     - - a
+                      ==: org.bukkit.Location
+                      x: 1.2
+                      y: -5.0
+                      z: 3.4
+                      yaw: 10.5
+                      pitch: -42.6
                 """.trimIndent()
             )
-        )
-    }
-
-    @Test
-    fun int_list() {
-        data class Data(val data: List<Int>)
-
-        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
-    }
-
-    @Test
-    fun uint_list() {
-        data class Data(val data: List<UInt>)
-
-        assertEquals(Data(listOf(1U, UInt.MAX_VALUE, UInt.MIN_VALUE)), ktConfigString("data: [1, ${UInt.MAX_VALUE}, ${UInt.MIN_VALUE}]"))
-    }
-
-    @Test
-    fun boolean_list() {
-        data class Data(val data: List<Boolean>)
-
-        assertEquals(Data(listOf(true, false, true)), ktConfigString("data: [true, false, true]"))
-    }
-
-    @Test
-    fun double_list() {
-        data class Data(val data: List<Double>)
-
-        assertEquals(Data(listOf(0.5, 1.0, 32.5)), ktConfigString("data: [.5, 1, 32.5]"))
-    }
-
-    @Test
-    fun float_list() {
-        data class Data(val data: List<Float>)
-
-        assertEquals(Data(listOf(0.5F, 1.0F, 32.5F)), ktConfigString("data: [.5, 1, 32.5]"))
-    }
-
-    @Test
-    fun long_list() {
-        data class Data(val data: List<Long>)
-
-        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
-    }
-
-    @Test
-    fun ulong_list() {
-        data class Data(val data: List<ULong>)
-
-        assertEquals(Data(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE)), ktConfigString("data: [1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]"))
-    }
-
-    @Test
-    fun byte_list() {
-        data class Data(val data: List<Byte>)
-
-        assertEquals(Data(listOf(5, 128.toByte(), 0x5E)), ktConfigString("data: [5, 128, 0x5E]"))
-    }
-
-    @Test
-    fun ubyte_list() {
-        data class Data(val data: List<UByte>)
-
-        assertEquals(Data(listOf(5U, 128.toUByte(), 0x5EU, UByte.MAX_VALUE)), ktConfigString("data: [5, 128, 0x5E, ${UByte.MAX_VALUE}]"))
-    }
-
-    @Test
-    fun char_list() {
-        data class Data(val data: List<Char>)
-
-        assertEquals(Data(listOf('a', 'B', '5')), ktConfigString("data: [a, B, '5']"))
-    }
-
-    @Test
-    fun short_list() {
-        data class Data(val data: List<Short>)
-
-        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
-    }
-
-    @Test
-    fun ushort_list() {
-        data class Data(val data: List<UShort>)
-
-        assertEquals(Data(listOf(1U, 20U, 31U, UShort.MAX_VALUE)), ktConfigString("data: [1, 20, 31, ${UShort.MAX_VALUE}]"))
-    }
-
-    @Test
-    fun string_list_list() {
-        data class Data(val data: List<List<String>>)
-
-        assertEquals(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))), ktConfigString("data: [[a, bc, def], [g], [], [hi]]"))
-    }
-
-    @Test
-    fun string_list_list_list() {
-        data class Data(val data: List<List<List<String>>>)
-
-        assertEquals(
-            Data(
-                listOf(
-                    listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
-                    listOf(),
-                    listOf(listOf("j")),
-                    listOf(listOf("k"), listOf("i"))
-                )
-            ),
-            ktConfigString("data: [[[a, bc, def], [g], [], [hi]], [], [[j]], [[k], [i]]]")
         )
     }
 

@@ -1,10 +1,11 @@
 
 import dev.s7a.ktconfig.saveKtConfigString
+import org.bukkit.Location
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PrimitiveTypeSerializeTest {
+class TypeSerializeTest {
     @Test
     fun string() {
         data class Data(val data: String)
@@ -142,70 +143,22 @@ class PrimitiveTypeSerializeTest {
     }
 
     @Test
-    fun string_list() {
-        data class Data(val data: List<String>)
-
-        assertEquals("data: []\n", saveKtConfigString(Data(listOf())))
-        assertEquals(
-            """
-                data:
-                - a
-                - bc
-                - d
-                - bc
-                
-            """.trimIndent(),
-            saveKtConfigString(Data(listOf("a", "bc", "d", "bc")))
-        )
-    }
-
-    @Test
-    fun string_list_list() {
-        data class Data(val data: List<List<String>>)
+    fun location() {
+        data class Data(val data: Location)
 
         assertEquals(
             """
                 data:
-                - - a
-                  - bc
-                  - def
-                - - g
-                - []
-                - - hi
-                
-            """.trimIndent(),
-            saveKtConfigString(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))))
-        )
-    }
-
-    @Test
-    fun string_list_list_list() {
-        data class Data(val data: List<List<List<String>>>)
-
-        assertEquals(
-            """
-                data:
-                - - - a
-                    - bc
-                    - def
-                  - - g
-                  - []
-                  - - hi
-                - []
-                - - - j
-                - - - k
-                  - - i
+                  ==: org.bukkit.Location
+                  x: 1.2
+                  y: -5.0
+                  z: 3.4
+                  pitch: -42.6
+                  yaw: 10.5
                 
             """.trimIndent(),
             saveKtConfigString(
-                Data(
-                    listOf(
-                        listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
-                        listOf(),
-                        listOf(listOf("j")),
-                        listOf(listOf("k"), listOf("i"))
-                    )
-                )
+                Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F))
             )
         )
     }
