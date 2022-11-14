@@ -89,7 +89,7 @@ class TypeSerializeTest {
         data class Data(val data: ULong)
 
         assertEquals("data: 5\n", saveKtConfigString(Data(5U)))
-        assertEquals("data: '18446744073709551615'\n", saveKtConfigString(Data(ULong.MAX_VALUE)))
+        assertEquals("data: 18446744073709551615\n", saveKtConfigString(Data(ULong.MAX_VALUE)))
     }
 
     @Test

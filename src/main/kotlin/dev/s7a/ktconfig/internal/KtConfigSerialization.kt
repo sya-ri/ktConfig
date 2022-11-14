@@ -286,7 +286,7 @@ internal object KtConfigSerialization {
             Double::class -> value
             Float::class -> value
             Long::class -> value
-            ULong::class -> (value as ULong).toLong().takeUnless { it < 0 } ?: value.toString()
+            ULong::class -> BigInteger(value.toString())
             Byte::class -> value
             UByte::class -> (value as UByte).toShort()
             Char::class -> value
