@@ -302,4 +302,39 @@ class TypeDeserializeTest {
         assertEquals(Data(EnumValue.Value1), ktConfigString("data: Value1"))
         assertEquals(Data(null), ktConfigString("data: value1"))
     }
+
+    @Test
+    fun pair() {
+        data class Data(val data: Pair<String, Int>)
+
+        assertEquals(
+            Data("zero" to 0),
+            ktConfigString(
+                """
+                    data:
+                      first: zero
+                      second: 0
+                    
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun triple() {
+        data class Data(val data: Triple<String, Int, Double>)
+
+        assertEquals(
+            Data(Triple("zero", 0, 0.0)),
+            ktConfigString(
+                """
+                    data:
+                      first: zero
+                      second: 0
+                      third: 0.0
+                    
+                """.trimIndent()
+            )
+        )
+    }
 }

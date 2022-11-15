@@ -181,4 +181,39 @@ class TypeSerializeTest {
 
         assertEquals("data: Value1\n", saveKtConfigString(Data(EnumValue.Value1)))
     }
+
+    @Test
+    fun pair() {
+        data class Data(val data: Pair<String, Int>)
+
+        assertEquals(
+            """
+                data:
+                  first: zero
+                  second: 0
+                
+            """.trimIndent(),
+            saveKtConfigString(
+                Data("zero" to 0)
+            )
+        )
+    }
+
+    @Test
+    fun triple() {
+        data class Data(val data: Triple<String, Int, Double>)
+
+        assertEquals(
+            """
+                data:
+                  first: zero
+                  second: 0
+                  third: 0.0
+                
+            """.trimIndent(),
+            saveKtConfigString(
+                Data(Triple("zero", 0, 0.0))
+            )
+        )
+    }
 }
