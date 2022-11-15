@@ -78,7 +78,7 @@ internal object KtConfigSerialization {
             else -> null
         }
         if (value == null && actualType.isMarkedNullable.not()) {
-            throw TypeMismatchException(type, null)
+            throw TypeMismatchException(actualType, null)
         }
         return value
     }
