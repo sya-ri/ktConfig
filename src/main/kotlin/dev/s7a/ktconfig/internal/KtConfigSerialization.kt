@@ -8,6 +8,7 @@ import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderCom
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.UUID
 import kotlin.reflect.KAnnotatedElement
@@ -189,6 +190,20 @@ internal object KtConfigSerialization {
                     else -> null
                 }
             }
+            BigInteger::class -> {
+                when (value) {
+                    is Number -> BigInteger(value.toString())
+                    is String -> BigInteger(value)
+                    else -> null
+                }
+            }
+            BigDecimal::class -> {
+                when (value) {
+                    is Number -> BigDecimal(value.toString())
+                    is String -> BigDecimal(value)
+                    else -> null
+                }
+            }
             UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
@@ -271,6 +286,8 @@ internal object KtConfigSerialization {
             Char::class -> key.singleOrNull()
             Short::class -> runCatching { BigInteger(key).toShort() }.getOrNull()
             UShort::class -> runCatching { BigInteger(key).toShort().toUShort() }.getOrNull()
+            BigInteger::class -> runCatching { BigInteger(key) }.getOrNull()
+            BigDecimal::class -> runCatching { BigDecimal(key) }.getOrNull()
             UUID::class -> runCatching { UUID.fromString(key) }.getOrNull()
             else -> throw UnsupportedTypeException(type, "key")
         }
@@ -292,6 +309,8 @@ internal object KtConfigSerialization {
             Char::class -> value
             Short::class -> value
             UShort::class -> (value as UShort).toInt()
+            BigInteger::class -> value
+            BigDecimal::class -> value.toString()
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
@@ -345,6 +364,8 @@ internal object KtConfigSerialization {
             Char::class -> key
             Short::class -> key
             UShort::class -> (key as UShort).toInt()
+            BigInteger::class -> BigInteger(key.toString())
+            BigDecimal::class -> BigDecimal(key.toString()).toString()
             UUID::class -> key.toString()
             else -> throw UnsupportedTypeException(type, "key")
         }

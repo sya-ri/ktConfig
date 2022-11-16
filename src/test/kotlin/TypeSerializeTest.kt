@@ -1,6 +1,8 @@
 
 import dev.s7a.ktconfig.saveKtConfigString
 import org.bukkit.Location
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -132,6 +134,22 @@ class TypeSerializeTest {
 
         assertEquals("data: 5\n", saveKtConfigString(Data(5U)))
         assertEquals("data: 65535\n", saveKtConfigString(Data(UShort.MAX_VALUE)))
+    }
+
+    @Test
+    fun big_integer() {
+        data class Data(val data: BigInteger)
+
+        assertEquals("data: 1000000000000000000000000000\n", saveKtConfigString(Data(BigInteger("1000000000000000000000000000"))))
+    }
+
+    @Test
+    fun big_decimal() {
+        data class Data(val data: BigDecimal)
+
+        assertEquals("data: '1000000000000000000000000000'\n", saveKtConfigString(Data(BigDecimal("1000000000000000000000000000"))))
+        assertEquals("data: '1.0E-100'\n", saveKtConfigString(Data(BigDecimal("1.0E-100"))))
+        assertEquals("data: '1.0E-1000'\n", saveKtConfigString(Data(BigDecimal("1.0E-1000"))))
     }
 
     @Test

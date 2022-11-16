@@ -1,4 +1,6 @@
 import dev.s7a.ktconfig.ktConfigString
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -264,6 +266,42 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       ${UShort.MAX_VALUE}: c
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun big_integer_string_map() {
+        data class Data(val data: Map<BigInteger, String>)
+
+        assertEquals(
+            Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c")),
+            ktConfigString(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      1000000000000000000000000000: c
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun big_decimal_string_map() {
+        data class Data(val data: Map<BigDecimal, String>)
+
+        assertEquals(
+            Data(mapOf(BigDecimal.ZERO to "ab", BigDecimal("1000000000000000000000000000") to "c", BigDecimal("1.0E-100") to "d", BigDecimal("1.0E-1000") to "e")),
+            ktConfigString(
+                """
+                    data:
+                      0: ab
+                      c: ignore
+                      1000000000000000000000000000: c
+                      1.0E-100: d
+                      1.0E-1000: e
                 """.trimIndent()
             )
         )

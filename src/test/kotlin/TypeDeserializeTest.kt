@@ -2,6 +2,8 @@
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.ktConfigString
 import org.bukkit.Location
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -252,6 +254,22 @@ class TypeDeserializeTest {
         assertEquals(Data(UShort.MIN_VALUE), ktConfigString("data: '65536'")) // overflow
         assertEquals(Data(UShort.MAX_VALUE), ktConfigString("data: -1")) // underflow
         assertEquals(Data(null), ktConfigString("data: zero"))
+    }
+
+    @Test
+    fun big_integer() {
+        data class Data(val data: BigInteger)
+
+        assertEquals(Data(BigInteger("1000000000000000000000000000")), ktConfigString("data: 1000000000000000000000000000"))
+    }
+
+    @Test
+    fun big_decimal() {
+        data class Data(val data: BigDecimal)
+
+        assertEquals(Data(BigDecimal("1000000000000000000000000000")), ktConfigString("data: 1000000000000000000000000000"))
+        assertEquals(Data(BigDecimal("1.0E-100")), ktConfigString("data: 1.0E-100"))
+        assertEquals(Data(BigDecimal("1.0E-1000")), ktConfigString("data: 1.0E-1000"))
     }
 
     @Test
