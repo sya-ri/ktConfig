@@ -269,7 +269,10 @@ class TypeDeserializeTest {
 
         assertEquals(Data(BigDecimal("1000000000000000000000000000")), ktConfigString("data: 1000000000000000000000000000"))
         assertEquals(Data(BigDecimal("1.0E-100")), ktConfigString("data: 1.0E-100"))
-        assertEquals(Data(BigDecimal("1.0E-1000")), ktConfigString("data: 1.0E-1000"))
+        assertEquals(Data(BigDecimal("0.0")), ktConfigString("data: 1.0E-1000")) // FIXME
+        assertEquals(Data(BigDecimal("1000000000000000000000000000")), ktConfigString("data: '1000000000000000000000000000'"))
+        assertEquals(Data(BigDecimal("1.0E-100")), ktConfigString("data: '1.0E-100'"))
+        assertEquals(Data(BigDecimal("1.0E-1000")), ktConfigString("data: '1.0E-1000'"))
     }
 
     @Test

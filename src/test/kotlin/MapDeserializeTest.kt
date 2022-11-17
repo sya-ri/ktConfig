@@ -297,11 +297,11 @@ class MapDeserializeTest {
             ktConfigString(
                 """
                     data:
-                      0: ab
-                      c: ignore
-                      1000000000000000000000000000: c
-                      1.0E-100: d
-                      1.0E-1000: e
+                      '0': ab
+                      'c': ignore
+                      '1000000000000000000000000000': c
+                      '1.0E-100': d
+                      '1.0E-1000': e
                 """.trimIndent()
             )
         )
