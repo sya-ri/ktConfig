@@ -3,6 +3,7 @@ import dev.s7a.ktconfig.saveKtConfigString
 import org.bukkit.Location
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Date
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -150,6 +151,15 @@ class TypeSerializeTest {
         assertEquals("data: '1000000000000000000000000000'\n", saveKtConfigString(Data(BigDecimal("1000000000000000000000000000"))))
         assertEquals("data: '1.0E-100'\n", saveKtConfigString(Data(BigDecimal("1.0E-100"))))
         assertEquals("data: '1.0E-1000'\n", saveKtConfigString(Data(BigDecimal("1.0E-1000"))))
+    }
+
+    @Test
+    fun date() {
+        data class Data(val data: Date)
+
+        assertEquals("data: 2000-01-02T00:00:00Z\n", saveKtConfigString(Data(Date(946771200000))))
+        assertEquals("data: 2000-01-02T23:34:45Z\n", saveKtConfigString(Data(Date(946856085000))))
+        assertEquals("data: 2000-01-02T23:34:45.678Z\n", saveKtConfigString(Data(Date(946856085678))))
     }
 
     @Test

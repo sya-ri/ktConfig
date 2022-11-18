@@ -8,8 +8,13 @@ import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderCom
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.constructor.SafeConstructor
+import org.yaml.snakeyaml.nodes.ScalarNode
+import org.yaml.snakeyaml.nodes.Tag
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Date
 import java.util.UUID
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
@@ -204,6 +209,13 @@ internal object KtConfigSerialization {
                     else -> null
                 }
             }
+            Date::class -> {
+                when (value) {
+                    is Date -> value
+                    is String -> runCatching { stringToDate(value) }.getOrNull()
+                    else -> null
+                }
+            }
             UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
@@ -293,6 +305,12 @@ internal object KtConfigSerialization {
         }
     }
 
+    private val constructYamlTimestamp = SafeConstructor.ConstructYamlTimestamp()
+
+    private fun stringToDate(value: String): Date? {
+        return constructYamlTimestamp.construct(ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)) as? Date
+    }
+
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
         return when (val classifier = type.classifier) {
@@ -311,6 +329,7 @@ internal object KtConfigSerialization {
             UShort::class -> (value as UShort).toInt()
             BigInteger::class -> value
             BigDecimal::class -> value.toString()
+            Date::class -> value
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
@@ -366,6 +385,7 @@ internal object KtConfigSerialization {
             UShort::class -> (key as UShort).toInt()
             BigInteger::class -> BigInteger(key.toString())
             BigDecimal::class -> BigDecimal(key.toString()).toString()
+            Date::class -> key
             UUID::class -> key.toString()
             else -> throw UnsupportedTypeException(type, "key")
         }

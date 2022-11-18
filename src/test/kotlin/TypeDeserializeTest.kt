@@ -4,6 +4,7 @@ import dev.s7a.ktconfig.ktConfigString
 import org.bukkit.Location
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Date
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -273,6 +274,25 @@ class TypeDeserializeTest {
         assertEquals(Data(BigDecimal("1000000000000000000000000000")), ktConfigString("data: '1000000000000000000000000000'"))
         assertEquals(Data(BigDecimal("1.0E-100")), ktConfigString("data: '1.0E-100'"))
         assertEquals(Data(BigDecimal("1.0E-1000")), ktConfigString("data: '1.0E-1000'"))
+    }
+
+    @Test
+    fun date() {
+        data class Data(val data: Date?)
+
+        assertEquals(Data(Date(946771200000)), ktConfigString("data: 2000-01-02"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: 2000-01-02T23:34:45"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: 2000-01-02T23:34:45Z"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: 2000-01-02T22:34:45-1"))
+        assertEquals(Data(Date(946856085678)), ktConfigString("data: 2000-01-02T23:34:45.678"))
+        assertEquals(Data(Date(946856085678)), ktConfigString("data: 2000-01-02T23:34:45.678Z"))
+        assertEquals(Data(Date(946771200000)), ktConfigString("data: '2000-01-02'"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: '2000-01-02T23:34:45'"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: '2000-01-02T23:34:45Z'"))
+        assertEquals(Data(Date(946856085000)), ktConfigString("data: '2000-01-02T22:34:45-1'"))
+        assertEquals(Data(Date(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678'"))
+        assertEquals(Data(Date(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678Z'"))
+        assertEquals(Data(null), ktConfigString("data: string"))
     }
 
     @Test

@@ -1,6 +1,7 @@
 import dev.s7a.ktconfig.ktConfigString
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Date
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -302,6 +303,23 @@ class MapDeserializeTest {
                       '1000000000000000000000000000': c
                       '1.0E-100': d
                       '1.0E-1000': e
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun date_string_map() {
+        data class Data(val data: Map<Date, String>)
+
+        assertEquals(
+            Data(mapOf(Date(946771200000) to "ab", Date(946856085000) to "c", Date(946856085678) to "d")),
+            ktConfigString(
+                """
+                    data:
+                      '2000-01-02T00:00:00Z': ab
+                      '2000-01-02T23:34:45Z': c
+                      '2000-01-02T23:34:45.678Z': d
                 """.trimIndent()
             )
         )
