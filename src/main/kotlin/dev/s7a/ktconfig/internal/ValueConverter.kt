@@ -1,6 +1,5 @@
 package dev.s7a.ktconfig.internal
 
-import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
@@ -18,7 +17,9 @@ internal object ValueConverter {
     private val constructYamlTimestamp = SafeConstructor.ConstructYamlTimestamp()
 
     private fun node(value: String): ScalarNode {
-        return ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)
+        // return ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)
+        @Suppress("DEPRECATION")
+        return ScalarNode(Tag.STR, value, null, null, null as Char?)
     }
 
     private fun number(value: String): Number? {
