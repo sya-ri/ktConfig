@@ -1,7 +1,6 @@
 package dev.s7a.ktconfig.internal
 
 import org.yaml.snakeyaml.DumperOptions
-import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
@@ -11,7 +10,8 @@ import java.util.Date
 import java.util.UUID
 
 internal object ValueConverter {
-    private val safeConstructor = SafeConstructor(LoaderOptions())
+    @Suppress("DEPRECATION")
+    private val safeConstructor = SafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
     private val constructYamlInt = safeConstructor.ConstructYamlInt()
     private val constructYamlFloat = safeConstructor.ConstructYamlFloat()
