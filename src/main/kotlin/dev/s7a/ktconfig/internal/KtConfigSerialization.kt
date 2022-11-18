@@ -8,10 +8,6 @@ import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderCom
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
-import org.yaml.snakeyaml.DumperOptions
-import org.yaml.snakeyaml.constructor.SafeConstructor
-import org.yaml.snakeyaml.nodes.ScalarNode
-import org.yaml.snakeyaml.nodes.Tag
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.Date
@@ -112,111 +108,115 @@ internal object KtConfigSerialization {
             String::class -> value.toString()
             Int::class -> {
                 when (value) {
-                    is Number -> value.toInt()
-                    is String -> runCatching { BigInteger(value).toInt() }.getOrNull()
+                    is Number -> ValueConverter.int(value)
+                    is String -> ValueConverter.int(value)
                     else -> null
                 }
             }
             UInt::class -> {
                 when (value) {
-                    is Number -> value.toInt().toUInt()
-                    is String -> runCatching { BigInteger(value).toInt().toUInt() }.getOrNull()
+                    is Number -> ValueConverter.uint(value)
+                    is String -> ValueConverter.uint(value)
                     else -> null
                 }
             }
             Boolean::class -> {
                 when (value) {
                     is Boolean -> value
-                    is String -> value.toBooleanStrictOrNull()
+                    is String -> ValueConverter.boolean(value)
                     else -> null
                 }
             }
             Double::class -> {
                 when (value) {
-                    is Number -> value.toDouble()
-                    is String -> value.toDoubleOrNull()
+                    is Number -> ValueConverter.double(value)
+                    is String -> ValueConverter.double(value)
                     else -> null
                 }
             }
             Float::class -> {
                 when (value) {
-                    is Number -> value.toFloat()
-                    is String -> value.toFloatOrNull()
+                    is Number -> ValueConverter.float(value)
+                    is String -> ValueConverter.float(value)
                     else -> null
                 }
             }
             Long::class -> {
                 when (value) {
-                    is Number -> value.toLong()
-                    is String -> runCatching { BigInteger(value).toLong() }.getOrNull()
+                    is Number -> ValueConverter.long(value)
+                    is String -> ValueConverter.long(value)
                     else -> null
                 }
             }
             ULong::class -> {
                 when (value) {
-                    is Number -> value.toLong().toULong()
-                    is String -> runCatching { BigInteger(value).toLong().toULong() }.getOrNull()
+                    is Number -> ValueConverter.ulong(value)
+                    is String -> ValueConverter.ulong(value)
                     else -> null
                 }
             }
             Byte::class -> {
                 when (value) {
-                    is Number -> value.toByte()
-                    is String -> runCatching { BigInteger(value).toByte() }.getOrNull()
+                    is Number -> ValueConverter.byte(value)
+                    is String -> ValueConverter.byte(value)
                     else -> null
                 }
             }
             UByte::class -> {
                 when (value) {
-                    is Number -> value.toByte().toUByte()
-                    is String -> runCatching { BigInteger(value).toByte().toUByte() }.getOrNull()
+                    is Number -> ValueConverter.ubyte(value)
+                    is String -> ValueConverter.ubyte(value)
                     else -> null
                 }
             }
             Char::class -> {
                 when (value) {
-                    is Char -> value
-                    is String -> value.singleOrNull()
-                    is Number -> value.toChar()
+                    is Number -> ValueConverter.char(value)
+                    is String -> ValueConverter.char(value)
                     else -> null
                 }
             }
             Short::class -> {
                 when (value) {
-                    is Number -> value.toShort()
-                    is String -> runCatching { BigInteger(value).toShort() }.getOrNull()
+                    is Number -> ValueConverter.short(value)
+                    is String -> ValueConverter.short(value)
                     else -> null
                 }
             }
             UShort::class -> {
                 when (value) {
-                    is Number -> value.toShort().toUShort()
-                    is String -> runCatching { BigInteger(value).toShort().toUShort() }.getOrNull()
+                    is Number -> ValueConverter.ushort(value)
+                    is String -> ValueConverter.ushort(value)
                     else -> null
                 }
             }
             BigInteger::class -> {
                 when (value) {
-                    is Number -> BigInteger(value.toString())
-                    is String -> BigInteger(value)
+                    is Number -> ValueConverter.bigInteger(value)
+                    is String -> ValueConverter.bigInteger(value)
                     else -> null
                 }
             }
             BigDecimal::class -> {
                 when (value) {
-                    is Number -> BigDecimal(value.toString())
-                    is String -> BigDecimal(value)
+                    is Number -> ValueConverter.bigDecimal(value)
+                    is String -> ValueConverter.bigDecimal(value)
                     else -> null
                 }
             }
             Date::class -> {
                 when (value) {
                     is Date -> value
-                    is String -> runCatching { stringToDate(value) }.getOrNull()
+                    is String -> ValueConverter.date(value)
                     else -> null
                 }
             }
-            UUID::class -> runCatching { UUID.fromString(value.toString()) }.getOrNull()
+            UUID::class -> {
+                when (value) {
+                    is String -> ValueConverter.uuid(value)
+                    else -> null
+                }
+            }
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
                 when (value) {
@@ -286,29 +286,24 @@ internal object KtConfigSerialization {
     private fun deserializeKey(type: KType, key: String): Any? {
         return when (type.classifier) {
             String::class -> key
-            Int::class -> runCatching { BigInteger(key).toInt() }.getOrNull()
-            UInt::class -> runCatching { BigInteger(key).toInt().toUInt() }.getOrNull()
-            Boolean::class -> key.toBooleanStrictOrNull()
-            Double::class -> key.toDoubleOrNull()
-            Float::class -> key.toFloatOrNull()
-            Long::class -> runCatching { BigInteger(key).toLong() }.getOrNull()
-            ULong::class -> runCatching { BigInteger(key).toLong().toULong() }.getOrNull()
-            Byte::class -> runCatching { BigInteger(key).toByte() }.getOrNull()
-            UByte::class -> runCatching { BigInteger(key).toByte().toUByte() }.getOrNull()
-            Char::class -> key.singleOrNull()
-            Short::class -> runCatching { BigInteger(key).toShort() }.getOrNull()
-            UShort::class -> runCatching { BigInteger(key).toShort().toUShort() }.getOrNull()
-            BigInteger::class -> runCatching { BigInteger(key) }.getOrNull()
-            BigDecimal::class -> runCatching { BigDecimal(key) }.getOrNull()
-            UUID::class -> runCatching { UUID.fromString(key) }.getOrNull()
+            Int::class -> ValueConverter.int(key)
+            UInt::class -> ValueConverter.uint(key)
+            Boolean::class -> ValueConverter.boolean(key)
+            Double::class -> ValueConverter.double(key)
+            Float::class -> ValueConverter.float(key)
+            Long::class -> ValueConverter.long(key)
+            ULong::class -> ValueConverter.ulong(key)
+            Byte::class -> ValueConverter.byte(key)
+            UByte::class -> ValueConverter.ubyte(key)
+            Char::class -> ValueConverter.char(key)
+            Short::class -> ValueConverter.short(key)
+            UShort::class -> ValueConverter.ushort(key)
+            BigInteger::class -> ValueConverter.bigInteger(key)
+            BigDecimal::class -> ValueConverter.bigDecimal(key)
+            Date::class -> ValueConverter.date(key)
+            UUID::class -> ValueConverter.uuid(key)
             else -> throw UnsupportedTypeException(type, "key")
         }
-    }
-
-    private val constructYamlTimestamp = SafeConstructor.ConstructYamlTimestamp()
-
-    private fun stringToDate(value: String): Date? {
-        return constructYamlTimestamp.construct(ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)) as? Date
     }
 
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
