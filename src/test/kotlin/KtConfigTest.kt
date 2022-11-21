@@ -1,13 +1,17 @@
 import be.seeseemelk.mockbukkit.MockBukkit
 import dev.s7a.ktconfig.ktConfigFile
+import dev.s7a.ktconfig.ktConfigString
 import dev.s7a.ktconfig.saveKtConfigFile
+import java.io.FileNotFoundException
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
-class KtConfigFileTest {
+class KtConfigTest {
     private data class Data(val data: Int = 1)
 
     @BeforeTest
@@ -18,6 +22,12 @@ class KtConfigFileTest {
     @AfterTest
     fun teardown() {
         MockBukkit.unmock()
+    }
+
+    @Test
+    fun load_blank() {
+        assertEquals(null, ktConfigString<Data>(""))
+        assertEquals(Data(), ktConfigString("", Data()))
     }
 
     @Test
@@ -90,5 +100,23 @@ class KtConfigFileTest {
         val file = directory.resolve("config.yml")
         plugin.saveKtConfigFile("config.yml", Data())
         assertEquals("data: 1\n", file.readText())
+    }
+
+    @Test
+    fun mkdirs() {
+        val directory = createTempDirectory().toFile()
+        val file = directory.resolve("a").resolve("b").resolve("config.yml")
+        saveKtConfigFile(file, Data())
+        assertEquals("data: 1\n", file.readText())
+        assertEquals("a/b/config.yml", file.toRelativeString(directory))
+    }
+
+    @Test
+    fun not_directory() {
+        val directory = createTempFile().toFile()
+        val file = directory.resolve("config.yml")
+        assertFailsWith<FileNotFoundException> {
+            saveKtConfigFile(file, Data())
+        }
     }
 }
