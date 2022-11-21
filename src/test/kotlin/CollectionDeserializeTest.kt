@@ -24,7 +24,16 @@ class CollectionDeserializeTest {
     fun int_list() {
         data class Data(val data: List<Int>)
 
-        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31]"))
+        assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31, string]"))
+        assertEquals(Data(listOf()), ktConfigString("data: string"))
+    }
+
+    @Test
+    fun nullable_int_list() {
+        data class Data(val data: List<Int?>)
+
+        assertEquals(Data(listOf(1, 20, 31, null)), ktConfigString("data: [1, 20, 31, string]"))
+        assertEquals(Data(listOf(null)), ktConfigString("data: string"))
     }
 
     @Test

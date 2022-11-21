@@ -219,12 +219,22 @@ internal object KtConfigSerialization {
             }
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = type.arguments[0].type!!
+                val actualType0 = projectionMap[type0.classifier]?.type ?: type0
                 when (value) {
                     is List<*> -> {
-                        value.map { deserialize(projectionMap, type0, it) }
+                        if (actualType0.isMarkedNullable) {
+                            value.map { deserialize(projectionMap, actualType0, it) }
+                        } else {
+                            value.mapNotNull { deserialize(projectionMap, actualType0, it) }
+                        }
                     }
                     else -> {
-                        listOf(deserialize(projectionMap, type0, value))
+                        val single = deserialize(projectionMap, actualType0, value)
+                        if (single != null || actualType0.isMarkedNullable) {
+                            listOf(single)
+                        } else {
+                            listOf()
+                        }
                     }
                 }.run {
                     when (classifier) {
@@ -243,11 +253,12 @@ internal object KtConfigSerialization {
                 }
                 val type0 = type.arguments[0].type!!
                 val type1 = type.arguments[1].type!!
+                val actualType0 = projectionMap[type0.classifier]?.type ?: type0
                 entries.mapNotNull { (key, value) ->
-                    if (key == "null" && type0.isMarkedNullable) {
+                    if (key == "null" && actualType0.isMarkedNullable) {
                         return@mapNotNull null to deserialize(projectionMap, type1, value)
                     }
-                    deserializeKey(type0, key.toString())?.let {
+                    deserializeKey(actualType0, key.toString())?.let {
                         it to deserialize(projectionMap, type1, value)
                     }
                 }.toMap()

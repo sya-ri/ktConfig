@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 
 class GenericsTest {
     private data class Data<T>(val data: T)
+    private data class ListData<T>(val data: List<T>)
 
     @Test
     fun serialize() {
@@ -13,6 +14,22 @@ class GenericsTest {
         assertEquals("data: 2.3\n", saveKtConfigString(Data(2.3)))
         assertEquals("data: 255\n", saveKtConfigString(Data(UByte.MAX_VALUE)))
         assertEquals("", saveKtConfigString(Data<Boolean?>(null)))
+        assertEquals(
+            """
+                data:
+                - hello
+                
+            """.trimIndent(),
+            saveKtConfigString(ListData(listOf("hello")))
+        )
+        assertEquals(
+            """
+                data:
+                - 5
+                
+            """.trimIndent(),
+            saveKtConfigString(ListData(listOf(5)))
+        )
     }
 
     @Test
@@ -22,5 +39,25 @@ class GenericsTest {
         assertEquals(Data(2.3), ktConfigString("data: 2.3"))
         assertEquals(Data(UByte.MAX_VALUE), ktConfigString("data: 255"))
         assertEquals(Data<Boolean?>(null), ktConfigString("data: other"))
+        assertEquals(
+            ListData(listOf("hello")),
+            ktConfigString("data: hello")
+        )
+        assertEquals(
+            ListData(listOf("hello")),
+            ktConfigString("data: [hello]")
+        )
+        assertEquals(
+            ListData(listOf(5)),
+            ktConfigString("data: 5")
+        )
+        assertEquals(
+            ListData<Int>(listOf()),
+            ktConfigString("data: string")
+        )
+        assertEquals(
+            ListData<Int?>(listOf(null)),
+            ktConfigString("data: string")
+        )
     }
 }
