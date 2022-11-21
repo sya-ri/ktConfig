@@ -54,6 +54,14 @@ internal object KtConfigSerialization {
         }.toMap()
     }
 
+    private fun Map<KTypeParameter, KTypeProjection>.type(type: KType): KType {
+        return get(type.classifier)?.type ?: type
+    }
+
+    private fun Map<KTypeParameter, KTypeProjection>.typeArgument(type: KType, index: Int): KType {
+        return type(type.arguments[index].type!!)
+    }
+
     private fun KAnnotatedElement.findComment(): List<String>? {
         return findAnnotation<Comment>()?.lines?.toList()
     }
@@ -72,15 +80,14 @@ internal object KtConfigSerialization {
 
     private fun Map<String, Any?>.get(projectionMap: Map<KTypeParameter, KTypeProjection>, parameter: KParameter): Any? {
         val name = parameter.name!!
-        val type = parameter.type
-        val actualType = projectionMap[type.classifier]?.type ?: type
+        val type = projectionMap.type(parameter.type)
         val value = when {
-            contains(name) -> deserialize(projectionMap, actualType, get(name))
+            contains(name) -> deserialize(projectionMap, type, get(name))
             parameter.isOptional -> {} // Use default value: Unit
             else -> null
         }
-        if (value == null && actualType.isMarkedNullable.not()) {
-            throw TypeMismatchException(actualType, null)
+        if (value == null && type.isMarkedNullable.not()) {
+            throw TypeMismatchException(type, null)
         }
         return value
     }
@@ -218,19 +225,18 @@ internal object KtConfigSerialization {
                 }
             }
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
-                val type0 = type.arguments[0].type!!
-                val actualType0 = projectionMap[type0.classifier]?.type ?: type0
+                val type0 = projectionMap.typeArgument(type, 0)
                 when (value) {
                     is List<*> -> {
-                        if (actualType0.isMarkedNullable) {
-                            value.map { deserialize(projectionMap, actualType0, it) }
+                        if (type0.isMarkedNullable) {
+                            value.map { deserialize(projectionMap, type0, it) }
                         } else {
-                            value.mapNotNull { deserialize(projectionMap, actualType0, it) }
+                            value.mapNotNull { deserialize(projectionMap, type0, it) }
                         }
                     }
                     else -> {
-                        val single = deserialize(projectionMap, actualType0, value)
-                        if (single != null || actualType0.isMarkedNullable) {
+                        val single = deserialize(projectionMap, type0, value)
+                        if (single != null || type0.isMarkedNullable) {
                             listOf(single)
                         } else {
                             listOf()
@@ -251,14 +257,13 @@ internal object KtConfigSerialization {
                     is Map<*, *> -> value.entries
                     else -> throw TypeMismatchException(type, value)
                 }
-                val type0 = type.arguments[0].type!!
-                val type1 = type.arguments[1].type!!
-                val actualType0 = projectionMap[type0.classifier]?.type ?: type0
+                val type0 = projectionMap.typeArgument(type, 0)
+                val type1 = projectionMap.typeArgument(type, 1)
                 entries.mapNotNull { (key, value) ->
-                    if (key == "null" && actualType0.isMarkedNullable) {
+                    if (key == "null" && type0.isMarkedNullable) {
                         return@mapNotNull null to deserialize(projectionMap, type1, value)
                     }
-                    deserializeKey(actualType0, key.toString())?.let {
+                    deserializeKey(type0, key.toString())?.let {
                         it to deserialize(projectionMap, type1, value)
                     }
                 }.toMap()
@@ -338,12 +343,12 @@ internal object KtConfigSerialization {
             Date::class -> value
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
-                val type0 = type.arguments[0].type!!
+                val type0 = projectionMap.typeArgument(type, 0)
                 (value as Iterable<*>).map { serialize(projectionMap, section, type0, it) }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
-                val type0 = type.arguments[0].type!!
-                val type1 = type.arguments[1].type!!
+                val type0 = projectionMap.typeArgument(type, 0)
+                val type1 = projectionMap.typeArgument(type, 1)
                 (value as Map<*, *>).map {
                     serializeKey(type0, it.key) to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value)
                 }.toMap()

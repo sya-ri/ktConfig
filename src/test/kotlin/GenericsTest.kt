@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
 class GenericsTest {
     private data class Data<T>(val data: T)
     private data class ListData<T>(val data: List<T>)
+    private data class ListListData<T>(val data: List<List<T>>)
 
     @Test
     fun serialize() {
@@ -29,6 +30,14 @@ class GenericsTest {
                 
             """.trimIndent(),
             saveKtConfigString(ListData(listOf(5)))
+        )
+        assertEquals(
+            """
+                data:
+                - - hello
+                
+            """.trimIndent(),
+            saveKtConfigString(ListListData(listOf(listOf("hello"))))
         )
     }
 
@@ -58,6 +67,18 @@ class GenericsTest {
         assertEquals(
             ListData<Int?>(listOf(null)),
             ktConfigString("data: string")
+        )
+        assertEquals(
+            ListListData(listOf(listOf("hello"))),
+            ktConfigString("data: hello")
+        )
+        assertEquals(
+            ListListData(listOf(listOf("hello"))),
+            ktConfigString("data: [hello]")
+        )
+        assertEquals(
+            ListListData(listOf(listOf("hello"))),
+            ktConfigString("data: [[hello]]")
         )
     }
 }
