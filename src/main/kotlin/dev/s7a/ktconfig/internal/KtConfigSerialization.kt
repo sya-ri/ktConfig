@@ -33,7 +33,7 @@ internal object KtConfigSerialization {
     private const val pathSeparator = 0x00.toChar()
 
     fun <T : Any> fromString(clazz: KClass<T>, type: KType, text: String): T? {
-        val constructor = clazz.primaryConstructor ?: return null
+        val constructor = clazz.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
         val values = YamlConfiguration().apply {
             options().pathSeparator(pathSeparator)
             loadFromString(text)
