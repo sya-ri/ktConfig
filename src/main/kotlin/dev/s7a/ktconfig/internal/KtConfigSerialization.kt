@@ -116,9 +116,7 @@ internal object KtConfigSerialization {
     }
 
     private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
-        type.findSerializer()?.let {
-            return it.deserialize(deserialize(projectionMap, it.type, value))
-        }
+        type.findSerializer()?.run { return deserialize(value) }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
             Int::class -> {
@@ -332,9 +330,7 @@ internal object KtConfigSerialization {
 
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
-        type.findSerializer()?.let {
-            return it.serialize(serialize(projectionMap, section, it.type, value))
-        }
+        type.findSerializer()?.run { return serialize(value) }
         return when (val classifier = type.classifier) {
             String::class -> value
             Int::class -> value
