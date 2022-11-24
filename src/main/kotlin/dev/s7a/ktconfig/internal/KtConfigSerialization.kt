@@ -96,20 +96,22 @@ internal object KtConfigSerialization {
     }
 
     private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
-        clazz.memberProperties.forEach {
-            if (it.javaField == null) {
-                // Ignore custom getters
-                // https://discuss.kotlinlang.org/t/reflection-and-properties-checking-for-custom-getters-setters/22457/2
-                return@forEach
-            }
-            it.isAccessible = true
-            serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
-                if (this !is Unit) {
-                    // Unit is that should be ignored
-                    set(it.name, this)
+        projectionMap(clazz, type).run {
+            clazz.memberProperties.forEach {
+                if (it.javaField == null) {
+                    // Ignore custom getters
+                    // https://discuss.kotlinlang.org/t/reflection-and-properties-checking-for-custom-getters-setters/22457/2
+                    return@forEach
                 }
+                it.isAccessible = true
+                serialize(this, createSection(it.name), it.returnType, it.call(value)).run {
+                    if (this !is Unit) {
+                        // Unit is that should be ignored
+                        set(it.name, this)
+                    }
+                }
+                setComment(it.name, it.findComment())
             }
-            setComment(it.name, it.findComment())
         }
     }
 
