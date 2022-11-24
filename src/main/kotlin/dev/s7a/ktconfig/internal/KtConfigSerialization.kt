@@ -413,9 +413,7 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun KType.findSerializer(): KtConfigSerializer? {
-        val serializer = findAnnotation<UseSerializer>()?.with ?: return null
-        println(serializer)
-        return serializer.objectInstance ?: serializer.createInstance()
+    private fun KAnnotatedElement.findSerializer(): KtConfigSerializer? {
+        return findAnnotation<UseSerializer>()?.with?.run { this.objectInstance ?: this.createInstance() }
     }
 }
