@@ -17,9 +17,9 @@ internal object ValueConverter {
     private val constructYamlTimestamp = SafeConstructor.ConstructYamlTimestamp()
 
     private fun node(value: String): ScalarNode {
-        // return ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)
         @Suppress("DEPRECATION")
         return ScalarNode(Tag.STR, value, null, null, null as Char?)
+        // return ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)
     }
 
     private fun number(value: String): Number? {
