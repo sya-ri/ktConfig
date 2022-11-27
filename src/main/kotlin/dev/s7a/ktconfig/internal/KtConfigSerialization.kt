@@ -93,6 +93,7 @@ internal object KtConfigSerialization {
     }
 
     private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
+        val projectionMap = projectionMap(clazz, type)
         clazz.memberProperties.forEach {
             if (it.javaField == null) {
                 // Ignore custom getters
@@ -100,7 +101,7 @@ internal object KtConfigSerialization {
                 return@forEach
             }
             it.isAccessible = true
-            serialize(projectionMap(clazz, type), createSection(it.name), it.returnType, it.call(value)).run {
+            serialize(projectionMap, createSection(it.name), it.returnType, it.call(value)).run {
                 if (this !is Unit) {
                     // Unit is that should be ignored
                     set(it.name, this)
