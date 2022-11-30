@@ -11,7 +11,11 @@ import kotlin.test.assertEquals
 class UseSerializerTest {
     @Test
     fun use_object() {
-        data class Data(val data: @UseSerializer(IntPairStringSerializerObject::class) Pair<Int, Int>)
+        data class Data(
+            val data:
+                @UseSerializer(IntPairStringSerializerObject::class)
+                Pair<Int, Int>
+        )
 
         assertEquals("data: 1, 2\n", saveKtConfigString(Data(1 to 2)))
         assertEquals(Data(2 to 3), ktConfigString("data: 2, 3"))
@@ -19,7 +23,11 @@ class UseSerializerTest {
 
     @Test
     fun use_class() {
-        data class Data(val data: @UseSerializer(IntPairStringSerializerClass::class) Pair<Int, Int>)
+        data class Data(
+            val data:
+                @UseSerializer(IntPairStringSerializerClass::class)
+                Pair<Int, Int>
+        )
 
         assertEquals("data: 1, 2\n", saveKtConfigString(Data(1 to 2)))
         assertEquals(Data(2 to 3), ktConfigString("data: 2, 3"))
@@ -53,7 +61,11 @@ class UseSerializerTest {
     // UByte is supported by ktConfig and is not JavaBean.
     @Test
     fun ubyte_ubyte() {
-        data class Data(val data: @UseSerializer(UByteUByteSerializer::class) UByte)
+        data class Data(
+            val data:
+                @UseSerializer(UByteUByteSerializer::class)
+                UByte
+        )
 
         assertEquals("data: 1\n", saveKtConfigString(Data(1U)))
         assertEquals(Data(2U), ktConfigString("data: 2"))
