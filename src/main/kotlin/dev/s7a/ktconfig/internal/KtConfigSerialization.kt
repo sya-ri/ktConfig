@@ -1,6 +1,8 @@
 package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.Comment
+import dev.s7a.ktconfig.KtConfigSerializer
+import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setComment
@@ -19,6 +21,7 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 import kotlin.reflect.KTypeProjection
+import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
@@ -64,6 +67,11 @@ internal object KtConfigSerialization {
 
     private fun KAnnotatedElement.findComment(): List<String>? {
         return findAnnotation<Comment>()?.lines?.toList()
+    }
+
+    private fun KType.findSerializer(): KtConfigSerializer? {
+        val serializer = findAnnotation<UseSerializer>()?.with ?: return null
+        return serializer.objectInstance ?: serializer.createInstance()
     }
 
     private fun <T> KFunction<T>.callByValues(projectionMap: Map<KTypeParameter, KTypeProjection>, values: Map<String, Any?>): T? {
@@ -112,6 +120,10 @@ internal object KtConfigSerialization {
     }
 
     private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
+        if (value == null) return null
+        type.findSerializer()?.let {
+            return it.deserialize(deserialize(projectionMap, it.type, value))
+        }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
             Int::class -> {
@@ -301,6 +313,9 @@ internal object KtConfigSerialization {
     }
 
     private fun deserializeKey(type: KType, key: String): Any? {
+        type.findSerializer()?.let {
+            return it.deserialize(deserializeKey(it.type, key))
+        }
         return when (type.classifier) {
             String::class -> key
             Int::class -> ValueConverter.int(key)
@@ -325,6 +340,9 @@ internal object KtConfigSerialization {
 
     private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
         if (value == null) return null
+        type.findSerializer()?.let {
+            return serialize(projectionMap, section, it.type, it.serialize(value))
+        }
         return when (val classifier = type.classifier) {
             String::class -> value
             Int::class -> value
@@ -381,6 +399,9 @@ internal object KtConfigSerialization {
 
     private fun serializeKey(type: KType, key: Any?): Any? {
         if (key == null) return null
+        type.findSerializer()?.let {
+            return serializeKey(it.type, it.serialize(key))
+        }
         return when (type.classifier) {
             String::class -> key
             Int::class -> key
