@@ -11,6 +11,7 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  * @see Vector
  */
+@Suppress("ktlint:annotation")
 typealias VectorString = @UseSerializer(VectorStringSerializer::class) Vector
 
 /**

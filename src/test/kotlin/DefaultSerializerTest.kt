@@ -61,9 +61,9 @@ class DefaultSerializerTest {
         data class Data(val data: LocationString?)
 
         val world = server.addSimpleWorld("test")
-        assertEquals("data: null, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(null, 5.0,  2.0, -1.5))))
-        assertEquals("data: test, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(world, 5.0,  2.0, -1.5))))
-        assertEquals("data: test, 5.0, 2.0, -1.5, 90.0, 31.5\n", saveKtConfigString(Data(Location(world, 5.0,  2.0, -1.5, 90F, 31.5F))))
+        assertEquals("data: null, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(null, 5.0, 2.0, -1.5))))
+        assertEquals("data: test, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(world, 5.0, 2.0, -1.5))))
+        assertEquals("data: test, 5.0, 2.0, -1.5, 90.0, 31.5\n", saveKtConfigString(Data(Location(world, 5.0, 2.0, -1.5, 90F, 31.5F))))
         assertEquals(Data(null), ktConfigString("data: null"))
         assertEquals(Data(null), ktConfigString("data: null, 5"))
         assertEquals(Data(null), ktConfigString("data: null, 5, 2"))
@@ -78,7 +78,7 @@ class DefaultSerializerTest {
     fun vector() {
         data class Data(val data: VectorString?)
 
-        assertEquals("data: 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Vector(5.0,  2.0, -1.5))))
+        assertEquals("data: 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Vector(5.0, 2.0, -1.5))))
         assertEquals(Data(null), ktConfigString("data: 5"))
         assertEquals(Data(null), ktConfigString("data: 5, 2"))
         assertEquals(Data(Vector(5.0, 2.0, -1.5)), ktConfigString("data: 5, 2, -1.5"))

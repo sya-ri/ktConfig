@@ -12,6 +12,7 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  * @see Location
  */
+@Suppress("ktlint:annotation")
 typealias LocationString = @UseSerializer(LocationStringSerializer::class) Location
 
 /**

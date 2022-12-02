@@ -12,6 +12,7 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  * @see Block
  */
+@Suppress("ktlint:annotation")
 typealias BlockString = @UseSerializer(BlockStringSerializer::class) Block
 
 /**

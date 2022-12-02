@@ -12,6 +12,7 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  * @see Chunk
  */
+@Suppress("ktlint:annotation")
 typealias ChunkString = @UseSerializer(ChunkStringSerializer::class) Chunk
 
 /**
