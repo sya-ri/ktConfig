@@ -2,6 +2,7 @@ package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfigSerializer
+import dev.s7a.ktconfig.PathName
 import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -69,6 +70,10 @@ internal object KtConfigSerialization {
         return findAnnotation<Comment>()?.lines?.toList()
     }
 
+    private fun KAnnotatedElement.findPathName(): String? {
+        return findAnnotation<PathName>()?.name
+    }
+
     private fun KType.findSerializer(): KtConfigSerializer? {
         val serializer = findAnnotation<UseSerializer>()?.with ?: return null
         return serializer.objectInstance ?: serializer.createInstance()
@@ -87,7 +92,7 @@ internal object KtConfigSerialization {
     }
 
     private fun Map<String, Any?>.get(projectionMap: Map<KTypeParameter, KTypeProjection>, parameter: KParameter): Any? {
-        val name = parameter.name!!
+        val name = parameter.findPathName() ?: parameter.name!!
         val type = projectionMap.type(parameter.type)
         val value = when {
             contains(name) -> deserialize(projectionMap, type, get(name))
@@ -109,13 +114,14 @@ internal object KtConfigSerialization {
                 return@forEach
             }
             it.isAccessible = true
-            serialize(projectionMap, createSection(it.name), it.returnType, it.call(value)).run {
+            val name = it.findPathName() ?: it.name
+            serialize(projectionMap, createSection(name), it.returnType, it.call(value)).run {
                 if (this !is Unit) {
                     // Unit is that should be ignored
-                    set(it.name, this)
+                    set(name, this)
                 }
             }
-            setComment(it.name, it.findComment())
+            setComment(name, it.findComment())
         }
     }
 
