@@ -3,6 +3,7 @@ import be.seeseemelk.mockbukkit.ServerMock
 import dev.s7a.ktconfig.ktConfigString
 import dev.s7a.ktconfig.saveKtConfigString
 import dev.s7a.ktconfig.serializer.BlockString
+import dev.s7a.ktconfig.serializer.ChunkString
 import dev.s7a.ktconfig.serializer.LocationString
 import dev.s7a.ktconfig.serializer.VectorString
 import org.bukkit.Location
@@ -39,6 +40,20 @@ class DefaultSerializerTest {
         assertEquals(Data(null), ktConfigString("data: test, -1"))
         assertEquals(Data(null), ktConfigString("data: test, -1, 3"))
         assertEquals(Data(world.getBlockAt(-1, 3, 5)), ktConfigString("data: test, -1, 3, 5"))
+    }
+
+    @Test
+    fun chunk() {
+        data class Data(val data: ChunkString?)
+
+        val world = server.addSimpleWorld("test")
+        assertEquals("data: test, -1, 5\n", saveKtConfigString(Data(world.getChunkAt(-1, 5))))
+        assertEquals(Data(null), ktConfigString("data: null"))
+        assertEquals(Data(null), ktConfigString("data: null, -1"))
+        assertEquals(Data(null), ktConfigString("data: null, -1, 5"))
+        assertEquals(Data(null), ktConfigString("data: test"))
+        assertEquals(Data(null), ktConfigString("data: test, -1"))
+        assertEquals(Data(world.getChunkAt(-1, 5)), ktConfigString("data: test, -1, 5"))
     }
 
     @Test
