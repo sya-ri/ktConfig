@@ -5,7 +5,7 @@ plugins {
     id("net.minecrell.plugin-yml.bukkit") version "0.5.2" apply false
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.jmailen.kotlinter") version "3.12.0"
+    id("org.jmailen.kotlinter") version "3.13.0"
     id("dev.s7a.gradle.minecraft.server") version "2.0.0" apply false
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
 }
