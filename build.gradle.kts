@@ -8,6 +8,8 @@ plugins {
     id("org.jmailen.kotlinter") version "3.13.0"
     id("dev.s7a.gradle.minecraft.server") version "2.1.0" apply false
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    `maven-publish`
+    signing
 }
 
 group = "dev.s7a"
@@ -44,4 +46,61 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+val sourceJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets["main"].allSource)
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri(
+                if (version.toString().endsWith("SNAPSHOT")) {
+                    "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                } else {
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                },
+            )
+            credentials {
+                username = project.properties["credentials.username"].toString()
+                password = project.properties["credentials.password"].toString()
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("maven") {
+            groupId = "dev.s7a"
+            artifactId = "ktConfig"
+            from(components["kotlin"])
+            artifact(sourceJar.get())
+            pom {
+                name.set("ktConfig")
+                description.set("Spigot config library for Kotlin handled using class constructor")
+                url.set("https://github.com/sya-ri/ktConfig")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://github.com/sya-ri/ktConfig/blob/master/LICENSE")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("sya-ri")
+                        name.set("sya-ri")
+                        email.set("contact@s7a.dev")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/sya-ri/ktConfig")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications["maven"])
 }
