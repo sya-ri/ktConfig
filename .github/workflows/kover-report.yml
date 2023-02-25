@@ -1,6 +1,7 @@
 name: Kover report
 on:
   pull_request:
+permissions: write-all
 jobs:
   build:
     runs-on: ubuntu-latest
