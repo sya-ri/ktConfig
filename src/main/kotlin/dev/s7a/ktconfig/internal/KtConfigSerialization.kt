@@ -126,135 +126,26 @@ internal object KtConfigSerialization {
         }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
-            Int::class -> {
-                when (value) {
-                    is Number -> ValueConverter.int(value)
-                    is String -> ValueConverter.int(value)
-                    else -> null
-                }
-            }
-            UInt::class -> {
-                when (value) {
-                    is Number -> ValueConverter.uint(value)
-                    is String -> ValueConverter.uint(value)
-                    else -> null
-                }
-            }
-            Boolean::class -> {
-                when (value) {
-                    is Boolean -> value
-                    is String -> ValueConverter.boolean(value)
-                    else -> null
-                }
-            }
-            Double::class -> {
-                when (value) {
-                    is Number -> ValueConverter.double(value)
-                    is String -> ValueConverter.double(value)
-                    else -> null
-                }
-            }
-            Float::class -> {
-                when (value) {
-                    is Number -> ValueConverter.float(value)
-                    is String -> ValueConverter.float(value)
-                    else -> null
-                }
-            }
-            Long::class -> {
-                when (value) {
-                    is Number -> ValueConverter.long(value)
-                    is String -> ValueConverter.long(value)
-                    else -> null
-                }
-            }
-            ULong::class -> {
-                when (value) {
-                    is Number -> ValueConverter.ulong(value)
-                    is String -> ValueConverter.ulong(value)
-                    else -> null
-                }
-            }
-            Byte::class -> {
-                when (value) {
-                    is Number -> ValueConverter.byte(value)
-                    is String -> ValueConverter.byte(value)
-                    else -> null
-                }
-            }
-            UByte::class -> {
-                when (value) {
-                    is Number -> ValueConverter.ubyte(value)
-                    is String -> ValueConverter.ubyte(value)
-                    else -> null
-                }
-            }
-            Char::class -> {
-                when (value) {
-                    is Number -> ValueConverter.char(value)
-                    is String -> ValueConverter.char(value)
-                    else -> null
-                }
-            }
-            Short::class -> {
-                when (value) {
-                    is Number -> ValueConverter.short(value)
-                    is String -> ValueConverter.short(value)
-                    else -> null
-                }
-            }
-            UShort::class -> {
-                when (value) {
-                    is Number -> ValueConverter.ushort(value)
-                    is String -> ValueConverter.ushort(value)
-                    else -> null
-                }
-            }
-            BigInteger::class -> {
-                when (value) {
-                    is Number -> ValueConverter.bigInteger(value)
-                    is String -> ValueConverter.bigInteger(value)
-                    else -> null
-                }
-            }
-            BigDecimal::class -> {
-                when (value) {
-                    is Number -> ValueConverter.bigDecimal(value)
-                    is String -> ValueConverter.bigDecimal(value)
-                    else -> null
-                }
-            }
-            Date::class -> {
-                when (value) {
-                    is Date -> value
-                    is String -> ValueConverter.date(value)
-                    else -> null
-                }
-            }
-            UUID::class -> {
-                when (value) {
-                    is String -> ValueConverter.uuid(value)
-                    else -> null
-                }
-            }
+            Int::class -> ValueConverter.int(value)
+            UInt::class -> ValueConverter.uint(value)
+            Boolean::class -> ValueConverter.boolean(value)
+            Double::class -> ValueConverter.double(value)
+            Float::class -> ValueConverter.float(value)
+            Long::class -> ValueConverter.long(value)
+            ULong::class -> ValueConverter.ulong(value)
+            Byte::class -> ValueConverter.byte(value)
+            UByte::class -> ValueConverter.ubyte(value)
+            Char::class -> ValueConverter.char(value)
+            Short::class -> ValueConverter.short(value)
+            UShort::class -> ValueConverter.ushort(value)
+            BigInteger::class -> ValueConverter.bigInteger(value)
+            BigDecimal::class -> ValueConverter.bigDecimal(value)
+            Date::class -> ValueConverter.date(value)
+            UUID::class -> ValueConverter.uuid(value)
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                when (value) {
-                    is List<*> -> {
-                        if (type0.isMarkedNullable) {
-                            value.map { deserialize(projectionMap, type0, it) }
-                        } else {
-                            value.mapNotNull { deserialize(projectionMap, type0, it) }
-                        }
-                    }
-                    else -> {
-                        val single = deserialize(projectionMap, type0, value)
-                        if (single != null || type0.isMarkedNullable) {
-                            listOf(single)
-                        } else {
-                            listOf()
-                        }
-                    }
+                ValueConverter.list(type0, value) {
+                    deserialize(projectionMap, type0, it)
                 }.run {
                     when (classifier) {
                         Set::class -> toSet()
@@ -265,35 +156,16 @@ internal object KtConfigSerialization {
                 }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
-                val entries = when (value) {
-                    is ConfigurationSection -> value.getValues(false).entries
-                    is Map<*, *> -> value.entries
-                    else -> throw TypeMismatchException(type, value)
-                }
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
-                entries.mapNotNull { (key, value) ->
-                    if (key == "null" && type0.isMarkedNullable) {
-                        return@mapNotNull null to deserialize(projectionMap, type1, value)
-                    }
-                    deserializeKey(type0, key.toString())?.let {
-                        it to deserialize(projectionMap, type1, value)
-                    }
-                }.toMap()
+                ValueConverter.map(type, type0, value, ::deserializeKey) {
+                    deserialize(projectionMap, type1, it)
+                }
             }
             is KClass<*> -> {
                 when {
-                    classifier.isSubclassOf(ConfigurationSerializable::class) -> {
-                        value
-                    }
-                    classifier.isSubclassOf(Enum::class) -> {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            java.lang.Enum.valueOf(classifier.java as Class<out Enum<*>>, value.toString())
-                        } catch (ex: IllegalArgumentException) {
-                            null
-                        }
-                    }
+                    classifier.isSubclassOf(ConfigurationSerializable::class) -> value
+                    classifier.isSubclassOf(Enum::class) -> ValueConverter.enum(classifier, value)
                     else -> {
                         val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
                         val values = when (value) {

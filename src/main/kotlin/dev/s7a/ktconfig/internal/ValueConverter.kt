@@ -1,5 +1,7 @@
 package dev.s7a.ktconfig.internal
 
+import dev.s7a.ktconfig.exception.TypeMismatchException
+import org.bukkit.configuration.ConfigurationSection
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
@@ -7,6 +9,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.Date
 import java.util.UUID
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 internal object ValueConverter {
     @Suppress("DEPRECATION")
@@ -28,6 +32,14 @@ internal object ValueConverter {
         }.getOrNull()
     }
 
+    fun int(value: Any): Int? {
+        return when (value) {
+            is Number -> int(value)
+            is String -> int(value)
+            else -> null
+        }
+    }
+
     fun int(value: Number): Int {
         return value.toInt()
     }
@@ -36,12 +48,28 @@ internal object ValueConverter {
         return number(value)?.let(::int)
     }
 
-    fun uint(value: Number): UInt {
+    fun uint(value: Any): UInt? {
+        return when (value) {
+            is Number -> uint(value)
+            is String -> uint(value)
+            else -> null
+        }
+    }
+
+    private fun uint(value: Number): UInt {
         return int(value).toUInt()
     }
 
     fun uint(value: String): UInt? {
         return number(value)?.let(::uint)
+    }
+
+    fun boolean(value: Any): Boolean? {
+        return when (value) {
+            is Boolean -> value
+            is String -> boolean(value)
+            else -> null
+        }
     }
 
     fun boolean(value: String): Boolean? {
@@ -50,7 +78,15 @@ internal object ValueConverter {
         }.getOrNull()
     }
 
-    fun double(value: Number): Double {
+    fun double(value: Any): Double? {
+        return when (value) {
+            is Number -> double(value)
+            is String -> double(value)
+            else -> null
+        }
+    }
+
+    private fun double(value: Number): Double {
         return value.toDouble()
     }
 
@@ -60,7 +96,15 @@ internal object ValueConverter {
         }.getOrNull()
     }
 
-    fun float(value: Number): Float {
+    fun float(value: Any): Float? {
+        return when (value) {
+            is Number -> float(value)
+            is String -> float(value)
+            else -> null
+        }
+    }
+
+    private fun float(value: Number): Float {
         return double(value).toFloat()
     }
 
@@ -68,7 +112,15 @@ internal object ValueConverter {
         return double(value)?.toFloat()
     }
 
-    fun long(value: Number): Long {
+    fun long(value: Any): Long? {
+        return when (value) {
+            is Number -> long(value)
+            is String -> long(value)
+            else -> null
+        }
+    }
+
+    private fun long(value: Number): Long {
         return value.toLong()
     }
 
@@ -76,7 +128,15 @@ internal object ValueConverter {
         return number(value)?.let(::long)
     }
 
-    fun ulong(value: Number): ULong {
+    fun ulong(value: Any): ULong? {
+        return when (value) {
+            is Number -> ulong(value)
+            is String -> ulong(value)
+            else -> null
+        }
+    }
+
+    private fun ulong(value: Number): ULong {
         return long(value).toULong()
     }
 
@@ -84,12 +144,28 @@ internal object ValueConverter {
         return number(value)?.let(::ulong)
     }
 
-    fun byte(value: Number): Byte {
+    fun byte(value: Any): Byte? {
+        return when (value) {
+            is Number -> byte(value)
+            is String -> byte(value)
+            else -> null
+        }
+    }
+
+    private fun byte(value: Number): Byte {
         return value.toByte()
     }
 
     fun byte(value: String): Byte? {
         return number(value)?.let(::byte)
+    }
+
+    fun ubyte(value: Any): UByte? {
+        return when (value) {
+            is Number -> ubyte(value)
+            is String -> ubyte(value)
+            else -> null
+        }
     }
 
     fun ubyte(value: Number): UByte {
@@ -100,7 +176,15 @@ internal object ValueConverter {
         return number(value)?.let(::ubyte)
     }
 
-    fun char(value: Number): Char {
+    fun char(value: Any): Char? {
+        return when (value) {
+            is Number -> char(value)
+            is String -> char(value)
+            else -> null
+        }
+    }
+
+    private fun char(value: Number): Char {
         return value.toChar()
     }
 
@@ -108,7 +192,15 @@ internal object ValueConverter {
         return value.singleOrNull()
     }
 
-    fun short(value: Number): Short {
+    fun short(value: Any): Short? {
+        return when (value) {
+            is Number -> short(value)
+            is String -> short(value)
+            else -> null
+        }
+    }
+
+    private fun short(value: Number): Short {
         return value.toShort()
     }
 
@@ -116,12 +208,28 @@ internal object ValueConverter {
         return number(value)?.let(::short)
     }
 
-    fun ushort(value: Number): UShort {
+    fun ushort(value: Any): UShort? {
+        return when (value) {
+            is Number -> ushort(value)
+            is String -> ushort(value)
+            else -> null
+        }
+    }
+
+    private fun ushort(value: Number): UShort {
         return short(value).toUShort()
     }
 
     fun ushort(value: String): UShort? {
         return number(value)?.let(::ushort)
+    }
+
+    fun bigInteger(value: Any): BigInteger? {
+        return when (value) {
+            is Number -> bigInteger(value)
+            is String -> bigInteger(value)
+            else -> null
+        }
     }
 
     fun bigInteger(value: Number): BigInteger {
@@ -138,7 +246,15 @@ internal object ValueConverter {
         }
     }
 
-    fun bigDecimal(value: Number): BigDecimal {
+    fun bigDecimal(value: Any): BigDecimal? {
+        return when (value) {
+            is Number -> bigDecimal(value)
+            is String -> bigDecimal(value)
+            else -> null
+        }
+    }
+
+    private fun bigDecimal(value: Number): BigDecimal {
         return BigDecimal(value.toString())
     }
 
@@ -148,13 +264,74 @@ internal object ValueConverter {
         }.getOrNull()
     }
 
+    fun date(value: Any): Date? {
+        return when (value) {
+            is Date -> value
+            is String -> date(value)
+            else -> null
+        }
+    }
+
     fun date(value: String): Date? {
         return runCatching {
             constructYamlTimestamp.construct(node(value)) as Date
         }.getOrNull()
     }
 
+    fun uuid(value: Any): UUID? {
+        return when (value) {
+            is String -> uuid(value)
+            else -> null
+        }
+    }
+
     fun uuid(value: String): UUID? {
         return runCatching { UUID.fromString(value) }.getOrNull()
+    }
+
+    inline fun list(type0: KType, value: Any, deserialize: (Any?) -> Any?): List<Any?> {
+        return when (value) {
+            is List<*> -> {
+                if (type0.isMarkedNullable) {
+                    value.map(deserialize)
+                } else {
+                    value.mapNotNull(deserialize)
+                }
+            }
+            else -> {
+                val single = deserialize(value)
+                if (single != null || type0.isMarkedNullable) {
+                    listOf(single)
+                } else {
+                    listOf()
+                }
+            }
+        }
+    }
+
+    inline fun map(type: KType, type0: KType, value: Any, deserializeKey: (KType, String) -> Any?, deserialize: (Any?) -> Any?): Map<Any?, Any?> {
+        val entries = when (value) {
+            is ConfigurationSection -> value.getValues(false).entries
+            is Map<*, *> -> value.entries
+            else -> throw TypeMismatchException(type, value)
+        }
+        return entries.mapNotNull { (key, value) ->
+            if (key == "null" && type0.isMarkedNullable) {
+                null to deserialize(value)
+            } else {
+                deserializeKey(type0, key.toString())?.let {
+                    it to deserialize(value)
+                }
+            }
+        }.toMap()
+    }
+
+    fun enum(classifier: KClass<*>, value: Any): Enum<*>? {
+        return try {
+            @Suppress("UNCHECKED_CAST")
+            java.lang.Enum.valueOf(classifier.java as Class<out Enum<*>>, value.toString())
+        } catch (ex: IllegalArgumentException) {
+            null
+        }
     }
 }
