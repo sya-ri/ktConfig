@@ -164,6 +164,12 @@ internal object KtConfigSerialization {
             }
             is KClass<*> -> {
                 when {
+                    classifier.java.isArray -> {
+                        val type0 = projectionMap.typeArgument(type, 0)
+                        ValueConverter.list(type0, value) {
+                            deserialize(projectionMap, type0, it)
+                        }.toTypedArray()
+                    }
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> value
                     classifier.isSubclassOf(Enum::class) -> ValueConverter.enum(classifier, value)
                     else -> {
@@ -246,6 +252,10 @@ internal object KtConfigSerialization {
             }
             is KClass<*> -> {
                 when {
+                    classifier.java.isArray -> {
+                        val type0 = type.arguments[0].type!!
+                        (value as Array<*>).map { serialize(projectionMap, section, type0, it) }
+                    }
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> {
                         value
                     }
