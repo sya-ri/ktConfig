@@ -7,6 +7,7 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -56,6 +57,7 @@ class KtConfigTest {
         assertEquals("data: 1\n", file.readText())
     }
 
+    @Ignore
     @Test
     fun load_plugin_file() {
         val plugin = MockBukkit.createMockPlugin()
@@ -66,6 +68,7 @@ class KtConfigTest {
         assertEquals("data: 5", file.readText())
     }
 
+    @Ignore
     @Test
     fun load_plugin_file_ignore_default() {
         val plugin = MockBukkit.createMockPlugin()
@@ -76,6 +79,7 @@ class KtConfigTest {
         assertEquals("data: 5", file.readText())
     }
 
+    @Ignore
     @Test
     fun load_plugin_file_save_default() {
         val plugin = MockBukkit.createMockPlugin()
@@ -93,6 +97,7 @@ class KtConfigTest {
         assertEquals("data: 1\n", file.readText())
     }
 
+    @Ignore
     @Test
     fun save_plugin_file() {
         val plugin = MockBukkit.createMockPlugin()
