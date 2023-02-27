@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import kotlin.reflect.KAnnotatedElement
@@ -141,6 +142,7 @@ internal object KtConfigSerialization {
             BigInteger::class -> ValueConverter.bigInteger(value)
             BigDecimal::class -> ValueConverter.bigDecimal(value)
             Date::class -> ValueConverter.date(value)
+            Calendar::class -> ValueConverter.calendar(value)
             UUID::class -> ValueConverter.uuid(value)
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
@@ -205,6 +207,7 @@ internal object KtConfigSerialization {
             BigInteger::class -> ValueConverter.bigInteger(key)
             BigDecimal::class -> ValueConverter.bigDecimal(key)
             Date::class -> ValueConverter.date(key)
+            Calendar::class -> ValueConverter.calendar(key)
             UUID::class -> ValueConverter.uuid(key)
             else -> throw UnsupportedTypeException(type, "key")
         }
@@ -232,6 +235,7 @@ internal object KtConfigSerialization {
             BigInteger::class -> value
             BigDecimal::class -> value.toString()
             Date::class -> value
+            Calendar::class -> (value as Calendar).time
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
@@ -291,6 +295,7 @@ internal object KtConfigSerialization {
             BigInteger::class -> BigInteger(key.toString())
             BigDecimal::class -> BigDecimal(key.toString()).toString()
             Date::class -> key
+            Calendar::class -> (key as Calendar).time
             UUID::class -> key.toString()
             else -> throw UnsupportedTypeException(type, "key")
         }

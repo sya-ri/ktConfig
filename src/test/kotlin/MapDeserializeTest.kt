@@ -1,7 +1,9 @@
 import dev.s7a.ktconfig.ktConfigString
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -318,6 +320,27 @@ class MapDeserializeTest {
                 """
                     data:
                       '2000-01-02T00:00:00Z': ab
+                      '2000-01-02T23:34:45Z': c
+                      '2000-01-02T23:34:45.678Z': d
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun calendar_string_map() {
+        data class Data(val data: Map<Calendar, String>)
+
+        fun calendar(date: Long): Calendar {
+            return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { this.time = Date(date) }
+        }
+
+        assertEquals(
+            Data(mapOf(calendar(946771200000) to "ab", calendar(946856085000) to "c", calendar(946856085678) to "d")),
+            ktConfigString(
+                """
+                    data:
+                      '2000-01-02T01:00:00+01:00': ab
                       '2000-01-02T23:34:45Z': c
                       '2000-01-02T23:34:45.678Z': d
                 """.trimIndent()

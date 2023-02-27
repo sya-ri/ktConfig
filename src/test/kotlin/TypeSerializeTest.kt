@@ -3,7 +3,9 @@ import dev.s7a.ktconfig.saveKtConfigString
 import org.bukkit.Location
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -160,6 +162,22 @@ class TypeSerializeTest {
         assertEquals("data: 2000-01-02T00:00:00Z\n", saveKtConfigString(Data(Date(946771200000))))
         assertEquals("data: 2000-01-02T23:34:45Z\n", saveKtConfigString(Data(Date(946856085000))))
         assertEquals("data: 2000-01-02T23:34:45.678Z\n", saveKtConfigString(Data(Date(946856085678))))
+    }
+
+    @Test
+    fun calendar() {
+        data class Data(val data: Calendar)
+
+        fun calendar(date: Long, zoneId: String): Calendar {
+            return Calendar.getInstance(TimeZone.getTimeZone(zoneId)).apply { this.time = Date(date) }
+        }
+
+        assertEquals("data: 2000-01-02T00:00:00Z\n", saveKtConfigString(Data(calendar(946771200000, "UTC"))))
+        assertEquals("data: 2000-01-02T23:34:45Z\n", saveKtConfigString(Data(calendar(946856085000, "UTC"))))
+        assertEquals("data: 2000-01-02T23:34:45.678Z\n", saveKtConfigString(Data(calendar(946856085678, "UTC"))))
+        assertEquals("data: 2000-01-02T00:00:00Z\n", saveKtConfigString(Data(calendar(946771200000, "GMT-01:00"))))
+        assertEquals("data: 2000-01-02T23:34:45Z\n", saveKtConfigString(Data(calendar(946856085000, "GMT-01:00"))))
+        assertEquals("data: 2000-01-02T23:34:45.678Z\n", saveKtConfigString(Data(calendar(946856085678, "GMT-01:00"))))
     }
 
     @Test

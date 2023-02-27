@@ -7,7 +7,9 @@ import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -276,6 +278,24 @@ internal object ValueConverter {
         return runCatching {
             constructYamlTimestamp.construct(node(value)) as Date
         }.getOrNull()
+    }
+
+    fun calendar(value: Any): Calendar? {
+        return when (value) {
+            is Date -> calendar(value)
+            is String -> calendar(value)
+            else -> null
+        }
+    }
+
+    private fun calendar(value: Date): Calendar {
+        return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            this.time = value
+        }
+    }
+
+    private fun calendar(value: String): Calendar? {
+        return date(value)?.let(::calendar)
     }
 
     fun uuid(value: Any): UUID? {

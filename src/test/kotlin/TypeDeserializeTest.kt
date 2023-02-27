@@ -4,7 +4,9 @@ import dev.s7a.ktconfig.ktConfigString
 import org.bukkit.Location
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -292,6 +294,29 @@ class TypeDeserializeTest {
         assertEquals(Data(Date(946856085000)), ktConfigString("data: '2000-01-02T22:34:45-1'"))
         assertEquals(Data(Date(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678'"))
         assertEquals(Data(Date(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678Z'"))
+        assertEquals(Data(null), ktConfigString("data: string"))
+    }
+
+    @Test
+    fun calendar() {
+        data class Data(val data: Calendar?)
+
+        fun calendar(date: Long): Calendar {
+            return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { this.time = Date(date) }
+        }
+
+        assertEquals(Data(calendar(946771200000)), ktConfigString("data: 2000-01-02"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: 2000-01-02T23:34:45"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: 2000-01-02T23:34:45Z"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: 2000-01-02T22:34:45-1"))
+        assertEquals(Data(calendar(946856085678)), ktConfigString("data: 2000-01-02T23:34:45.678"))
+        assertEquals(Data(calendar(946856085678)), ktConfigString("data: 2000-01-02T23:34:45.678Z"))
+        assertEquals(Data(calendar(946771200000)), ktConfigString("data: '2000-01-02'"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: '2000-01-02T23:34:45'"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: '2000-01-02T23:34:45Z'"))
+        assertEquals(Data(calendar(946856085000)), ktConfigString("data: '2000-01-02T22:34:45-1'"))
+        assertEquals(Data(calendar(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678'"))
+        assertEquals(Data(calendar(946856085678)), ktConfigString("data: '2000-01-02T23:34:45.678Z'"))
         assertEquals(Data(null), ktConfigString("data: string"))
     }
 
