@@ -15,6 +15,8 @@ import kotlin.reflect.typeOf
  * @param text Yaml data
  * @param T Config type
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */
@@ -32,6 +34,8 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String): T? {
  * @param default Default config data
  * @param T Config type
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */
@@ -47,6 +51,8 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, defaul
  * @param file File
  * @param T Config type
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */
@@ -63,6 +69,8 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File): T? {
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */
@@ -79,6 +87,8 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @param default Default config data
  * @param T Config type
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */
@@ -98,6 +108,8 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  * @suppress
  */

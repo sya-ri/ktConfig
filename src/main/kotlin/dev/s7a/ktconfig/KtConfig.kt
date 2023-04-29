@@ -10,6 +10,8 @@ import kotlin.reflect.typeOf
  * @param text Yaml data
  * @param T Config type
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfigString(text: String): T? {
@@ -23,6 +25,8 @@ inline fun <reified T : Any> ktConfigString(text: String): T? {
  * @param default Default config data
  * @param T Config type
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfigString(text: String, default: T): T {
@@ -35,6 +39,8 @@ inline fun <reified T : Any> ktConfigString(text: String, default: T): T {
  * @param file File
  * @param T Config type
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfigFile(file: File): T? {
@@ -48,6 +54,8 @@ inline fun <reified T : Any> ktConfigFile(file: File): T? {
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or null
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String): T? {
@@ -61,6 +69,8 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String): T? {
  * @param default Default config data
  * @param T Config type
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> ktConfigFile(file: File, default: T): T {
@@ -75,6 +85,8 @@ inline fun <reified T : Any> ktConfigFile(file: File, default: T): T {
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
+ * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
+ * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: T): T {
