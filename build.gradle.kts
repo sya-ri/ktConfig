@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm") version "1.8.21"
     id("net.minecrell.plugin-yml.bukkit") version "0.5.3" apply false
@@ -24,11 +22,11 @@ allprojects {
         maven("https://hub.spigotmc.org/nexus/content/groups/public/")
     }
 
-    java {
-        targetCompatibility = JavaVersion.VERSION_1_8
+    tasks.compileJava {
+        targetCompatibility = "1.8"
     }
 
-    tasks.withType<KotlinCompile> {
+    tasks.compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
 }
