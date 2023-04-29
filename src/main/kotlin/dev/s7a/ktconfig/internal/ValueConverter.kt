@@ -1,5 +1,6 @@
 package dev.s7a.ktconfig.internal
 
+import dev.s7a.ktconfig.KtConfigSetting
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import org.bukkit.configuration.ConfigurationSection
 import org.yaml.snakeyaml.constructor.SafeConstructor
@@ -14,7 +15,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-internal object ValueConverter {
+internal class ValueConverter(private val setting: KtConfigSetting) {
     @Suppress("DEPRECATION")
     private val safeConstructor = SafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
@@ -309,13 +310,21 @@ internal object ValueConverter {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
-    inline fun list(type0: KType, value: Any, deserialize: (Int, Any?) -> Any?): List<Any?> {
+    inline fun list(type0: KType, value: Any, path: String, deserialize: (Int, Any?) -> Any?): List<Any?> {
         return when (value) {
             is List<*> -> {
-                if (type0.isMarkedNullable) {
-                    value.mapIndexed(deserialize)
-                } else {
-                    value.mapIndexedNotNull(deserialize)
+                when {
+                    type0.isMarkedNullable -> {
+                        value.mapIndexed(deserialize)
+                    }
+                    setting.strictListElement -> {
+                        value.mapIndexed { index, v ->
+                            deserialize(index, v) ?: throw TypeMismatchException(type0, v, "$path[$index]")
+                        }
+                    }
+                    else -> {
+                        value.mapIndexedNotNull(deserialize)
+                    }
                 }
             }
             else -> {
@@ -323,7 +332,11 @@ internal object ValueConverter {
                 if (single != null || type0.isMarkedNullable) {
                     listOf(single)
                 } else {
-                    listOf()
+                    if (setting.strictListElement) {
+                        throw TypeMismatchException(type0, value, "$path[0]")
+                    } else {
+                        listOf()
+                    }
                 }
             }
         }
@@ -339,8 +352,16 @@ internal object ValueConverter {
             if (key == "null" && type0.isMarkedNullable) {
                 null to deserialize("$path.$key", value)
             } else {
-                deserializeKey(type0, key.toString(), "$path.$key")?.let {
-                    it to deserialize("$path.$key", value)
+                deserializeKey(type0, key.toString(), "$path.$key").let {
+                    if (it != null) {
+                        it to deserialize("$path.$key", value)
+                    } else {
+                        when {
+                            type0.isMarkedNullable -> null
+                            setting.strictMapElement -> throw TypeMismatchException(type0, key, "$path.$key(key)")
+                            else -> null
+                        }
+                    }
                 }
             }
         }.toMap()

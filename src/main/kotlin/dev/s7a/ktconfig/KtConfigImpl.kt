@@ -13,6 +13,7 @@ import kotlin.reflect.typeOf
  * @param clazz [KClass]<[T]>
  * @param type [typeOf]<[T]>()
  * @param text Yaml data
+ * @param setting Config setting
  * @param T Config type
  * @return Config data or null
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -20,9 +21,9 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String): T? {
+fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, setting: KtConfigSetting = KtConfigSetting()): T? {
     if (text.isBlank()) return null
-    return KtConfigSerialization.fromString(clazz, type, text)
+    return KtConfigSerialization(setting).fromString(clazz, type, text)
 }
 
 /**
@@ -32,6 +33,7 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String): T? {
  * @param type [typeOf]<[T]>()
  * @param text Yaml data
  * @param default Default config data
+ * @param setting Config setting
  * @param T Config type
  * @return Config data or [default]
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -39,8 +41,8 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String): T? {
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, default: T): T {
-    return ktConfigString(clazz, type, text) ?: default
+fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+    return ktConfigString(clazz, type, text, setting) ?: default
 }
 
 /**
@@ -49,6 +51,7 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, defaul
  * @param clazz [KClass]<[T]>
  * @param type [typeOf]<[T]>()
  * @param file File
+ * @param setting Config setting
  * @param T Config type
  * @return Config data or null
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -56,8 +59,8 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, defaul
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File): T? {
-    return if (file.exists()) ktConfigString(clazz, type, file.readText()) else null
+fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, setting: KtConfigSetting = KtConfigSetting()): T? {
+    return if (file.exists()) ktConfigString(clazz, type, file.readText(), setting) else null
 }
 
 /**
@@ -66,6 +69,7 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File): T? {
  * @param clazz [KClass]<[T]>
  * @param type [typeOf]<[T]>()
  * @param fileName File path in plugin data folder
+ * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or null
@@ -74,8 +78,8 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File): T? {
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String): T? {
-    return ktConfigFile(clazz, type, dataFolder.resolve(fileName))
+fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+    return ktConfigFile(clazz, type, dataFolder.resolve(fileName), setting)
 }
 
 /**
@@ -85,6 +89,7 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @param type [typeOf]<[T]>()
  * @param file File
  * @param default Default config data
+ * @param setting Config setting
  * @param T Config type
  * @return Config data or [default]
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -92,8 +97,8 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T): T {
-    return ktConfigFile(clazz, type, file) ?: default.apply {
+fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+    return ktConfigFile(clazz, type, file, setting) ?: default.apply {
         saveKtConfigFile(clazz, type, file, this)
     }
 }
@@ -105,6 +110,7 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T
  * @param type [typeOf]<[T]>()
  * @param fileName File path in plugin data folder
  * @param default Default config data
+ * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
@@ -113,8 +119,8 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String, default: T): T {
-    return ktConfigFile(clazz, type, dataFolder.resolve(fileName), default)
+fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+    return ktConfigFile(clazz, type, dataFolder.resolve(fileName), default, setting)
 }
 
 /**
@@ -123,13 +129,14 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @param clazz [KClass]<[T]>
  * @param type [KType] of [clazz]
  * @param content Config data
+ * @param setting Config setting
  * @param T Config type
  * @return Yaml data
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T): String {
-    return KtConfigSerialization.toString(clazz, type, content)
+fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, setting: KtConfigSetting = KtConfigSetting()): String {
+    return KtConfigSerialization(setting).toString(clazz, type, content)
 }
 
 /**
@@ -139,13 +146,14 @@ fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T): Str
  * @param type [typeOf]<[T]>()
  * @param file File
  * @param content Config data
+ * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> saveKtConfigFile(clazz: KClass<T>, type: KType, file: File, content: T) {
+fun <T : Any> saveKtConfigFile(clazz: KClass<T>, type: KType, file: File, content: T, setting: KtConfigSetting = KtConfigSetting()) {
     file.parentFile?.mkdirs()
-    file.writeText(saveKtConfigString(clazz, type, content))
+    file.writeText(saveKtConfigString(clazz, type, content, setting))
 }
 
 /**
@@ -155,11 +163,12 @@ fun <T : Any> saveKtConfigFile(clazz: KClass<T>, type: KType, file: File, conten
  * @param type [typeOf]<[T]>()
  * @param fileName File path in plugin data folder
  * @param content Config data
+ * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.saveKtConfigFile(clazz: KClass<T>, type: KType, fileName: String, content: T) {
-    saveKtConfigFile(clazz, type, dataFolder.resolve(fileName), content)
+fun <T : Any> JavaPlugin.saveKtConfigFile(clazz: KClass<T>, type: KType, fileName: String, content: T, setting: KtConfigSetting = KtConfigSetting()) {
+    saveKtConfigFile(clazz, type, dataFolder.resolve(fileName), content, setting)
 }

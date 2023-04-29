@@ -2,6 +2,7 @@ package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfigSerializer
+import dev.s7a.ktconfig.KtConfigSetting
 import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -30,11 +31,15 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 
-internal object KtConfigSerialization {
-    /**
-     * Change the path separator to be able to use Double or Float as key
-     */
-    private const val pathSeparator = 0x00.toChar()
+internal class KtConfigSerialization(private val setting: KtConfigSetting) {
+    companion object {
+        /**
+         * Change the path separator to be able to use Double or Float as key
+         */
+        private const val pathSeparator = 0x00.toChar()
+    }
+
+    private val valueConverter = ValueConverter(setting)
 
     fun <T : Any> fromString(clazz: KClass<T>, type: KType, text: String): T? {
         val constructor = clazz.primaryConstructor ?: throw UnsupportedTypeException(type, "value", "")
@@ -127,26 +132,26 @@ internal object KtConfigSerialization {
         }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
-            Int::class -> ValueConverter.int(value)
-            UInt::class -> ValueConverter.uint(value)
-            Boolean::class -> ValueConverter.boolean(value)
-            Double::class -> ValueConverter.double(value)
-            Float::class -> ValueConverter.float(value)
-            Long::class -> ValueConverter.long(value)
-            ULong::class -> ValueConverter.ulong(value)
-            Byte::class -> ValueConverter.byte(value)
-            UByte::class -> ValueConverter.ubyte(value)
-            Char::class -> ValueConverter.char(value)
-            Short::class -> ValueConverter.short(value)
-            UShort::class -> ValueConverter.ushort(value)
-            BigInteger::class -> ValueConverter.bigInteger(value)
-            BigDecimal::class -> ValueConverter.bigDecimal(value)
-            Date::class -> ValueConverter.date(value)
-            Calendar::class -> ValueConverter.calendar(value)
-            UUID::class -> ValueConverter.uuid(value)
+            Int::class -> valueConverter.int(value)
+            UInt::class -> valueConverter.uint(value)
+            Boolean::class -> valueConverter.boolean(value)
+            Double::class -> valueConverter.double(value)
+            Float::class -> valueConverter.float(value)
+            Long::class -> valueConverter.long(value)
+            ULong::class -> valueConverter.ulong(value)
+            Byte::class -> valueConverter.byte(value)
+            UByte::class -> valueConverter.ubyte(value)
+            Char::class -> valueConverter.char(value)
+            Short::class -> valueConverter.short(value)
+            UShort::class -> valueConverter.ushort(value)
+            BigInteger::class -> valueConverter.bigInteger(value)
+            BigDecimal::class -> valueConverter.bigDecimal(value)
+            Date::class -> valueConverter.date(value)
+            Calendar::class -> valueConverter.calendar(value)
+            UUID::class -> valueConverter.uuid(value)
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                ValueConverter.list(type0, value) { index, v ->
+                valueConverter.list(type0, value, path) { index, v ->
                     deserialize(projectionMap, type0, v, "$path[$index]")
                 }.run {
                     when (classifier) {
@@ -160,14 +165,20 @@ internal object KtConfigSerialization {
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
-                ValueConverter.map(type, type0, value, path, ::deserializeKey) { p, v ->
-                    deserialize(projectionMap, type1, v, p)
+                valueConverter.map(type, type0, value, path, ::deserializeKey) { p, v ->
+                    deserialize(projectionMap, type1, v, p).let {
+                        when {
+                            type1.isMarkedNullable -> it
+                            setting.strictMapElement -> throw TypeMismatchException(type1, v, p)
+                            else -> it
+                        }
+                    }
                 }
             }
             is KClass<*> -> {
                 when {
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> value
-                    classifier.isSubclassOf(Enum::class) -> ValueConverter.enum(classifier, value)
+                    classifier.isSubclassOf(Enum::class) -> valueConverter.enum(classifier, value)
                     else -> {
                         val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value", path)
                         val values = when (value) {
@@ -192,23 +203,23 @@ internal object KtConfigSerialization {
         }
         return when (type.classifier) {
             String::class -> key
-            Int::class -> ValueConverter.int(key)
-            UInt::class -> ValueConverter.uint(key)
-            Boolean::class -> ValueConverter.boolean(key)
-            Double::class -> ValueConverter.double(key)
-            Float::class -> ValueConverter.float(key)
-            Long::class -> ValueConverter.long(key)
-            ULong::class -> ValueConverter.ulong(key)
-            Byte::class -> ValueConverter.byte(key)
-            UByte::class -> ValueConverter.ubyte(key)
-            Char::class -> ValueConverter.char(key)
-            Short::class -> ValueConverter.short(key)
-            UShort::class -> ValueConverter.ushort(key)
-            BigInteger::class -> ValueConverter.bigInteger(key)
-            BigDecimal::class -> ValueConverter.bigDecimal(key)
-            Date::class -> ValueConverter.date(key)
-            Calendar::class -> ValueConverter.calendar(key)
-            UUID::class -> ValueConverter.uuid(key)
+            Int::class -> valueConverter.int(key)
+            UInt::class -> valueConverter.uint(key)
+            Boolean::class -> valueConverter.boolean(key)
+            Double::class -> valueConverter.double(key)
+            Float::class -> valueConverter.float(key)
+            Long::class -> valueConverter.long(key)
+            ULong::class -> valueConverter.ulong(key)
+            Byte::class -> valueConverter.byte(key)
+            UByte::class -> valueConverter.ubyte(key)
+            Char::class -> valueConverter.char(key)
+            Short::class -> valueConverter.short(key)
+            UShort::class -> valueConverter.ushort(key)
+            BigInteger::class -> valueConverter.bigInteger(key)
+            BigDecimal::class -> valueConverter.bigDecimal(key)
+            Date::class -> valueConverter.date(key)
+            Calendar::class -> valueConverter.calendar(key)
+            UUID::class -> valueConverter.uuid(key)
             else -> throw UnsupportedTypeException(type, "key", path)
         }
     }
