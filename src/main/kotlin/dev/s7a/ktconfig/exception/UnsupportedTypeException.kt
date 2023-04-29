@@ -7,4 +7,4 @@ import kotlin.reflect.KType
  *
  * @since 1.0.0
  */
-class UnsupportedTypeException(type: KType, forName: String) : IllegalArgumentException("$type is unsupported for $forName")
+class UnsupportedTypeException(type: KType, forName: String, path: String) : IllegalArgumentException("$type is unsupported for $forName ($path)")

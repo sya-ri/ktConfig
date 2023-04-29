@@ -309,17 +309,17 @@ internal object ValueConverter {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
-    inline fun list(type0: KType, value: Any, deserialize: (Any?) -> Any?): List<Any?> {
+    inline fun list(type0: KType, value: Any, deserialize: (Int, Any?) -> Any?): List<Any?> {
         return when (value) {
             is List<*> -> {
                 if (type0.isMarkedNullable) {
-                    value.map(deserialize)
+                    value.mapIndexed(deserialize)
                 } else {
-                    value.mapNotNull(deserialize)
+                    value.mapIndexedNotNull(deserialize)
                 }
             }
             else -> {
-                val single = deserialize(value)
+                val single = deserialize(0, value)
                 if (single != null || type0.isMarkedNullable) {
                     listOf(single)
                 } else {
@@ -329,18 +329,18 @@ internal object ValueConverter {
         }
     }
 
-    inline fun map(type: KType, type0: KType, value: Any, deserializeKey: (KType, String) -> Any?, deserialize: (Any?) -> Any?): Map<Any?, Any?> {
+    inline fun map(type: KType, type0: KType, value: Any, path: String, deserializeKey: (KType, String, String) -> Any?, deserialize: (String, Any?) -> Any?): Map<Any?, Any?> {
         val entries = when (value) {
             is ConfigurationSection -> value.getValues(false).entries
             is Map<*, *> -> value.entries
-            else -> throw TypeMismatchException(type, value)
+            else -> throw TypeMismatchException(type, value, path)
         }
         return entries.mapNotNull { (key, value) ->
             if (key == "null" && type0.isMarkedNullable) {
-                null to deserialize(value)
+                null to deserialize("$path.$key", value)
             } else {
-                deserializeKey(type0, key.toString())?.let {
-                    it to deserialize(value)
+                deserializeKey(type0, key.toString(), "$path.$key")?.let {
+                    it to deserialize("$path.$key", value)
                 }
             }
         }.toMap()

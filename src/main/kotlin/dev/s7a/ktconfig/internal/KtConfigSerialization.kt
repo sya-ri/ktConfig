@@ -37,7 +37,7 @@ internal object KtConfigSerialization {
     private const val pathSeparator = 0x00.toChar()
 
     fun <T : Any> fromString(clazz: KClass<T>, type: KType, text: String): T? {
-        val constructor = clazz.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
+        val constructor = clazz.primaryConstructor ?: throw UnsupportedTypeException(type, "value", "")
         val values = YamlConfiguration().apply {
             options().pathSeparator(pathSeparator)
             loadFromString(text)
@@ -91,12 +91,12 @@ internal object KtConfigSerialization {
         val name = parameter.name!!
         val type = projectionMap.type(parameter.type)
         val value = when {
-            contains(name) -> deserialize(projectionMap, type, get(name))
+            contains(name) -> deserialize(projectionMap, type, get(name), name)
             parameter.isOptional -> {} // Use default value: Unit
             else -> null
         }
         if (value == null && type.isMarkedNullable.not()) {
-            throw TypeMismatchException(type, null)
+            throw TypeMismatchException(type, null, name)
         }
         return value
     }
@@ -110,7 +110,7 @@ internal object KtConfigSerialization {
                 return@forEach
             }
             it.isAccessible = true
-            serialize(projectionMap, createSection(it.name), it.returnType, it.call(value)).run {
+            serialize(projectionMap, createSection(it.name), it.returnType, it.call(value), it.name).run {
                 if (this !is Unit) {
                     // Unit is that should be ignored
                     set(it.name, this)
@@ -120,10 +120,10 @@ internal object KtConfigSerialization {
         }
     }
 
-    private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?): Any? {
+    private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?, path: String): Any? {
         if (value == null) return null
         type.findSerializer()?.let {
-            return it.deserialize(deserialize(projectionMap, it.type, value))
+            return it.deserialize(deserialize(projectionMap, it.type, value, path))
         }
         return when (val classifier = type.classifier) {
             String::class -> value.toString()
@@ -146,8 +146,8 @@ internal object KtConfigSerialization {
             UUID::class -> ValueConverter.uuid(value)
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                ValueConverter.list(type0, value) {
-                    deserialize(projectionMap, type0, it)
+                ValueConverter.list(type0, value) { index, v ->
+                    deserialize(projectionMap, type0, v, "$path[$index]")
                 }.run {
                     when (classifier) {
                         Set::class -> toSet()
@@ -160,8 +160,8 @@ internal object KtConfigSerialization {
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
-                ValueConverter.map(type, type0, value, ::deserializeKey) {
-                    deserialize(projectionMap, type1, it)
+                ValueConverter.map(type, type0, value, path, ::deserializeKey) { p, v ->
+                    deserialize(projectionMap, type1, v, p)
                 }
             }
             is KClass<*> -> {
@@ -169,26 +169,26 @@ internal object KtConfigSerialization {
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> value
                     classifier.isSubclassOf(Enum::class) -> ValueConverter.enum(classifier, value)
                     else -> {
-                        val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value")
+                        val constructor = classifier.primaryConstructor ?: throw UnsupportedTypeException(type, "value", path)
                         val values = when (value) {
                             is ConfigurationSection -> value.getValues(false)
                             is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
-                            else -> throw TypeMismatchException(type, value)
+                            else -> throw TypeMismatchException(type, value, path)
                         }
                         constructor.callByValues(projectionMap(classifier, type), values)
                     }
                 }
             }
             is KTypeParameter -> {
-                deserialize(projectionMap, projectionMap[classifier]!!.type!!, value)
+                deserialize(projectionMap, projectionMap[classifier]!!.type!!, value, path)
             }
-            else -> throw UnsupportedTypeException(type, "value")
+            else -> throw UnsupportedTypeException(type, "value", path)
         }
     }
 
-    private fun deserializeKey(type: KType, key: String): Any? {
+    private fun deserializeKey(type: KType, key: String, path: String): Any? {
         type.findSerializer()?.let {
-            return it.deserialize(deserializeKey(it.type, key))
+            return it.deserialize(deserializeKey(it.type, key, path))
         }
         return when (type.classifier) {
             String::class -> key
@@ -209,14 +209,14 @@ internal object KtConfigSerialization {
             Date::class -> ValueConverter.date(key)
             Calendar::class -> ValueConverter.calendar(key)
             UUID::class -> ValueConverter.uuid(key)
-            else -> throw UnsupportedTypeException(type, "key")
+            else -> throw UnsupportedTypeException(type, "key", path)
         }
     }
 
-    private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?): Any? {
+    private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?, path: String): Any? {
         if (value == null) return null
         type.findSerializer()?.let {
-            return serialize(projectionMap, section, it.type, it.serialize(value))
+            return serialize(projectionMap, section, it.type, it.serialize(value), path)
         }
         return when (val classifier = type.classifier) {
             String::class -> value
@@ -239,13 +239,15 @@ internal object KtConfigSerialization {
             UUID::class -> value.toString()
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                (value as Iterable<*>).map { serialize(projectionMap, section, type0, it) }
+                (value as Iterable<*>).mapIndexed { index, v ->
+                    serialize(projectionMap, section, type0, v, "$path[$index]")
+                }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
                 (value as Map<*, *>).map {
-                    serializeKey(type0, it.key) to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value)
+                    serializeKey(type0, it.key, "$path.${it.key}") to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value, "$path.${it.key}")
                 }.toMap()
             }
             is KClass<*> -> {
@@ -267,16 +269,16 @@ internal object KtConfigSerialization {
                 }
             }
             is KTypeParameter -> {
-                serialize(projectionMap, section, projectionMap[classifier]!!.type!!, value)
+                serialize(projectionMap, section, projectionMap[classifier]!!.type!!, value, path)
             }
             else -> value
         }
     }
 
-    private fun serializeKey(type: KType, key: Any?): Any? {
+    private fun serializeKey(type: KType, key: Any?, path: String): Any? {
         if (key == null) return null
         type.findSerializer()?.let {
-            return serializeKey(it.type, it.serialize(key))
+            return serializeKey(it.type, it.serialize(key), path)
         }
         return when (type.classifier) {
             String::class -> key
@@ -297,7 +299,7 @@ internal object KtConfigSerialization {
             Date::class -> key
             Calendar::class -> (key as Calendar).time
             UUID::class -> key.toString()
-            else -> throw UnsupportedTypeException(type, "key")
+            else -> throw UnsupportedTypeException(type, "key", path)
         }
     }
 }
