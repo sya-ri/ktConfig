@@ -75,7 +75,7 @@ class TypeMismatchExceptionTest {
                     data:
                       1: one
                 """.trimIndent(),
-                KtConfigSetting(strictMapElement = true),
+                KtConfigSetting(strictMapElement = true)
             )
         }.run {
             assertEquals("Expected kotlin.Int, but kotlin.String(one): data.1", message)
@@ -87,7 +87,7 @@ class TypeMismatchExceptionTest {
                     data:
                       1: not-null
                 """.trimIndent(),
-                KtConfigSetting(strictMapElement = true),
+                KtConfigSetting(strictMapElement = true)
             )
         }.run {
             assertEquals("Expected kotlin.Int, but kotlin.String(not-null): data.1", message)
@@ -99,7 +99,7 @@ class TypeMismatchExceptionTest {
                     data:
                       not-null: 1
                 """.trimIndent(),
-                KtConfigSetting(strictMapElement = true),
+                KtConfigSetting(strictMapElement = true)
             )
         }.run {
             assertEquals("Expected kotlin.Int, but kotlin.String(not-null): data.not-null(key)", message)
@@ -111,7 +111,7 @@ class TypeMismatchExceptionTest {
                     data:
                       not-null: not-null
                 """.trimIndent(),
-                KtConfigSetting(strictMapElement = true),
+                KtConfigSetting(strictMapElement = true)
             )
         }.run {
             assertEquals("Expected kotlin.Int, but kotlin.String(not-null): data.not-null(key)", message)

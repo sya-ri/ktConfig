@@ -6,5 +6,5 @@ package dev.s7a.ktconfig
  */
 data class KtConfigSetting(
     val strictListElement: Boolean = false,
-    val strictMapElement: Boolean = false,
+    val strictMapElement: Boolean = false
 )
