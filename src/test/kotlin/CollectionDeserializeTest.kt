@@ -152,6 +152,43 @@ class CollectionDeserializeTest {
     }
 
     @Test
+    fun int_int_map() {
+        data class Data(val data: Map<Int, Int>)
+
+        assertEquals(
+            mapOf(1 to 2, 3 to 4, 5 to 6),
+            ktConfigString<Data>(
+                """
+                    data:
+                      1: 2
+                      3: 4
+                      null: 0
+                      5: 6
+                      7: null
+                """.trimIndent()
+            )?.data
+        )
+    }
+
+    @Test
+    fun string_string_map() {
+        data class Data(val data: Map<String, String>)
+
+        assertEquals(
+            mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
+            ktConfigString<Data>(
+                """
+                    data:
+                      a: b
+                      c: d
+                      null: e
+                      5: f
+                """.trimIndent()
+            )?.data
+        )
+    }
+
+    @Test
     fun string_string_hash_map() {
         data class Data(val data: HashMap<String, String>)
 

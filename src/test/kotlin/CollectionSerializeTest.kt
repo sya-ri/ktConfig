@@ -107,6 +107,23 @@ class CollectionSerializeTest {
     }
 
     @Test
+    fun string_string_map() {
+        data class Data(val data: Map<String, String>)
+
+        assertEquals(
+            """
+                data:
+                  a: b
+                  c: d
+                  'null': e
+                  '5': f
+                
+            """.trimIndent(),
+            saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
+        )
+    }
+
+    @Test
     fun string_string_hash_map() {
         data class Data(val data: HashMap<String, String>)
 
