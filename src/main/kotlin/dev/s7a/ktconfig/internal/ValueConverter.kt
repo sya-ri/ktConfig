@@ -329,14 +329,10 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
             }
             else -> {
                 val single = deserialize(0, value)
-                if (single != null || type0.isMarkedNullable) {
-                    listOf(single)
-                } else {
-                    if (setting.strictListElement) {
-                        throw TypeMismatchException(type0, value, "$path[0]")
-                    } else {
-                        listOf()
-                    }
+                when {
+                    single != null || type0.isMarkedNullable -> listOf(single)
+                    setting.strictListElement -> throw TypeMismatchException(type0, value, "$path[0]")
+                    else -> listOf()
                 }
             }
         }
