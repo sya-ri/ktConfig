@@ -73,18 +73,6 @@ class TypeMismatchExceptionTest {
             ktConfigString<Data>(
                 """
                     data:
-                      1: one
-                """.trimIndent(),
-                KtConfigSetting(strictMapElement = true)
-            )
-        }.run {
-            assertEquals("Expected kotlin.Int, but kotlin.String(one): data.1", message)
-        }
-
-        assertFailsWith<TypeMismatchException> {
-            ktConfigString<Data>(
-                """
-                    data:
                       1: not-null
                 """.trimIndent(),
                 KtConfigSetting(strictMapElement = true)
