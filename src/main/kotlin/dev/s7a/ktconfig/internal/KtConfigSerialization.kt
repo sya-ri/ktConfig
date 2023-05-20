@@ -168,9 +168,10 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 valueConverter.map(projectionMap, type, type0, value, path, ::deserializeKey) { p, v ->
                     deserialize(projectionMap, type1, v, p).let {
                         when {
-                            type1.isMarkedNullable -> it
-                            setting.strictMapElement && it == null -> throw TypeMismatchException(type1, v, p)
-                            else -> it
+                            it != null -> it
+                            type1.isMarkedNullable -> null
+                            setting.strictMapElement -> throw TypeMismatchException(type1, v, p)
+                            else -> null
                         }
                     }
                 }

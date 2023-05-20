@@ -351,14 +351,11 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
                 null to deserialize("$path.$key", value)
             } else {
                 deserializeKey(projectionMap, type0, key.toString(), "$path.$key").let {
-                    if (it != null) {
-                        it to deserialize("$path.$key", value)
-                    } else {
-                        when {
-                            type0.isMarkedNullable -> null
-                            setting.strictMapElement -> throw TypeMismatchException(type0, key, "$path.$key(key)")
-                            else -> null
-                        }
+                    when {
+                        it != null -> it to deserialize("$path.$key", value)
+                        type0.isMarkedNullable -> null
+                        setting.strictMapElement -> throw TypeMismatchException(type0, key, "$path.$key(key)")
+                        else -> null
                     }
                 }
             }
