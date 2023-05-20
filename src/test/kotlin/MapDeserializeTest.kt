@@ -365,6 +365,26 @@ class MapDeserializeTest {
         )
     }
 
+    enum class EnumValue {
+        Value1
+    }
+
+    @Test
+    fun enum_string_map() {
+        data class Data(val data: Map<EnumValue, String>)
+
+        assertEquals(
+            Data(mapOf(EnumValue.Value1 to "ab")),
+            ktConfigString(
+                """
+                    data:
+                      Value1: ab
+                      c: ignore
+                """.trimIndent()
+            )
+        )
+    }
+
     @Test
     fun string_string_map_list() {
         data class Data(val data: List<Map<String, String>>)

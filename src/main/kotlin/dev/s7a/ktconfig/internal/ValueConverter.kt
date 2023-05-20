@@ -14,6 +14,8 @@ import java.util.TimeZone
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.KTypeProjection
 
 internal class ValueConverter(private val setting: KtConfigSetting) {
     @Suppress("DEPRECATION")
@@ -338,7 +340,7 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
         }
     }
 
-    inline fun map(type: KType, type0: KType, value: Any, path: String, deserializeKey: (KType, String, String) -> Any?, deserialize: (String, Any?) -> Any?): Map<Any?, Any?> {
+    inline fun map(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, type0: KType, value: Any, path: String, deserializeKey: (Map<KTypeParameter, KTypeProjection>, KType, String, String) -> Any?, deserialize: (String, Any?) -> Any?): Map<Any?, Any?> {
         val entries = when (value) {
             is ConfigurationSection -> value.getValues(false).entries
             is Map<*, *> -> value.entries
@@ -348,7 +350,7 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
             if (key == "null" && type0.isMarkedNullable) {
                 null to deserialize("$path.$key", value)
             } else {
-                deserializeKey(type0, key.toString(), "$path.$key").let {
+                deserializeKey(projectionMap, type0, key.toString(), "$path.$key").let {
                     if (it != null) {
                         it to deserialize("$path.$key", value)
                     } else {

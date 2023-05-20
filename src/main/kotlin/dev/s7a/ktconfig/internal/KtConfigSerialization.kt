@@ -165,7 +165,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
-                valueConverter.map(type, type0, value, path, ::deserializeKey) { p, v ->
+                valueConverter.map(projectionMap, type, type0, value, path, ::deserializeKey) { p, v ->
                     deserialize(projectionMap, type1, v, p).let {
                         when {
                             type1.isMarkedNullable -> it
@@ -197,11 +197,11 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
         }
     }
 
-    private fun deserializeKey(type: KType, key: String, path: String): Any? {
+    private fun deserializeKey(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, key: String, path: String): Any? {
         type.findSerializer()?.let {
-            return it.deserialize(deserializeKey(it.type, key, path))
+            return it.deserialize(deserializeKey(projectionMap, it.type, key, path))
         }
-        return when (type.classifier) {
+        return when (val classifier = type.classifier) {
             String::class -> key
             Int::class -> valueConverter.int(key)
             UInt::class -> valueConverter.uint(key)
@@ -220,6 +220,15 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             Date::class -> valueConverter.date(key)
             Calendar::class -> valueConverter.calendar(key)
             UUID::class -> valueConverter.uuid(key)
+            is KClass<*> -> {
+                when {
+                    classifier.isSubclassOf(Enum::class) -> valueConverter.enum(classifier, key)
+                    else -> throw UnsupportedTypeException(type, "key", path)
+                }
+            }
+            is KTypeParameter -> {
+                deserializeKey(projectionMap, projectionMap[classifier]!!.type!!, key, path)
+            }
             else -> throw UnsupportedTypeException(type, "key", path)
         }
     }
@@ -258,7 +267,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
                 (value as Map<*, *>).map {
-                    serializeKey(type0, it.key, "$path.${it.key}") to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value, "$path.${it.key}")
+                    serializeKey(projectionMap, type0, it.key, "$path.${it.key}") to serialize(projectionMap, section.createSection(it.key.toString()), type1, it.value, "$path.${it.key}")
                 }.toMap()
             }
             is KClass<*> -> {
@@ -286,12 +295,12 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
         }
     }
 
-    private fun serializeKey(type: KType, key: Any?, path: String): Any? {
+    private fun serializeKey(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, key: Any?, path: String): Any? {
         if (key == null) return null
         type.findSerializer()?.let {
-            return serializeKey(it.type, it.serialize(key), path)
+            return serializeKey(projectionMap, it.type, it.serialize(key), path)
         }
-        return when (type.classifier) {
+        return when (val classifier = type.classifier) {
             String::class -> key
             Int::class -> key
             UInt::class -> (key as UInt).toLong()
@@ -310,6 +319,21 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             Date::class -> key
             Calendar::class -> (key as Calendar).time
             UUID::class -> key.toString()
+            is KClass<*> -> {
+                when {
+                    classifier.isSubclassOf(Enum::class) -> {
+                        try {
+                            (key as Enum<*>).name
+                        } catch (ex: IllegalArgumentException) {
+                            null
+                        }
+                    }
+                    else -> throw UnsupportedTypeException(type, "key", path)
+                }
+            }
+            is KTypeParameter -> {
+                serializeKey(projectionMap, projectionMap[classifier]!!.type!!, key, path)
+            }
             else -> throw UnsupportedTypeException(type, "key", path)
         }
     }

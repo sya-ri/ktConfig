@@ -7,6 +7,7 @@ class GenericsTest {
     private data class Data<T>(val data: T)
     private data class ListData<T>(val data: List<T>)
     private data class ListListData<T>(val data: List<List<T>>)
+    private data class MapData<T, U>(val data: Map<T, U>)
 
     @Test
     fun serialize() {
@@ -38,6 +39,15 @@ class GenericsTest {
                 
             """.trimIndent(),
             saveKtConfigString(ListListData(listOf(listOf("hello"))))
+        )
+        assertEquals(
+            """
+                data:
+                  a: 1
+                  b: 2
+                
+            """.trimIndent(),
+            saveKtConfigString(MapData(mapOf("a" to 1, "b" to 2)))
         )
     }
 
@@ -79,6 +89,10 @@ class GenericsTest {
         assertEquals(
             ListListData(listOf(listOf("hello"))),
             ktConfigString("data: [[hello]]")
+        )
+        assertEquals(
+            MapData(mapOf("a" to 1, "b" to 2)),
+            ktConfigString("data: {'a': 1, 'b': 2}")
         )
     }
 }
