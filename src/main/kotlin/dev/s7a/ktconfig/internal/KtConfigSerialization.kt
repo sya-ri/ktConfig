@@ -47,7 +47,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             options().pathSeparator(pathSeparator)
             loadFromString(text)
         }.getValues(false)
-        return constructor.callByValues(projectionMap(clazz, type), values)
+        return constructor.callByValues(ProjectionMap(clazz, type), values)
     }
 
     fun <T : Any> toString(clazz: KClass<T>, type: KType, value: T): String {
@@ -55,20 +55,6 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
             set(clazz, type, value)
         }.saveToString()
-    }
-
-    private fun projectionMap(clazz: KClass<*>, type: KType): Map<KTypeParameter, KTypeProjection> {
-        return clazz.typeParameters.mapIndexed { index, parameter ->
-            parameter to type.arguments[index]
-        }.toMap()
-    }
-
-    private fun Map<KTypeParameter, KTypeProjection>.type(type: KType): KType {
-        return get(type.classifier)?.type ?: type
-    }
-
-    private fun Map<KTypeParameter, KTypeProjection>.typeArgument(type: KType, index: Int): KType {
-        return type(type.arguments[index].type!!)
     }
 
     private fun KAnnotatedElement.findComment(): List<String>? {
@@ -80,7 +66,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
         return serializer.objectInstance ?: serializer.createInstance()
     }
 
-    private fun <T> KFunction<T>.callByValues(projectionMap: Map<KTypeParameter, KTypeProjection>, values: Map<String, Any?>): T? {
+    private fun <T> KFunction<T>.callByValues(projectionMap: ProjectionMap, values: Map<String, Any?>): T? {
         isAccessible = true
         return parameters.mapNotNull { parameter ->
             val value = values.get(projectionMap, parameter)
@@ -92,7 +78,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
         }.toMap().run(::callBy)
     }
 
-    private fun Map<String, Any?>.get(projectionMap: Map<KTypeParameter, KTypeProjection>, parameter: KParameter): Any? {
+    private fun Map<String, Any?>.get(projectionMap: ProjectionMap, parameter: KParameter): Any? {
         val name = parameter.name!!
         val type = projectionMap.type(parameter.type)
         val value = when {
@@ -107,7 +93,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
     }
 
     private fun ConfigurationSection.set(clazz: KClass<*>, type: KType, value: Any) {
-        val projectionMap = projectionMap(clazz, type)
+        val projectionMap = ProjectionMap(clazz, type)
         clazz.memberProperties.forEach {
             if (it.javaField == null) {
                 // Ignore custom getters
@@ -125,7 +111,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
         }
     }
 
-    private fun deserialize(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, value: Any?, path: String): Any? {
+    private fun deserialize(projectionMap: ProjectionMap, type: KType, value: Any?, path: String): Any? {
         if (value == null) return null
         type.findSerializer()?.let {
             return it.deserialize(deserialize(projectionMap, it.type, value, path))
@@ -150,10 +136,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             Calendar::class -> valueConverter.calendar(value)
             UUID::class -> valueConverter.uuid(value)
             Iterable::class, Collection::class, List::class, Set::class, HashSet::class, LinkedHashSet::class -> {
-                val type0 = projectionMap.typeArgument(type, 0)
-                valueConverter.list(type0, value, path) { index, v ->
-                    deserialize(projectionMap, type0, v, "$path[$index]")
-                }.run {
+                valueConverter.list(projectionMap, type, value, path, ::deserialize).run {
                     when (classifier) {
                         Set::class -> toSet()
                         HashSet::class -> toHashSet()
@@ -163,9 +146,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 }
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
-                val type0 = projectionMap.typeArgument(type, 0)
-                val type1 = projectionMap.typeArgument(type, 1)
-                valueConverter.map(projectionMap, type, type0, type1, value, path, ::deserializeKey, ::deserialize)
+                valueConverter.map(projectionMap, type, value, path, ::deserializeKey, ::deserialize)
             }
             is KClass<*> -> {
                 when {
@@ -178,18 +159,18 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                             is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
                             else -> throw TypeMismatchException(type, value, path)
                         }
-                        constructor.callByValues(projectionMap(classifier, type), values)
+                        constructor.callByValues(ProjectionMap(classifier, type), values)
                     }
                 }
             }
             is KTypeParameter -> {
-                deserialize(projectionMap, projectionMap[classifier]!!.type!!, value, path)
+                deserialize(projectionMap, projectionMap.type(classifier), value, path)
             }
             else -> throw UnsupportedTypeException(type, "value", path)
         }
     }
 
-    private fun deserializeKey(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, key: String, path: String): Any? {
+    private fun deserializeKey(projectionMap: ProjectionMap, type: KType, key: String, path: String): Any? {
         type.findSerializer()?.let {
             return it.deserialize(deserializeKey(projectionMap, it.type, key, path))
         }
@@ -219,13 +200,13 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 }
             }
             is KTypeParameter -> {
-                deserializeKey(projectionMap, projectionMap[classifier]!!.type!!, key, path)
+                deserializeKey(projectionMap, projectionMap.type(classifier), key, path)
             }
             else -> throw UnsupportedTypeException(type, "key", path)
         }
     }
 
-    private fun serialize(projectionMap: Map<KTypeParameter, KTypeProjection>, section: ConfigurationSection, type: KType, value: Any?, path: String): Any? {
+    private fun serialize(projectionMap: ProjectionMap, section: ConfigurationSection, type: KType, value: Any?, path: String): Any? {
         if (value == null) return null
         type.findSerializer()?.let {
             return serialize(projectionMap, section, it.type, it.serialize(value), path)
@@ -281,13 +262,13 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 }
             }
             is KTypeParameter -> {
-                serialize(projectionMap, section, projectionMap[classifier]!!.type!!, value, path)
+                serialize(projectionMap, section, projectionMap.type(classifier), value, path)
             }
             else -> value
         }
     }
 
-    private fun serializeKey(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, key: Any?, path: String): Any? {
+    private fun serializeKey(projectionMap: ProjectionMap, type: KType, key: Any?, path: String): Any? {
         if (key == null) return null
         type.findSerializer()?.let {
             return serializeKey(projectionMap, it.type, it.serialize(key), path)
@@ -324,7 +305,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
                 }
             }
             is KTypeParameter -> {
-                serializeKey(projectionMap, projectionMap[classifier]!!.type!!, key, path)
+                serializeKey(projectionMap, projectionMap.type(classifier), key, path)
             }
             else -> throw UnsupportedTypeException(type, "key", path)
         }

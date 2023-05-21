@@ -313,35 +313,34 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
-    inline fun list(type0: KType, value: Any, path: String, deserialize: (Int, Any?) -> Any?): List<Any?> {
-        return when (value) {
-            is List<*> -> {
-                when {
-                    type0.isMarkedNullable -> {
-                        value.mapIndexed(deserialize)
-                    }
-                    setting.strictListElement -> {
-                        value.mapIndexed { index, v ->
-                            deserialize(index, v) ?: throw TypeMismatchException(type0, v, "$path[$index]")
-                        }
-                    }
-                    else -> {
-                        value.mapIndexedNotNull(deserialize)
-                    }
+    inline fun list(projectionMap: ProjectionMap, type: KType, value: Any, path: String, crossinline deserialize: (ProjectionMap, KType, Any?, String) -> Any?): List<Any?> {
+        val type0 = projectionMap.typeArgument(type, 0)
+        val values = when (value) {
+            is List<*> -> value
+            else -> listOf(value)
+        }
+        return when {
+            type0.isMarkedNullable -> {
+                values.mapIndexed { index, v ->
+                    deserialize(projectionMap, type0, v, "$path[$index]")
+                }
+            }
+            setting.strictListElement -> {
+                values.mapIndexed { index, v ->
+                    deserialize(projectionMap, type0, v, "$path[$index]") ?: throw TypeMismatchException(type0, v, "$path[$index]")
                 }
             }
             else -> {
-                val single = deserialize(0, value)
-                when {
-                    single != null || type0.isMarkedNullable -> listOf(single)
-                    setting.strictListElement -> throw TypeMismatchException(type0, value, "$path[0]")
-                    else -> listOf()
+                values.mapIndexedNotNull { index, v ->
+                    deserialize(projectionMap, type0, v, "$path[$index]")
                 }
             }
         }
     }
 
-    inline fun map(projectionMap: Map<KTypeParameter, KTypeProjection>, type: KType, type0: KType, type1: KType, value: Any, path: String, deserializeKey: (Map<KTypeParameter, KTypeProjection>, KType, String, String) -> Any?, deserialize: (Map<KTypeParameter, KTypeProjection>, KType, Any?, String) -> Any?): Map<Any?, Any?> {
+    inline fun map(projectionMap: ProjectionMap, type: KType, value: Any, path: String, deserializeKey: (ProjectionMap, KType, String, String) -> Any?, deserialize: (ProjectionMap, KType, Any?, String) -> Any?): Map<Any?, Any?> {
+        val type0 = projectionMap.typeArgument(type, 0)
+        val type1 = projectionMap.typeArgument(type, 1)
         if (type0.isMarkedNullable) throw NullableMapKeyException(path)
         val entries = when (value) {
             is ConfigurationSection -> value.getValues(false).entries
