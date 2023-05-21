@@ -165,16 +165,7 @@ internal class KtConfigSerialization(private val setting: KtConfigSetting) {
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
                 val type1 = projectionMap.typeArgument(type, 1)
-                valueConverter.map(projectionMap, type, type0, value, path, ::deserializeKey) { p, v ->
-                    deserialize(projectionMap, type1, v, p).let {
-                        when {
-                            it != null -> it
-                            type1.isMarkedNullable -> null
-                            setting.strictMapElement -> throw TypeMismatchException(type1, v, p)
-                            else -> null
-                        }
-                    }
-                }
+                valueConverter.map(projectionMap, type, type0, type1, value, path, ::deserializeKey, ::deserialize)
             }
             is KClass<*> -> {
                 when {
