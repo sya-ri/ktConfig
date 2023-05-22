@@ -1,6 +1,8 @@
+import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import dev.s7a.ktconfig.saveKtConfigString
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class PropertyTest {
     @Test
@@ -12,7 +14,6 @@ class PropertyTest {
         assertEquals(
             """
                 value1: 3
-                value2: 5
                 
             """.trimIndent(),
             saveKtConfigString(Data(3))
@@ -28,7 +29,6 @@ class PropertyTest {
         assertEquals(
             """
                 value1: 3
-                value2: 5
                 
             """.trimIndent(),
             saveKtConfigString(Data(3))
@@ -38,12 +38,13 @@ class PropertyTest {
     @Test
     fun another_field() {
         class Data(value1: Int) {
+            val value1 = value1 * 2
             val value2 = value1
         }
 
         assertEquals(
             """
-                value2: 3
+                value1: 6
                 
             """.trimIndent(),
             saveKtConfigString(Data(3))
@@ -82,7 +83,11 @@ class PropertyTest {
             """.trimIndent(),
             saveKtConfigString(Data(3, 5))
         )
-        assertEquals("", saveKtConfigString<Base>(Data(3, 5)))
+        assertFailsWith<UnsupportedTypeException> {
+            saveKtConfigString<Base>(Data(3, 5))
+        }.run {
+            assertEquals("PropertyTest.Base is unsupported type (primary constructor must be defined)", message)
+        }
     }
 
     @Test
@@ -96,14 +101,12 @@ class PropertyTest {
             """
                 value1: 3
                 value2: 5
-                value3: 7
                 
             """.trimIndent(),
             saveKtConfigString(Data(3, 5))
         )
         assertEquals(
             """
-                value2: 9
                 value3: 7
                 
             """.trimIndent(),
@@ -111,7 +114,6 @@ class PropertyTest {
         )
         assertEquals(
             """
-                value2: 5
                 value3: 7
                 
             """.trimIndent(),
@@ -130,7 +132,6 @@ class PropertyTest {
             """
                 value1: 3
                 value2: 5
-                value3: 7
                 
             """.trimIndent(),
             saveKtConfigString(Data(3, 5))

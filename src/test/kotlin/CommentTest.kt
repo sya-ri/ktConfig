@@ -40,6 +40,16 @@ class CommentTest {
     }
 
     @Test
+    fun nullValue() {
+        data class Data(
+            @Comment("line1", "line2")
+            val data: String?
+        )
+
+        assertEquals("", saveKtConfigString(Data(null)))
+    }
+
+    @Test
     fun nest() {
         @Comment("default")
         data class Data1(

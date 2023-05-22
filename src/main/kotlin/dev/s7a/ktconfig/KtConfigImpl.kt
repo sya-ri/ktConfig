@@ -1,11 +1,23 @@
 package dev.s7a.ktconfig
 
-import dev.s7a.ktconfig.internal.KtConfigSerialization
+import dev.s7a.ktconfig.internal.ContentSerializer
+import dev.s7a.ktconfig.internal.Deserializer
+import dev.s7a.ktconfig.internal.ProjectionMap
+import dev.s7a.ktconfig.internal.Section
+import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setComment
+import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderComment
+import dev.s7a.ktconfig.internal.findComment
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
+
+/**
+ * Change the path separator to be able to use Double or Float as key
+ */
+private const val pathSeparator = 0x00.toChar()
 
 /**
  * Load config from [text].
@@ -22,8 +34,13 @@ import kotlin.reflect.typeOf
  * @suppress
  */
 fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+    val section = ContentSerializer(setting).section(clazz, type, ProjectionMap(clazz, type))
     if (text.isBlank()) return null
-    return KtConfigSerialization(setting).fromString(clazz, type, text)
+    val values = YamlConfiguration().apply {
+        options().pathSeparator(pathSeparator)
+        loadFromString(text)
+    }.getValues(false)
+    return section.deserialize(Deserializer(setting), "", values)
 }
 
 /**
@@ -136,7 +153,24 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @suppress
  */
 fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, setting: KtConfigSetting = KtConfigSetting()): String {
-    return KtConfigSerialization(setting).toString(clazz, type, content)
+    val section = ContentSerializer(setting).section(clazz, type, ProjectionMap(clazz, type))
+    return YamlConfiguration().apply {
+        options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
+
+        fun setSection(parent: String?, section: Section) {
+            section.values?.forEach { name, (comments, value) ->
+                val path = if (parent != null) "$parent$pathSeparator$name" else name
+                if (value is Section) {
+                    setSection(path, value)
+                } else {
+                    set(path, value)
+                }
+                setComment(path, comments)
+            }
+        }
+
+        setSection(null, section.serialize("", content))
+    }.saveToString()
 }
 
 /**

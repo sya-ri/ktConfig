@@ -1,7 +1,6 @@
 package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.KtConfigSetting
-import dev.s7a.ktconfig.exception.NullableMapKeyException
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import org.bukkit.configuration.ConfigurationSection
 import org.yaml.snakeyaml.constructor.SafeConstructor
@@ -16,7 +15,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-internal class ValueConverter(private val setting: KtConfigSetting) {
+internal class Deserializer(private val setting: KtConfigSetting) {
     @Suppress("DEPRECATION")
     private val safeConstructor = SafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
@@ -311,53 +310,52 @@ internal class ValueConverter(private val setting: KtConfigSetting) {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
-    inline fun list(projectionMap: ProjectionMap, type: KType, value: Any, path: String, crossinline deserialize: (ProjectionMap, KType, Any?, String) -> Any?): List<Any?> {
-        val type0 = projectionMap.typeArgument(type, 0)
+    fun <T : Any?> list(content: Content<T>, path: String, value: Any, isMarkedNullable: Boolean): List<T> {
         val values = when (value) {
             is List<*> -> value
             else -> listOf(value)
         }
         return when {
-            type0.isMarkedNullable -> {
+            isMarkedNullable -> {
                 values.mapIndexed { index, v ->
-                    deserialize(projectionMap, type0, v, "$path[$index]")
+                    @Suppress("UNCHECKED_CAST")
+                    v?.let { content.deserialize(this, "$path[$index]", v) } as T
                 }
             }
             setting.strictListElement -> {
                 values.mapIndexed { index, v ->
-                    deserialize(projectionMap, type0, v, "$path[$index]") ?: throw TypeMismatchException(type0, v, "$path[$index]")
+                    v?.let { content.deserialize(this, "$path[$index]", v) } ?: throw TypeMismatchException(content.type, v, "$path[$index]")
                 }
             }
             else -> {
-                values.mapIndexedNotNull { index, v ->
-                    deserialize(projectionMap, type0, v, "$path[$index]")
+                values.filterNotNull().mapIndexedNotNull { index, v ->
+                    content.deserialize(this, "$path[$index]", v)
                 }
             }
         }
     }
 
-    inline fun map(projectionMap: ProjectionMap, type: KType, value: Any, path: String, deserializeKey: (ProjectionMap, KType, String, String) -> Any?, deserialize: (ProjectionMap, KType, Any?, String) -> Any?): Map<Any?, Any?> {
-        val type0 = projectionMap.typeArgument(type, 0)
-        val type1 = projectionMap.typeArgument(type, 1)
-        if (type0.isMarkedNullable) throw NullableMapKeyException(path)
+    fun <K, V> map(type: KType, keyable: Content.Keyable<K>, content: Content<V>, path: String, value: Any, isMarkedNullable: Boolean): Map<K, V?> {
         val entries = when (value) {
             is ConfigurationSection -> value.getValues(false).entries
             is Map<*, *> -> value.entries
             else -> throw TypeMismatchException(type, value, path)
         }
         return entries.mapNotNull { (key, value) ->
-            deserializeKey(projectionMap, type0, key.toString(), "$path.$key").let { deserializedKey ->
+            keyable.deserialize(this, "$path.$key", key.toString()).let { deserializedKey ->
                 when {
                     deserializedKey != null -> {
-                        deserializedKey to deserialize(projectionMap, type1, value, "$path.$key").let { deserializedValue ->
+                        deserializedKey to content.deserialize(this, "$path.$key", value).let { deserializedValue ->
                             when {
-                                deserializedValue != null || type1.isMarkedNullable -> deserializedValue
-                                setting.strictMapElement -> throw TypeMismatchException(type1, value, "$path.$key")
+                                deserializedValue != null || isMarkedNullable -> deserializedValue
+                                setting.strictMapElement -> throw TypeMismatchException(content.type, value, "$path.$key")
                                 else -> null
                             }
                         }
                     }
-                    setting.strictMapElement -> throw TypeMismatchException(type0, key, "$path.$key(key)")
+                    setting.strictMapElement -> {
+                        throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
+                    }
                     else -> null
                 }
             }
