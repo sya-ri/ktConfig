@@ -7,7 +7,7 @@ import kotlin.reflect.KTypeProjection
 
 @JvmInline
 internal value class ProjectionMap private constructor(private val map: Map<KTypeParameter, KTypeProjection>) {
-    constructor(clazz: KClass<*>, type: KType): this(
+    constructor(clazz: KClass<*>, type: KType) : this(
         clazz.typeParameters.mapIndexed { index, parameter ->
             parameter to type.arguments[index]
         }.toMap()

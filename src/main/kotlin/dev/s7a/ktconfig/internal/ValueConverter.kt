@@ -15,8 +15,6 @@ import java.util.TimeZone
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.KTypeParameter
-import kotlin.reflect.KTypeProjection
 
 internal class ValueConverter(private val setting: KtConfigSetting) {
     @Suppress("DEPRECATION")
