@@ -5,7 +5,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.8.10"
     id("org.jmailen.kotlinter") version "3.13.0"
     id("dev.s7a.gradle.minecraft.server") version "2.1.1" apply false
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     `maven-publish`
     signing
 }
