@@ -3,7 +3,7 @@
 > **Warning**
 > This library is under development, so you can't use it.
 
-Spigot config library for Kotlin handled using class constructor.
+Spigot configuration library using Kotlin data classes.
 
 ```kotlin
 class Main : JavaPlugin() { 

@@ -37,7 +37,7 @@ export default function Home(): JSX.Element {
           <div className="text--center margin-vert--lg">
             <h3>
               <Translate>
-                You can read and write config files just by defining a class constructor.
+                You can read and write configuration files just by defining a data class.
               </Translate>
             </h3>
           </div>

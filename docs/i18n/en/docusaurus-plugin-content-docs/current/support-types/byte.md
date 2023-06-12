@@ -1,11 +1,12 @@
 ---
-sidebar_position: 2.03
+sidebar_position: 4.03
 ---
 
 # Byte
 
-[Byte](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/) is an integer from -128 to 127.
-Values outside that range underflow or overflow.
+
+[Byte](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/) is an integer ranging from -128 to 127.
+Values outside this range result in underflow or overflow.
 
 ```kotlin title="Config.kt"
 data class Config(
@@ -30,7 +31,7 @@ byte: 0x4E
 byte: 130
 ```
 
-Also, it can be used as a key type for [Map](map.md).
+Byte can be used as a key type in [Map](map.md).
 
 ```kotlin title="Config.kt"
 data class Config(

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2.10
+sidebar_position: 4.10
 ---
 
 # UByte

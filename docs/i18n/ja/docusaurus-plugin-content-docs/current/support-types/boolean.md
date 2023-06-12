@@ -1,11 +1,11 @@
 ---
-sidebar_position: 2.02
+sidebar_position: 4.02
 ---
 
 # Boolean
 
-[Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/) は `true` もしくは `false` の値を持ちます。
-もしも、それ以外の文字列を設定すると、null になります。
+[Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/) has a value of `true` or `false`.
+If set to any other type, it will be considered null.
 
 ```kotlin title="Config.kt"
 data class Config(
@@ -24,7 +24,7 @@ boolean: false
 boolean: other
 ```
 
-また、[Map](map.md) のキーとして利用できます。
+Boolean can be used as a key type in [Map](map.md).
 
 ```kotlin title="Config.kt"
 data class Config(
