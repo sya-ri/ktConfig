@@ -1,8 +1,7 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/oceanicNext');
+const themes = require('prism-react-renderer').themes;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -84,8 +83,8 @@ const config = {
         copyright: `© ${new Date().getFullYear()} sya-ri`,
       },
       prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+        theme: themes.github,
+        darkTheme: themes.oceanicNext,
         additionalLanguages: ['kotlin'],
       },
     }),
