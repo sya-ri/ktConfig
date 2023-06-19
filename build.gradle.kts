@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm") version "1.8.22"
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.3" apply false
+    id("net.minecrell.plugin-yml.bukkit") version "0.6.0" apply false
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
     id("org.jetbrains.dokka") version "1.8.20"
     id("org.jmailen.kotlinter") version "3.13.0"
