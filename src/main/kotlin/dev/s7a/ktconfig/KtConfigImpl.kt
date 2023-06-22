@@ -160,10 +160,34 @@ fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, sett
         fun setSection(parent: String?, section: Section) {
             section.values?.forEach { name, (comments, value) ->
                 val path = if (parent != null) "$parent$pathSeparator$name" else name
-                if (value is Section) {
-                    setSection(path, value)
-                } else {
-                    set(path, value)
+                when (value) {
+                    is Section -> {
+                        setSection(path, value)
+                    }
+                    is Map<*, *> -> {
+                        fun map(map: Map<*, *>): Map<*, *> {
+                            return map.entries.associate { (p, v) ->
+                                p to when (v) {
+                                    is Section -> {
+                                        v.values?.entries?.associate {
+                                            it.key to it.value.value
+                                        }
+                                    }
+                                    is Map<*, *> -> {
+                                        map(v)
+                                    }
+                                    else -> {
+                                        v
+                                    }
+                                }
+                            }
+                        }
+
+                        set(path, map(value))
+                    }
+                    else -> {
+                        set(path, value)
+                    }
                 }
                 setComment(path, comments)
             }

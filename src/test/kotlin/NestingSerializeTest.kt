@@ -20,6 +20,22 @@ class NestingSerializeTest {
     }
 
     @Test
+    fun another_map() {
+        data class Data1(val data: String)
+        data class Data2(val data1: Map<String, Data1>)
+
+        assertEquals(
+            """
+                data1:
+                  one:
+                    data: hello
+                
+            """.trimIndent(),
+            saveKtConfigString(Data2(mapOf("one" to Data1("hello"))))
+        )
+    }
+
+    @Test
     fun recursive() {
         data class Data(val int: Int, val data: Data?)
 
