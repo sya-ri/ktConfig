@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
     id("org.jetbrains.dokka") version "1.9.0"
     id("org.jmailen.kotlinter") version "3.13.0"
-    id("dev.s7a.gradle.minecraft.server") version "2.1.1" apply false
+    id("dev.s7a.gradle.minecraft.server") version "3.0.0" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     `maven-publish`
     signing
