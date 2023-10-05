@@ -1,15 +1,15 @@
-package dev.s7a.ktconfig.internal
+package dev.s7a.ktconfig.internal.reflection
 
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfigurationOptions
 
 internal object YamlConfigurationOptionsReflection {
     private fun interface SetHeaderCommentMethod {
-        fun apply(options: YamlConfigurationOptions, comments: List<String>)
+        fun invoke(options: YamlConfigurationOptions, comments: List<String>)
     }
 
     private fun interface SetValueCommentMethod {
-        fun apply(section: ConfigurationSection, path: String, comment: List<String>?)
+        fun invoke(section: ConfigurationSection, path: String, comment: List<String>?)
     }
 
     private val setHeaderCommentMethod: SetHeaderCommentMethod
@@ -41,11 +41,11 @@ internal object YamlConfigurationOptionsReflection {
 
     fun YamlConfigurationOptions.setHeaderComment(comment: List<String>?) {
         if (comment != null) {
-            setHeaderCommentMethod.apply(this, comment)
+            setHeaderCommentMethod.invoke(this, comment)
         }
     }
 
     fun ConfigurationSection.setComment(path: String, comment: List<String>?) {
-        setValueCommentMethod.apply(this, path, comment)
+        setValueCommentMethod.invoke(this, path, comment)
     }
 }

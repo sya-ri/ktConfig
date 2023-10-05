@@ -2,31 +2,25 @@ package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.KtConfigSetting
 import dev.s7a.ktconfig.exception.TypeMismatchException
+import dev.s7a.ktconfig.internal.reflection.SnakeYamlReflection
 import org.bukkit.configuration.ConfigurationSection
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.ScalarNode
-import org.yaml.snakeyaml.nodes.Tag
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.Calendar
-import java.util.Date
-import java.util.TimeZone
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 internal class Deserializer(private val setting: KtConfigSetting) {
-    @Suppress("DEPRECATION")
-    private val safeConstructor = SafeConstructor()
+    private val safeConstructor = SnakeYamlReflection.getSafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
     private val constructYamlInt = safeConstructor.ConstructYamlInt()
     private val constructYamlFloat = safeConstructor.ConstructYamlFloat()
     private val constructYamlTimestamp = SafeConstructor.ConstructYamlTimestamp()
 
     private fun node(value: String): ScalarNode {
-        @Suppress("DEPRECATION")
-        return ScalarNode(Tag.STR, value, null, null, null as Char?)
-        // return ScalarNode(Tag.STR, value, null, null, DumperOptions.ScalarStyle.PLAIN)
+        return SnakeYamlReflection.getScalarNode(value)
     }
 
     private fun number(value: String): Number? {

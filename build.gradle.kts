@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
     id("org.jetbrains.dokka") version "1.9.0"
     id("org.jmailen.kotlinter") version "3.13.0"
-    id("dev.s7a.gradle.minecraft.server") version "2.1.1" apply false
+    id("dev.s7a.gradle.minecraft.server") version "3.0.0" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     `maven-publish`
     signing
@@ -39,11 +39,11 @@ dependencies {
     if (project.hasProperty("USE_SPIGOT_8")) {
         compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
     } else {
-        compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
+        compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     }
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.19:3.1.0")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.31.0")
 }
 
 tasks.test {

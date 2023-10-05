@@ -9,7 +9,7 @@ subprojects {
     apply(plugin = "com.github.johnrengelman.shadow")
 
     dependencies {
-        compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
+        compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
         implementation(project(":"))
     }
 
@@ -36,19 +36,20 @@ subprojects {
         "16" to "1.16.5",
         "17" to "1.17.1",
         "18" to "1.18.2",
-        "19" to "1.19.2"
+        "19" to "1.19.4",
+        "20" to "1.20.2",
     ).forEach { (name, version) ->
         task<LaunchMinecraftServerTask>("testPlugin$name") {
             dependsOn("build")
 
             doFirst {
                 copy {
-                    from(buildDir.resolve("libs/${project.name}-all.jar"))
-                    into(buildDir.resolve("MinecraftServer$name/plugins"))
+                    from(layout.buildDirectory.get().asFile.resolve("libs/${project.name}-all.jar"))
+                    into(layout.buildDirectory.get().asFile.resolve("MinecraftServer$name/plugins"))
                 }
             }
 
-            serverDirectory.set(buildDir.resolve("MinecraftServer$name"))
+            serverDirectory.set(layout.buildDirectory.get().asFile.resolve("MinecraftServer$name").absolutePath)
             jarUrl.set(JarUrl.Paper(version))
             agreeEula.set(true)
         }

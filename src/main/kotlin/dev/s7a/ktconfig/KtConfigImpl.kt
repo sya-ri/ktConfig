@@ -4,9 +4,9 @@ import dev.s7a.ktconfig.internal.ContentSerializer
 import dev.s7a.ktconfig.internal.Deserializer
 import dev.s7a.ktconfig.internal.ProjectionMap
 import dev.s7a.ktconfig.internal.Section
-import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setComment
-import dev.s7a.ktconfig.internal.YamlConfigurationOptionsReflection.setHeaderComment
 import dev.s7a.ktconfig.internal.findComment
+import dev.s7a.ktconfig.internal.reflection.YamlConfigurationOptionsReflection.setComment
+import dev.s7a.ktconfig.internal.reflection.YamlConfigurationOptionsReflection.setHeaderComment
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
