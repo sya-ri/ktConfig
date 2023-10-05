@@ -2,6 +2,7 @@ import be.seeseemelk.mockbukkit.MockBukkit
 import dev.s7a.ktconfig.ktConfigFile
 import dev.s7a.ktconfig.ktConfigString
 import dev.s7a.ktconfig.saveKtConfigFile
+import java.io.File
 import java.io.FileNotFoundException
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
@@ -113,7 +114,7 @@ class KtConfigTest {
         val file = directory.resolve("a").resolve("b").resolve("config.yml")
         saveKtConfigFile(file, Data())
         assertEquals("data: 1\n", file.readText())
-        assertEquals("a/b/config.yml", file.toRelativeString(directory))
+        assertEquals("a${File.separator}b${File.separator}config.yml", file.toRelativeString(directory))
     }
 
     @Test
