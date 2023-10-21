@@ -39,7 +39,7 @@ dependencies {
     if (project.hasProperty("USE_SPIGOT_8")) {
         compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
     } else {
-        compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+        compileOnly("org.spigotmc:spigot-api:1.20.2-experimental-SNAPSHOT")
     }
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
