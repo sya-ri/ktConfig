@@ -43,7 +43,7 @@ dependencies {
     }
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.46.0")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.47.0")
 }
 
 tasks.test {
