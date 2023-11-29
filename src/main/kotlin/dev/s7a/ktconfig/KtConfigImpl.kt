@@ -34,7 +34,7 @@ private const val pathSeparator = 0x00.toChar()
  * @suppress
  */
 fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, setting: KtConfigSetting = KtConfigSetting()): T? {
-    val section = ContentSerializer(setting).section(clazz, type, ProjectionMap(clazz, type))
+    val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
     if (text.isBlank()) return null
     val values = YamlConfiguration().apply {
         options().pathSeparator(pathSeparator)
@@ -153,7 +153,7 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @suppress
  */
 fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, setting: KtConfigSetting = KtConfigSetting()): String {
-    val section = ContentSerializer(setting).section(clazz, type, ProjectionMap(clazz, type))
+    val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
     return YamlConfiguration().apply {
         options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
 

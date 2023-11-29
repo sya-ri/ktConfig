@@ -1,7 +1,6 @@
 package dev.s7a.ktconfig.internal
 
 import dev.s7a.ktconfig.KtConfigSerializer
-import dev.s7a.ktconfig.KtConfigSetting
 import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.serialization.ConfigurationSerializable
@@ -12,6 +11,7 @@ import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
+import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
@@ -22,18 +22,22 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
-internal class ContentSerializer(setting: KtConfigSetting) {
+internal class ContentSerializer {
     private val contentCache = mutableMapOf<Pair<KClass<*>, KType>, Content<*>>()
+
+    private fun from(type: KType, projectionMap: ProjectionMap, serializer: KtConfigSerializer): Content<out Any?> {
+        val content = from(serializer.type, projectionMap)
+        @Suppress("UNCHECKED_CAST")
+        return if (content is Content.Keyable) {
+            Content.UseSerializerType.Keyable(type, serializer, content as Content<Any?>)
+        } else {
+            Content.UseSerializerType(type, serializer, content as Content<Any?>)
+        }
+    }
 
     private fun from(type: KType, projectionMap: ProjectionMap): Content<out Any?> {
         type.findSerializer()?.let { serializer ->
-            val content = from(serializer.type, projectionMap)
-            @Suppress("UNCHECKED_CAST")
-            return if (content is Content.Keyable) {
-                Content.UseSerializerType.Keyable(type, serializer, content as Content<Any?>)
-            } else {
-                Content.UseSerializerType(type, serializer, content as Content<Any?>)
-            }
+            return from(type, projectionMap, serializer)
         }
         return when (val classifier = type.classifier) {
             String::class -> Content.StringType(type)
@@ -79,6 +83,9 @@ internal class ContentSerializer(setting: KtConfigSetting) {
                 Content.MapType(type, keyable, from(type1, projectionMap), type1.isMarkedNullable)
             }
             is KClass<*> -> {
+                classifier.findSerializer()?.let { serializer ->
+                    return from(type, projectionMap, serializer)
+                }
                 when {
                     classifier.isSubclassOf(ConfigurationSerializable::class) -> Content.ConfigurationSerializableType(type)
                     classifier.isSubclassOf(Enum::class) -> Content.EnumType(type, classifier)
@@ -108,7 +115,7 @@ internal class ContentSerializer(setting: KtConfigSetting) {
     }
 
     companion object {
-        private fun KType.findSerializer(): KtConfigSerializer? {
+        private fun KAnnotatedElement.findSerializer(): KtConfigSerializer? {
             val serializer = findAnnotation<UseSerializer>()?.with ?: return null
             return serializer.objectInstance ?: serializer.createInstance()
         }

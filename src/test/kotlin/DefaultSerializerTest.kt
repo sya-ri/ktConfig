@@ -1,10 +1,10 @@
 import be.seeseemelk.mockbukkit.MockBukkit
 import be.seeseemelk.mockbukkit.ServerMock
 import dev.s7a.ktconfig.ktConfigString
+import dev.s7a.ktconfig.model.LazyBlock
+import dev.s7a.ktconfig.model.LazyChunk
+import dev.s7a.ktconfig.model.LazyLocation
 import dev.s7a.ktconfig.saveKtConfigString
-import dev.s7a.ktconfig.serializer.BlockString
-import dev.s7a.ktconfig.serializer.ChunkString
-import dev.s7a.ktconfig.serializer.LocationString
 import dev.s7a.ktconfig.serializer.VectorString
 import org.bukkit.Location
 import org.bukkit.util.Vector
@@ -27,51 +27,57 @@ class DefaultSerializerTest {
     }
 
     @Test
-    fun block() {
-        data class Data(val data: BlockString?)
+    fun lazyBlock() {
+        data class Data(val data: LazyBlock?)
 
         val world = server.addSimpleWorld("test")
-        assertEquals("data: test, -1, 3, 5\n", saveKtConfigString(Data(world.getBlockAt(-1, 3, 5))))
+        assertEquals("data: test, -1, 3, 5\n", saveKtConfigString(Data(LazyBlock("test", -1, 3, 5))))
         assertEquals(Data(null), ktConfigString("data: null"))
         assertEquals(Data(null), ktConfigString("data: null, -1"))
         assertEquals(Data(null), ktConfigString("data: null, -1, 3"))
-        assertEquals(Data(null), ktConfigString("data: null, -1, 3, 5"))
+        assertEquals(Data(LazyBlock("null", -1, 3, 5)), ktConfigString("data: null, -1, 3, 5"))
+        assertEquals(null, LazyBlock("null", -1, 3, 5).get())
         assertEquals(Data(null), ktConfigString("data: test"))
         assertEquals(Data(null), ktConfigString("data: test, -1"))
         assertEquals(Data(null), ktConfigString("data: test, -1, 3"))
-        assertEquals(Data(world.getBlockAt(-1, 3, 5)), ktConfigString("data: test, -1, 3, 5"))
+        assertEquals(Data(LazyBlock("test", -1, 3, 5)), ktConfigString("data: test, -1, 3, 5"))
+        assertEquals(world.getBlockAt(-1, 3, 5), LazyBlock("test", -1, 3, 5).get())
     }
 
     @Test
-    fun chunk() {
-        data class Data(val data: ChunkString?)
+    fun lazyChunk() {
+        data class Data(val data: LazyChunk?)
 
         val world = server.addSimpleWorld("test")
-        assertEquals("data: test, -1, 5\n", saveKtConfigString(Data(world.getChunkAt(-1, 5))))
+        assertEquals("data: test, -1, 5\n", saveKtConfigString(Data(LazyChunk("test", -1, 5))))
         assertEquals(Data(null), ktConfigString("data: null"))
         assertEquals(Data(null), ktConfigString("data: null, -1"))
-        assertEquals(Data(null), ktConfigString("data: null, -1, 5"))
+        assertEquals(Data(LazyChunk("null", -1, 5)), ktConfigString("data: null, -1, 5"))
+        assertEquals(null, LazyChunk("null", -1, 5).get())
         assertEquals(Data(null), ktConfigString("data: test"))
         assertEquals(Data(null), ktConfigString("data: test, -1"))
-        assertEquals(Data(world.getChunkAt(-1, 5)), ktConfigString("data: test, -1, 5"))
+        assertEquals(Data(LazyChunk("test", -1, 5)), ktConfigString("data: test, -1, 5"))
+        assertEquals(world.getChunkAt(-1, 5), LazyChunk("test", -1, 5).get())
     }
 
     @Test
-    fun location() {
-        data class Data(val data: LocationString?)
+    fun lazyLocation() {
+        data class Data(val data: LazyLocation?)
 
         val world = server.addSimpleWorld("test")
-        assertEquals("data: null, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(null, 5.0, 2.0, -1.5))))
-        assertEquals("data: test, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Location(world, 5.0, 2.0, -1.5))))
-        assertEquals("data: test, 5.0, 2.0, -1.5, 90.0, 31.5\n", saveKtConfigString(Data(Location(world, 5.0, 2.0, -1.5, 90F, 31.5F))))
+        assertEquals("data: null, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(LazyLocation("null", 5.0, 2.0, -1.5))))
+        assertEquals("data: test, 5.0, 2.0, -1.5\n", saveKtConfigString(Data(LazyLocation("test", 5.0, 2.0, -1.5))))
+        assertEquals("data: test, 5.0, 2.0, -1.5, 90.0, 31.5\n", saveKtConfigString(Data(LazyLocation("test", 5.0, 2.0, -1.5, 90F, 31.5F))))
         assertEquals(Data(null), ktConfigString("data: null"))
         assertEquals(Data(null), ktConfigString("data: null, 5"))
         assertEquals(Data(null), ktConfigString("data: null, 5, 2"))
-        assertEquals(Data(Location(null, 5.0, 2.0, -1.5)), ktConfigString("data: null, 5, 2, -1.5"))
-        assertEquals(Data(Location(null, 5.0, 2.0, -1.5, 30F, 0F)), ktConfigString("data: null, 5, 2, -1.5, 30"))
-        assertEquals(Data(Location(world, 5.0, 2.0, -1.5)), ktConfigString("data: test, 5, 2, -1.5"))
-        assertEquals(Data(Location(world, 5.0, 2.0, -1.5)), ktConfigString("data: test, 5, 2, -1.5, 0, 0"))
-        assertEquals(Data(Location(world, 5.0, 2.0, -1.5, 90F, 31.5F)), ktConfigString("data: test, 5, 2, -1.5, 90, 31.5"))
+        assertEquals(Data(LazyLocation("null", 5.0, 2.0, -1.5)), ktConfigString("data: null, 5, 2, -1.5"))
+        assertEquals(Data(LazyLocation("null", 5.0, 2.0, -1.5, 30F, 0F)), ktConfigString("data: null, 5, 2, -1.5, 30"))
+        assertEquals(Location(null, 5.0, 2.0, -1.5, 30F, 10F), LazyLocation("null", 5.0, 2.0, -1.5, 30F, 10F).get())
+        assertEquals(Data(LazyLocation("test", 5.0, 2.0, -1.5)), ktConfigString("data: test, 5, 2, -1.5"))
+        assertEquals(Data(LazyLocation("test", 5.0, 2.0, -1.5)), ktConfigString("data: test, 5, 2, -1.5, 0, 0"))
+        assertEquals(Data(LazyLocation("test", 5.0, 2.0, -1.5, 90F, 31.5F)), ktConfigString("data: test, 5, 2, -1.5, 90, 31.5"))
+        assertEquals(Location(world, 5.0, 2.0, -1.5, 30F, 10F), LazyLocation("test", 5.0, 2.0, -1.5, 30F, 10F).get())
     }
 
     @Test
