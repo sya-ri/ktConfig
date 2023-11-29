@@ -195,15 +195,15 @@ internal sealed class Content<T>(val type: KType) {
     }
 
     @Suppress("UNCHECKED_CAST")
-    class UseSerializerType<T>(type: KType, private val serializer: KtConfigSerializer, private val content: Content<Any?>) : Content<T>(type) {
-        override fun deserialize(deserializer: Deserializer, path: String, value: Any): T? = serializer.deserialize(content.deserialize(deserializer, path, value)) as T?
-        override fun serialize(path: String, value: T?) = content.serialize(path, serializer.serialize(value))
+    class UseSerializerType<T, Z>(type: KType, private val serializer: KtConfigSerializer<T, Z>, private val content: Content<Any?>) : Content<Z>(type) {
+        override fun deserialize(deserializer: Deserializer, path: String, value: Any): Z? = serializer.deserialize(content.deserialize(deserializer, path, value) as T)
+        override fun serialize(path: String, value: Z?) = value?.let { content.serialize(path, serializer.serialize(value)) }
 
-        class Keyable<T>(type: KType, serializer: KtConfigSerializer, content: Content<Any?>) : Content.Keyable<T>(type) {
-            private val useSerializerType = UseSerializerType<T>(type, serializer, content)
+        class Keyable<T, Z>(type: KType, serializer: KtConfigSerializer<T, Z>, content: Content<Any?>) : Content.Keyable<Z>(type) {
+            private val useSerializerType = UseSerializerType(type, serializer, content)
 
             override fun deserialize(deserializer: Deserializer, path: String, value: Any) = useSerializerType.deserialize(deserializer, path, value)
-            override fun serialize(path: String, value: T?) = useSerializerType.serialize(path, value)
+            override fun serialize(path: String, value: Z?) = useSerializerType.serialize(path, value)
         }
     }
 

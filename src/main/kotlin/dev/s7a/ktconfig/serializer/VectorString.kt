@@ -19,30 +19,22 @@ typealias VectorString = @UseSerializer(VectorStringSerializer::class) Vector
  *
  * @since 1.0.0
  */
-object VectorStringSerializer : KtConfigSerializer {
+object VectorStringSerializer : KtConfigSerializer<String, Vector> {
     override val type = typeOf<String>()
 
-    override fun deserialize(value: Any?): Vector? {
-        require(value is String)
+    override fun deserialize(value: String): Vector? {
         return runCatching {
             value.split(',').let {
+                if (it.size != 3) return null
                 val x = it[0].trim().toDouble()
                 val y = it[1].trim().toDouble()
                 val z = it[2].trim().toDouble()
-                when (it.size) {
-                    3 -> {
-                        Vector(x, y, z)
-                    }
-                    else -> {
-                        null
-                    }
-                }
+                return Vector(x, y, z)
             }
         }.getOrNull()
     }
 
-    override fun serialize(value: Any?): String {
-        require(value is Vector)
+    override fun serialize(value: Vector): String {
         return "${value.x}, ${value.y}, ${value.z}"
     }
 }

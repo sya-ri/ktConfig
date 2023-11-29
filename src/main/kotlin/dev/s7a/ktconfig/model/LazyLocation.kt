@@ -39,11 +39,10 @@ data class LazyLocation(val world: String, val x: Double, val y: Double, val z: 
      *
      * @since 1.0.0
      */
-    object Serializer : KtConfigSerializer {
+    object Serializer : KtConfigSerializer<String, LazyLocation> {
         override val type = typeOf<String>()
 
-        override fun deserialize(value: Any?): LazyLocation? {
-            require(value is String)
+        override fun deserialize(value: String): LazyLocation? {
             return runCatching {
                 value.split(',').let {
                     if (it.size !in 4..6) return null
@@ -58,8 +57,7 @@ data class LazyLocation(val world: String, val x: Double, val y: Double, val z: 
             }.getOrNull()
         }
 
-        override fun serialize(value: Any?): String {
-            require(value is LazyLocation)
+        override fun serialize(value: LazyLocation): String {
             return if (value.yaw == 0F && value.pitch == 0F) {
                 "${value.world}, ${value.x}, ${value.y}, ${value.z}"
             } else {

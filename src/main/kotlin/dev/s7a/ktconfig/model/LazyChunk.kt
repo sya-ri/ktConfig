@@ -39,11 +39,10 @@ data class LazyChunk(val world: String, val x: Int, val z: Int) {
      *
      * @since 1.0.0
      */
-    object Serializer : KtConfigSerializer {
+    object Serializer : KtConfigSerializer<String, LazyChunk> {
         override val type = typeOf<String>()
 
-        override fun deserialize(value: Any?): LazyChunk? {
-            require(value is String)
+        override fun deserialize(value: String): LazyChunk? {
             return runCatching {
                 value.split(',').let {
                     if (it.size != 3) return null
@@ -55,8 +54,7 @@ data class LazyChunk(val world: String, val x: Int, val z: Int) {
             }.getOrNull()
         }
 
-        override fun serialize(value: Any?): String {
-            require(value is LazyChunk)
+        override fun serialize(value: LazyChunk): String {
             return "${value.world}, ${value.x}, ${value.z}"
         }
     }

@@ -25,7 +25,7 @@ import kotlin.reflect.jvm.isAccessible
 internal class ContentSerializer {
     private val contentCache = mutableMapOf<Pair<KClass<*>, KType>, Content<*>>()
 
-    private fun from(type: KType, projectionMap: ProjectionMap, serializer: KtConfigSerializer): Content<out Any?> {
+    private fun from(type: KType, projectionMap: ProjectionMap, serializer: KtConfigSerializer<*, *>): Content<out Any?> {
         val content = from(serializer.type, projectionMap)
         @Suppress("UNCHECKED_CAST")
         return if (content is Content.Keyable) {
@@ -115,7 +115,7 @@ internal class ContentSerializer {
     }
 
     companion object {
-        private fun KAnnotatedElement.findSerializer(): KtConfigSerializer? {
+        private fun KAnnotatedElement.findSerializer(): KtConfigSerializer<*, *>? {
             val serializer = findAnnotation<UseSerializer>()?.with ?: return null
             return serializer.objectInstance ?: serializer.createInstance()
         }

@@ -39,11 +39,10 @@ data class LazyBlock(val world: String, val x: Int, val y: Int, val z: Int) {
      *
      * @since 1.0.0
      */
-    object Serializer : KtConfigSerializer {
+    object Serializer : KtConfigSerializer<String, LazyBlock> {
         override val type = typeOf<String>()
 
-        override fun deserialize(value: Any?): LazyBlock? {
-            require(value is String)
+        override fun deserialize(value: String): LazyBlock? {
             return runCatching {
                 value.split(',').let {
                     if (it.size != 4) return null
@@ -56,8 +55,7 @@ data class LazyBlock(val world: String, val x: Int, val y: Int, val z: Int) {
             }.getOrNull()
         }
 
-        override fun serialize(value: Any?): String {
-            require(value is LazyBlock)
+        override fun serialize(value: LazyBlock): String {
             return "${value.world}, ${value.x}, ${value.y}, ${value.z}"
         }
     }

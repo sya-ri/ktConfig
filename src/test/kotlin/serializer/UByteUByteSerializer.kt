@@ -3,14 +3,14 @@ package serializer
 import dev.s7a.ktconfig.KtConfigSerializer
 import kotlin.reflect.typeOf
 
-class UByteUByteSerializer : KtConfigSerializer {
+class UByteUByteSerializer : KtConfigSerializer<UByte, UByte> {
     override val type = typeOf<UByte>()
 
-    override fun deserialize(value: Any?): Any? {
-        return value as? UByte
+    override fun deserialize(value: UByte): UByte {
+        return value
     }
 
-    override fun serialize(value: Any?): Any? {
-        return value as? UByte
+    override fun serialize(value: UByte): UByte {
+        return value
     }
 }
