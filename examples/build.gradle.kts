@@ -3,12 +3,6 @@ import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask
 import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask.JarUrl
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
-plugins {
-    alias(libs.plugins.pluginYml.bukkit) apply false
-    alias(libs.plugins.minecraftServer) apply false
-    alias(libs.plugins.shadow) apply false
-}
-
 subprojects {
     apply(plugin = "net.minecrell.plugin-yml.bukkit")
     apply(plugin = "dev.s7a.gradle.minecraft.server")

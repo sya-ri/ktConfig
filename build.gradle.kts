@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinter)
+    alias(libs.plugins.pluginYml.bukkit) apply false
+    alias(libs.plugins.minecraftServer) apply false
+    alias(libs.plugins.shadow) apply false
     `maven-publish`
     signing
 }
