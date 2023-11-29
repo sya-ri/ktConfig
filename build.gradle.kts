@@ -66,8 +66,8 @@ publishing {
                 },
             )
             credentials {
-                username = project.properties["credentials.username"].toString()
-                password = project.properties["credentials.password"].toString()
+                username = properties["sonatypeUsername"].toString()
+                password = properties["sonatypePassword"].toString()
             }
         }
     }
@@ -104,5 +104,9 @@ publishing {
 }
 
 signing {
+    val key = properties["signingKey"]?.toString()?.replace("\\n", "\n")
+    val password = properties["signingPassword"]?.toString()
+
+    useInMemoryPgpKeys(key, password)
     sign(publishing.publications["maven"])
 }
