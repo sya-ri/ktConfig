@@ -1,11 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.9.21"
-    id("net.minecrell.plugin-yml.bukkit") version "0.6.0" apply false
-    id("org.jetbrains.kotlinx.kover") version "0.6.1"
-    id("org.jetbrains.dokka") version "1.9.10"
-    id("org.jmailen.kotlinter") version "3.13.0"
-    id("dev.s7a.gradle.minecraft.server") version "3.0.0" apply false
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.kotlinter)
     `maven-publish`
     signing
 }
@@ -37,13 +34,13 @@ repositories {
 
 dependencies {
     if (project.hasProperty("USE_SPIGOT_8")) {
-        compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
+        compileOnly(libs.spigot8)
     } else {
-        compileOnly("org.spigotmc:spigot-api:1.20.2-experimental-SNAPSHOT")
+        compileOnly(libs.spigotLatest)
     }
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.49.0")
+    testImplementation(libs.mockBukkit)
 }
 
 tasks.test {
