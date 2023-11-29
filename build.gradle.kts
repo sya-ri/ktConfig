@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kover)
@@ -41,6 +43,50 @@ dependencies {
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(libs.mockBukkit)
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    val dokkaDir = projectDir.resolve("dokka")
+    val version = version.toString()
+
+    dependencies {
+        dokkaPlugin(libs.dokka.plugin.versioning)
+    }
+    outputDirectory.set(file(dokkaDir.resolve(version)))
+    pluginsMapConfiguration.set(
+        mapOf(
+            "org.jetbrains.dokka.versioning.VersioningPlugin" to """
+                {
+                    "version": "$version",
+                    "olderVersionsDir": "$dokkaDir"
+                }
+            """.trimIndent(),
+        ),
+    )
+}
+
+tasks.named("dokkaHtml") {
+    val dokkaDir = projectDir.resolve("dokka")
+
+    doFirst {
+        dokkaDir.listFiles()?.forEach { file ->
+            if (file != null && file.isDirectory && file.name.endsWith("-SNAPSHOT")) {
+                file.deleteRecursively()
+            }
+        }
+    }
+    doLast {
+        if (version.toString().endsWith("-SNAPSHOT").not()) {
+            dokkaDir.resolve("index.html").writeText(
+                """
+                    <!DOCTYPE html>
+                    <meta charset="utf-8">
+                    <meta http-equiv="refresh" content="0; URL=./$version/">
+                    <link rel="canonical" href="./$version/">
+                """.trimIndent(),
+            )
+        }
+    }
 }
 
 tasks.test {
