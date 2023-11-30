@@ -80,7 +80,7 @@ tasks.named("dokkaHtml") {
         }
     }
     doLast {
-        if (version.toString().endsWith("-SNAPSHOT").not() || dokkaDir.listFiles(FileFilter { it.isDirectory }).isEmpty()) {
+        if (version.toString().endsWith("-SNAPSHOT").not() || dokkaDir.listFiles(FileFilter { it.isDirectory }).singleOrNull()?.name == version.toString()) {
             dokkaDir.resolve("index.html").writeText(
                 """
                     <!DOCTYPE html>
