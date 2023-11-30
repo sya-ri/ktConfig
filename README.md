@@ -1,6 +1,6 @@
 # ktConfig
 
-> **Warning**
+> [!WARNING]
 > This library is under development, so you can't use it.
 
 Spigot configuration library using Kotlin data classes.
