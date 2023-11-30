@@ -1,4 +1,5 @@
 import org.jetbrains.dokka.gradle.DokkaTask
+import java.io.FileFilter
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -79,7 +80,7 @@ tasks.named("dokkaHtml") {
         }
     }
     doLast {
-        if (version.toString().endsWith("-SNAPSHOT").not() || dokkaDir.listFiles().isEmpty()) {
+        if (version.toString().endsWith("-SNAPSHOT").not() || dokkaDir.listFiles(FileFilter { it.isDirectory }).isEmpty()) {
             dokkaDir.resolve("index.html").writeText(
                 """
                     <!DOCTYPE html>
