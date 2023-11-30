@@ -34,10 +34,10 @@ class UseSerializerTest {
 
         assertEquals(
             """
-                data:
-                  1, 2: 3
-                  3, 4: 5
-                
+            data:
+              1, 2: 3
+              3, 4: 5
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf((1 to 2) to 3, (3 to 4) to 5))),
         )
@@ -45,9 +45,9 @@ class UseSerializerTest {
             Data(mapOf((1 to 3) to 5, (2 to 4) to 6)),
             ktConfigString(
                 """
-                    data:
-                      1, 3: 5
-                      2, 4: 6
+                data:
+                  1, 3: 5
+                  2, 4: 6
                 """.trimIndent(),
             ),
         )

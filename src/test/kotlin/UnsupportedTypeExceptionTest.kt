@@ -54,6 +54,7 @@ class UnsupportedTypeExceptionTest {
     @Test
     fun mapKeyNest() {
         data class Data1(val data: Map<String?, String>)
+
         data class Data(val data: Data1)
 
         assertFailsWith<UnsupportedTypeException> {

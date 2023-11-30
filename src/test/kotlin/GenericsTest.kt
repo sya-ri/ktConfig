@@ -5,8 +5,11 @@ import kotlin.test.assertEquals
 
 class GenericsTest {
     private data class Data<T>(val data: T)
+
     private data class ListData<T>(val data: List<T>)
+
     private data class ListListData<T>(val data: List<List<T>>)
+
     private data class MapData<T, U>(val data: Map<T, U>)
 
     @Test
@@ -18,34 +21,34 @@ class GenericsTest {
         assertEquals("", saveKtConfigString(Data<Boolean?>(null)))
         assertEquals(
             """
-                data:
-                - hello
-                
+            data:
+            - hello
+            
             """.trimIndent(),
             saveKtConfigString(ListData(listOf("hello"))),
         )
         assertEquals(
             """
-                data:
-                - 5
-                
+            data:
+            - 5
+            
             """.trimIndent(),
             saveKtConfigString(ListData(listOf(5))),
         )
         assertEquals(
             """
-                data:
-                - - hello
-                
+            data:
+            - - hello
+            
             """.trimIndent(),
             saveKtConfigString(ListListData(listOf(listOf("hello")))),
         )
         assertEquals(
             """
-                data:
-                  a: 1
-                  b: 2
-                
+            data:
+              a: 1
+              b: 2
+            
             """.trimIndent(),
             saveKtConfigString(MapData(mapOf("a" to 1, "b" to 2))),
         )

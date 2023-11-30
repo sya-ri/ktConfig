@@ -6,7 +6,9 @@ import dev.s7a.ktconfig.exception.UnsupportedTypeException
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.UUID
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashMap
@@ -25,7 +27,11 @@ import kotlin.reflect.jvm.isAccessible
 internal class ContentSerializer {
     private val contentCache = mutableMapOf<Pair<KClass<*>, KType>, Content<*>>()
 
-    private fun from(type: KType, projectionMap: ProjectionMap, serializer: KtConfigSerializer<*, *>): Content<out Any?> {
+    private fun from(
+        type: KType,
+        projectionMap: ProjectionMap,
+        serializer: KtConfigSerializer<*, *>,
+    ): Content<out Any?> {
         val content = from(serializer.type, projectionMap)
         @Suppress("UNCHECKED_CAST")
         return if (content is Content.Keyable) {
@@ -35,7 +41,10 @@ internal class ContentSerializer {
         }
     }
 
-    private fun from(type: KType, projectionMap: ProjectionMap): Content<out Any?> {
+    private fun from(
+        type: KType,
+        projectionMap: ProjectionMap,
+    ): Content<out Any?> {
         type.findSerializer()?.let { serializer ->
             return from(type, projectionMap, serializer)
         }
@@ -103,13 +112,18 @@ internal class ContentSerializer {
         }
     }
 
-    fun <T : Any> section(clazz: KClass<T>, type: KType, projectionMap: ProjectionMap): Content.SectionType<T> {
+    fun <T : Any> section(
+        clazz: KClass<T>,
+        type: KType,
+        projectionMap: ProjectionMap,
+    ): Content.SectionType<T> {
         val constructor = clazz.primaryConstructor ?: throw UnsupportedTypeException(type, "primary constructor must be defined")
         constructor.isAccessible = true
-        val contents = constructor.parameters.associateWith {
-            @Suppress("UNCHECKED_CAST")
-            from(projectionMap.type(it.type), projectionMap) as Content<Any?>
-        }
+        val contents =
+            constructor.parameters.associateWith {
+                @Suppress("UNCHECKED_CAST")
+                from(projectionMap.type(it.type), projectionMap) as Content<Any?>
+            }
         val properties = clazz.memberProperties
         return Content.SectionType(type, constructor, properties, contents)
     }

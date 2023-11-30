@@ -21,7 +21,10 @@ internal value class ProjectionMap private constructor(private val map: Map<KTyp
         return map[type.classifier]?.type ?: type
     }
 
-    fun typeArgument(type: KType, index: Int): KType {
+    fun typeArgument(
+        type: KType,
+        index: Int,
+    ): KType {
         return type(type.arguments[index].type!!)
     }
 }

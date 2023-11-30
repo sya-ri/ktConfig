@@ -22,31 +22,47 @@ internal object SnakeYamlReflection {
 
     init {
         val safeConstructorClass = SafeConstructor::class.java
-        safeConstructorMethod = try {
-            val loaderOptionsClass = Class.forName("org.yaml.snakeyaml.LoaderOptions")
-            val constructor = safeConstructorClass.getConstructor(loaderOptionsClass)
-            val loaderOptionsConstructor = loaderOptionsClass.getConstructor()
-            SafeConstructorMethod {
-                constructor.newInstance(loaderOptionsConstructor.newInstance())
+        safeConstructorMethod =
+            try {
+                val loaderOptionsClass = Class.forName("org.yaml.snakeyaml.LoaderOptions")
+                val constructor = safeConstructorClass.getConstructor(loaderOptionsClass)
+                val loaderOptionsConstructor = loaderOptionsClass.getConstructor()
+                SafeConstructorMethod {
+                    constructor.newInstance(loaderOptionsConstructor.newInstance())
+                }
+            } catch (_: ClassNotFoundException) {
+                val constructor = safeConstructorClass.getConstructor()
+                SafeConstructorMethod {
+                    constructor.newInstance()
+                }
             }
-        } catch (_: ClassNotFoundException) {
-            val constructor = safeConstructorClass.getConstructor()
-            SafeConstructorMethod {
-                constructor.newInstance()
-            }
-        }
         val scalarNodeClass = ScalarNode::class.java
-        scalarNodeConstructorMethod = try {
-            val constructor = scalarNodeClass.getConstructor(Tag::class.java, String::class.java, Mark::class.java, Mark::class.java, DumperOptions.ScalarStyle::class.java)
-            ScalarNodeConstructorMethod {
-                constructor.newInstance(Tag.STR, it, null, null, DumperOptions.ScalarStyle.PLAIN)
+        scalarNodeConstructorMethod =
+            try {
+                val constructor =
+                    scalarNodeClass.getConstructor(
+                        Tag::class.java,
+                        String::class.java,
+                        Mark::class.java,
+                        Mark::class.java,
+                        DumperOptions.ScalarStyle::class.java,
+                    )
+                ScalarNodeConstructorMethod {
+                    constructor.newInstance(Tag.STR, it, null, null, DumperOptions.ScalarStyle.PLAIN)
+                }
+            } catch (_: NoSuchMethodException) {
+                val constructor =
+                    scalarNodeClass.getConstructor(
+                        Tag::class.java,
+                        String::class.java,
+                        Mark::class.java,
+                        Mark::class.java,
+                        Char::class.java,
+                    )
+                ScalarNodeConstructorMethod {
+                    constructor.newInstance(Tag.STR, it, null, null, null)
+                }
             }
-        } catch (_: NoSuchMethodException) {
-            val constructor = scalarNodeClass.getConstructor(Tag::class.java, String::class.java, Mark::class.java, Mark::class.java, Char::class.java)
-            ScalarNodeConstructorMethod {
-                constructor.newInstance(Tag.STR, it, null, null, null)
-            }
-        }
     }
 
     fun getSafeConstructor(): SafeConstructor {

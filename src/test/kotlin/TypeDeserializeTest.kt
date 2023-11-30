@@ -36,7 +36,7 @@ class TypeDeserializeTest {
             Data("a", "abc"),
             ktConfigString(
                 """
-                    value: a
+                value: a
                 """.trimIndent(),
             ),
         )
@@ -44,8 +44,8 @@ class TypeDeserializeTest {
             Data("a", "abc"),
             ktConfigString(
                 """
-                    value: a
-                    ignore: value
+                value: a
+                ignore: value
                 """.trimIndent(),
             ),
         )
@@ -53,8 +53,8 @@ class TypeDeserializeTest {
             Data("a", "b"),
             ktConfigString(
                 """
-                    value: a
-                    optional: b
+                value: a
+                optional: b
                 """.trimIndent(),
             ),
         )
@@ -62,15 +62,15 @@ class TypeDeserializeTest {
             Data("a", "abc"),
             ktConfigString(
                 """
-                    value: a
-                    optional: null
+                value: a
+                optional: null
                 """.trimIndent(),
             ),
         )
         assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>(
                 """
-                    value: null
+                value: null
                 """.trimIndent(),
             )
         }
@@ -337,13 +337,13 @@ class TypeDeserializeTest {
             Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F)),
             ktConfigString(
                 """
-                    data:
-                      ==: org.bukkit.Location
-                      x: 1.2
-                      y: -5.0
-                      z: 3.4
-                      yaw: 10.5
-                      pitch: -42.6
+                data:
+                  ==: org.bukkit.Location
+                  x: 1.2
+                  y: -5.0
+                  z: 3.4
+                  yaw: 10.5
+                  pitch: -42.6
                 """.trimIndent(),
             ),
         )
@@ -377,10 +377,10 @@ class TypeDeserializeTest {
             Data("zero" to 0),
             ktConfigString(
                 """
-                    data:
-                      first: zero
-                      second: 0
-                    
+                data:
+                  first: zero
+                  second: 0
+                
                 """.trimIndent(),
             ),
         )
@@ -394,11 +394,11 @@ class TypeDeserializeTest {
             Data(Triple("zero", 0, 0.0)),
             ktConfigString(
                 """
-                    data:
-                      first: zero
-                      second: 0
-                      third: 0.0
-                    
+                data:
+                  first: zero
+                  second: 0
+                  third: 0.0
+                
                 """.trimIndent(),
             ),
         )

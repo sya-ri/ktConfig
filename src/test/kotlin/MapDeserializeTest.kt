@@ -17,11 +17,11 @@ class MapDeserializeTest {
             Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")),
             ktConfigString(
                 """
-                    data:
-                      a: b
-                      c: d
-                      null: e
-                      5: f
+                data:
+                  a: b
+                  c: d
+                  null: e
+                  5: f
                 """.trimIndent(),
             ),
         )
@@ -35,10 +35,10 @@ class MapDeserializeTest {
             Data(mapOf(0 to "ab", -1 to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      -1: c
+                data:
+                  0: ab
+                  c: ignore
+                  -1: c
                 """.trimIndent(),
             ),
         )
@@ -52,10 +52,10 @@ class MapDeserializeTest {
             Data(mapOf(0U to "ab", UInt.MAX_VALUE to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      ${UInt.MAX_VALUE}: c
+                data:
+                  0: ab
+                  c: ignore
+                  ${UInt.MAX_VALUE}: c
                 """.trimIndent(),
             ),
         )
@@ -69,10 +69,10 @@ class MapDeserializeTest {
             Data(mapOf(true to "ab", false to "c")),
             ktConfigString(
                 """
-                    data:
-                      true: ab
-                      c: ignore
-                      false: c
+                data:
+                  true: ab
+                  c: ignore
+                  false: c
                 """.trimIndent(),
             ),
         )
@@ -86,12 +86,12 @@ class MapDeserializeTest {
             Data(mapOf(0.5F to "ab", 1.0F to "c", Float.MAX_VALUE to "d", Float.MIN_VALUE to "e")),
             ktConfigString(
                 """
-                    data:
-                      0.5: ab
-                      1.0: c
-                      3.4028235E38: d
-                      1.4E-45: e
-                    
+                data:
+                  0.5: ab
+                  1.0: c
+                  3.4028235E38: d
+                  1.4E-45: e
+                
                 """.trimIndent(),
             ),
         )
@@ -105,12 +105,12 @@ class MapDeserializeTest {
             Data(mapOf(0.5 to "ab", 1.0 to "c", Double.MAX_VALUE to "d", Double.MIN_VALUE to "e")),
             ktConfigString(
                 """
-                    data:
-                      0.5: ab
-                      1.0: c
-                      1.7976931348623157E308: d
-                      4.9E-324: e
-                    
+                data:
+                  0.5: ab
+                  1.0: c
+                  1.7976931348623157E308: d
+                  4.9E-324: e
+                
                 """.trimIndent(),
             ),
         )
@@ -124,10 +124,10 @@ class MapDeserializeTest {
             Data(mapOf(0L to "ab", -1L to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      -1: c
+                data:
+                  0: ab
+                  c: ignore
+                  -1: c
                 """.trimIndent(),
             ),
         )
@@ -141,10 +141,10 @@ class MapDeserializeTest {
             Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      ${ULong.MAX_VALUE}: c
+                data:
+                  0: ab
+                  c: ignore
+                  ${ULong.MAX_VALUE}: c
                 """.trimIndent(),
             ),
         )
@@ -158,11 +158,11 @@ class MapDeserializeTest {
             Data(mapOf(0.toByte() to "ab", (-1).toByte() to "c", 0x5E.toByte() to "d")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      -1: c
-                      0x5E: d
+                data:
+                  0: ab
+                  c: ignore
+                  -1: c
+                  0x5E: d
                 """.trimIndent(),
             ),
         )
@@ -176,11 +176,11 @@ class MapDeserializeTest {
             Data(mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      ${UByte.MAX_VALUE}: c
-                      0x5E: d
+                data:
+                  0: ab
+                  c: ignore
+                  ${UByte.MAX_VALUE}: c
+                  0x5E: d
                 """.trimIndent(),
             ),
         )
@@ -194,10 +194,10 @@ class MapDeserializeTest {
             Data(mapOf('0' to "ab", 'd' to "e")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      cc: ignore
-                      d: e
+                data:
+                  0: ab
+                  cc: ignore
+                  d: e
                 """.trimIndent(),
             ),
         )
@@ -211,10 +211,10 @@ class MapDeserializeTest {
             Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      -1: c
+                data:
+                  0: ab
+                  c: ignore
+                  -1: c
                 """.trimIndent(),
             ),
         )
@@ -228,10 +228,10 @@ class MapDeserializeTest {
             Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      ${UShort.MAX_VALUE}: c
+                data:
+                  0: ab
+                  c: ignore
+                  ${UShort.MAX_VALUE}: c
                 """.trimIndent(),
             ),
         )
@@ -245,10 +245,10 @@ class MapDeserializeTest {
             Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c")),
             ktConfigString(
                 """
-                    data:
-                      0: ab
-                      c: ignore
-                      1000000000000000000000000000: c
+                data:
+                  0: ab
+                  c: ignore
+                  1000000000000000000000000000: c
                 """.trimIndent(),
             ),
         )
@@ -259,15 +259,22 @@ class MapDeserializeTest {
         data class Data(val data: Map<BigDecimal, String>)
 
         assertEquals(
-            Data(mapOf(BigDecimal.ZERO to "ab", BigDecimal("1000000000000000000000000000") to "c", BigDecimal("1.0E-100") to "d", BigDecimal("1.0E-1000") to "e")),
+            Data(
+                mapOf(
+                    BigDecimal.ZERO to "ab",
+                    BigDecimal("1000000000000000000000000000") to "c",
+                    BigDecimal("1.0E-100") to "d",
+                    BigDecimal("1.0E-1000") to "e",
+                ),
+            ),
             ktConfigString(
                 """
-                    data:
-                      '0': ab
-                      'c': ignore
-                      '1000000000000000000000000000': c
-                      '1.0E-100': d
-                      '1.0E-1000': e
+                data:
+                  '0': ab
+                  'c': ignore
+                  '1000000000000000000000000000': c
+                  '1.0E-100': d
+                  '1.0E-1000': e
                 """.trimIndent(),
             ),
         )
@@ -281,10 +288,10 @@ class MapDeserializeTest {
             Data(mapOf(Date(946771200000) to "ab", Date(946856085000) to "c", Date(946856085678) to "d")),
             ktConfigString(
                 """
-                    data:
-                      '2000-01-02T00:00:00Z': ab
-                      '2000-01-02T23:34:45Z': c
-                      '2000-01-02T23:34:45.678Z': d
+                data:
+                  '2000-01-02T00:00:00Z': ab
+                  '2000-01-02T23:34:45Z': c
+                  '2000-01-02T23:34:45.678Z': d
                 """.trimIndent(),
             ),
         )
@@ -302,10 +309,10 @@ class MapDeserializeTest {
             Data(mapOf(calendar(946771200000) to "ab", calendar(946856085000) to "c", calendar(946856085678) to "d")),
             ktConfigString(
                 """
-                    data:
-                      '2000-01-02T01:00:00+01:00': ab
-                      '2000-01-02T23:34:45Z': c
-                      '2000-01-02T23:34:45.678Z': d
+                data:
+                  '2000-01-02T01:00:00+01:00': ab
+                  '2000-01-02T23:34:45Z': c
+                  '2000-01-02T23:34:45.678Z': d
                 """.trimIndent(),
             ),
         )
@@ -320,9 +327,9 @@ class MapDeserializeTest {
             Data(mapOf(uuid to "ab")),
             ktConfigString(
                 """
-                    data:
-                      $uuid: ab
-                      c: ignore
+                data:
+                  $uuid: ab
+                  c: ignore
                 """.trimIndent(),
             ),
         )
@@ -340,9 +347,9 @@ class MapDeserializeTest {
             Data(mapOf(EnumValue.Value1 to "ab")),
             ktConfigString(
                 """
-                    data:
-                      Value1: ab
-                      c: ignore
+                data:
+                  Value1: ab
+                  c: ignore
                 """.trimIndent(),
             ),
         )
@@ -364,15 +371,15 @@ class MapDeserializeTest {
             ),
             ktConfigString(
                 """
-                    data:
-                      - a: b
-                        c: d
-                        null: e
-                        5: f
-                      - g: h
-                      - {}
-                      - 'null': i
-                      - j: k
+                data:
+                  - a: b
+                    c: d
+                    null: e
+                    5: f
+                  - g: h
+                  - {}
+                  - 'null': i
+                  - j: k
                 """.trimIndent(),
             ),
         )

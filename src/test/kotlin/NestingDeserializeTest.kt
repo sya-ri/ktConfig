@@ -6,14 +6,15 @@ class NestingDeserializeTest {
     @Test
     fun another() {
         data class Data1(val data: String)
+
         data class Data2(val data1: Data1)
 
         assertEquals(
             Data2(Data1("hello")),
             ktConfigString(
                 """
-                    data1:
-                      data: hello
+                data1:
+                  data: hello
                 """.trimIndent(),
             ),
         )
@@ -22,15 +23,16 @@ class NestingDeserializeTest {
     @Test
     fun another_map() {
         data class Data1(val data: String)
+
         data class Data2(val data1: Map<String, Data1>)
 
         assertEquals(
             Data2(mapOf("one" to Data1("hello"))),
             ktConfigString(
                 """
-                    data1:
-                      one:
-                        data: hello
+                data1:
+                  one:
+                    data: hello
                 """.trimIndent(),
             ),
         )
@@ -44,12 +46,12 @@ class NestingDeserializeTest {
             Data(1, Data(21, Data(302, null))),
             ktConfigString(
                 """
-                    int: 1
-                    data:
-                      int: 21
-                      data:
-                        int: 302
-                        data: null
+                int: 1
+                data:
+                  int: 21
+                  data:
+                    int: 302
+                    data: null
                 """.trimIndent(),
             ),
         )

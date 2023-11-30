@@ -168,7 +168,10 @@ class TypeSerializeTest {
     fun calendar() {
         data class Data(val data: Calendar)
 
-        fun calendar(date: Long, zoneId: String): Calendar {
+        fun calendar(
+            date: Long,
+            zoneId: String,
+        ): Calendar {
             return Calendar.getInstance(TimeZone.getTimeZone(zoneId)).apply { this.time = Date(date) }
         }
 
@@ -194,14 +197,14 @@ class TypeSerializeTest {
 
         assertEquals(
             """
-                data:
-                  ==: org.bukkit.Location
-                  x: 1.2
-                  y: -5.0
-                  z: 3.4
-                  pitch: -42.6
-                  yaw: 10.5
-                
+            data:
+              ==: org.bukkit.Location
+              x: 1.2
+              y: -5.0
+              z: 3.4
+              pitch: -42.6
+              yaw: 10.5
+            
             """.trimIndent(),
             saveKtConfigString(
                 Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F)),
@@ -234,10 +237,10 @@ class TypeSerializeTest {
 
         assertEquals(
             """
-                data:
-                  first: zero
-                  second: 0
-                
+            data:
+              first: zero
+              second: 0
+            
             """.trimIndent(),
             saveKtConfigString(
                 Data("zero" to 0),
@@ -251,11 +254,11 @@ class TypeSerializeTest {
 
         assertEquals(
             """
-                data:
-                  first: zero
-                  second: 0
-                  third: 0.0
-                
+            data:
+              first: zero
+              second: 0
+              third: 0.0
+            
             """.trimIndent(),
             saveKtConfigString(
                 Data(Triple("zero", 0, 0.0)),

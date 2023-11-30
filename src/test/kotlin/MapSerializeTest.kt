@@ -15,12 +15,12 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  a: b
-                  c: d
-                  'null': e
-                  '5': f
-                
+            data:
+              a: b
+              c: d
+              'null': e
+              '5': f
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
@@ -32,11 +32,11 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  -1: c
-                  2147483647: d
-                  -2147483648: e
+            data:
+              0: ab
+              -1: c
+              2147483647: d
+              -2147483648: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0 to "ab", -1 to "c", Int.MAX_VALUE to "d", Int.MIN_VALUE to "e"))),
@@ -49,10 +49,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  4294967295: c
-                
+            data:
+              0: ab
+              4294967295: c
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0U to "ab", UInt.MAX_VALUE to "c"))),
         )
@@ -64,10 +64,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  true: ab
-                  false: c
-                
+            data:
+              true: ab
+              false: c
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(true to "ab", false to "c"))),
         )
@@ -79,12 +79,12 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0.5: ab
-                  1.0: c
-                  3.4028235E38: d
-                  1.4E-45: e
-                
+            data:
+              0.5: ab
+              1.0: c
+              3.4028235E38: d
+              1.4E-45: e
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.5F to "ab", 1.0F to "c", Float.MAX_VALUE to "d", Float.MIN_VALUE to "e"))),
         )
@@ -96,12 +96,12 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0.5: ab
-                  1.0: c
-                  1.7976931348623157E308: d
-                  4.9E-324: e
-                
+            data:
+              0.5: ab
+              1.0: c
+              1.7976931348623157E308: d
+              4.9E-324: e
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.5 to "ab", 1.0 to "c", Double.MAX_VALUE to "d", Double.MIN_VALUE to "e"))),
         )
@@ -113,11 +113,11 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  -1: c
-                  9223372036854775807: d
-                  -9223372036854775808: e
+            data:
+              0: ab
+              -1: c
+              9223372036854775807: d
+              -9223372036854775808: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0L to "ab", -1L to "c", Long.MAX_VALUE to "d", Long.MIN_VALUE to "e"))),
@@ -130,10 +130,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  18446744073709551615: c
-                
+            data:
+              0: ab
+              18446744073709551615: c
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c"))),
         )
@@ -145,12 +145,12 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  94: d
-                  127: e
-                  -128: f
-                
+            data:
+              0: ab
+              94: d
+              127: e
+              -128: f
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toByte() to "ab", 0x5E.toByte() to "d", Byte.MAX_VALUE to "e", Byte.MIN_VALUE to "f"))),
         )
@@ -162,10 +162,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  255: c
-                  94: d
+            data:
+              0: ab
+              255: c
+              94: d
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d"))),
@@ -178,10 +178,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  '0': ab
-                  d: e
-                
+            data:
+              '0': ab
+              d: e
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf('0' to "ab", 'd' to "e"))),
         )
@@ -193,11 +193,11 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  -1: c
-                  32767: d
-                  -32768: e
+            data:
+              0: ab
+              -1: c
+              32767: d
+              -32768: e
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c", Short.MAX_VALUE to "d", Short.MIN_VALUE to "e"))),
@@ -210,9 +210,9 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  65535: c
+            data:
+              0: ab
+              65535: c
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c"))),
@@ -225,9 +225,9 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  0: ab
-                  1000000000000000000000000000: c
+            data:
+              0: ab
+              1000000000000000000000000000: c
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c"))),
@@ -240,14 +240,23 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  '0': ab
-                  '1000000000000000000000000000': c
-                  '1.0E-100': d
-                  '1.0E-1000': e
+            data:
+              '0': ab
+              '1000000000000000000000000000': c
+              '1.0E-100': d
+              '1.0E-1000': e
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(BigDecimal.ZERO to "ab", BigDecimal("1000000000000000000000000000") to "c", BigDecimal("1.0E-100") to "d", BigDecimal("1.0E-1000") to "e"))),
+            saveKtConfigString(
+                Data(
+                    mapOf(
+                        BigDecimal.ZERO to "ab",
+                        BigDecimal("1000000000000000000000000000") to "c",
+                        BigDecimal("1.0E-100") to "d",
+                        BigDecimal("1.0E-1000") to "e",
+                    ),
+                ),
+            ),
         )
     }
 
@@ -257,10 +266,10 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  2000-01-02T00:00:00Z: ab
-                  2000-01-02T23:34:45Z: c
-                  2000-01-02T23:34:45.678Z: d
+            data:
+              2000-01-02T00:00:00Z: ab
+              2000-01-02T23:34:45Z: c
+              2000-01-02T23:34:45.678Z: d
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(Date(946771200000) to "ab", Date(946856085000) to "c", Date(946856085678) to "d"))),
@@ -271,19 +280,30 @@ class MapSerializeTest {
     fun calendar_string_map() {
         data class Data(val data: Map<Calendar, String>)
 
-        fun calendar(date: Long, zoneId: String): Calendar {
+        fun calendar(
+            date: Long,
+            zoneId: String,
+        ): Calendar {
             return Calendar.getInstance(TimeZone.getTimeZone(zoneId)).apply { this.time = Date(date) }
         }
 
         assertEquals(
             """
-                data:
-                  2000-01-02T00:00:00Z: ab
-                  2000-01-02T23:34:45Z: c
-                  2000-01-02T23:34:45.678Z: d
+            data:
+              2000-01-02T00:00:00Z: ab
+              2000-01-02T23:34:45Z: c
+              2000-01-02T23:34:45.678Z: d
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(calendar(946771200000, "UTC") to "ab", calendar(946856085000, "UTC") to "c", calendar(946856085678, "GMT-01:00") to "d"))),
+            saveKtConfigString(
+                Data(
+                    mapOf(
+                        calendar(946771200000, "UTC") to "ab",
+                        calendar(946856085000, "UTC") to "c",
+                        calendar(946856085678, "GMT-01:00") to "d",
+                    ),
+                ),
+            ),
         )
     }
 
@@ -294,8 +314,8 @@ class MapSerializeTest {
         val uuid = UUID.randomUUID()
         assertEquals(
             """
-                data:
-                  $uuid: ab
+            data:
+              $uuid: ab
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(uuid to "ab"))),
@@ -312,8 +332,8 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                  Value1: ab
+            data:
+              Value1: ab
 
             """.trimIndent(),
             saveKtConfigString(Data(mapOf(EnumValue.Value1 to "ab"))),
@@ -326,16 +346,16 @@ class MapSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a: b
-                  c: d
-                  'null': e
-                  '5': f
-                - g: h
-                - {}
-                - 'null': i
-                - j: k
-                
+            data:
+            - a: b
+              c: d
+              'null': e
+              '5': f
+            - g: h
+            - {}
+            - 'null': i
+            - j: k
+            
             """.trimIndent(),
             saveKtConfigString(
                 Data(

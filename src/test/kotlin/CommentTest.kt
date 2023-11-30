@@ -11,11 +11,11 @@ class CommentTest {
 
         assertEquals(
             """
-                # line1
-                # line2
-                
-                data: hello
-                
+            # line1
+            # line2
+            
+            data: hello
+            
             """.trimIndent(),
             saveKtConfigString(Data("hello")),
         )
@@ -30,10 +30,10 @@ class CommentTest {
 
         assertEquals(
             """
-                # line1
-                # line2
-                data: hello
-                
+            # line1
+            # line2
+            data: hello
+            
             """.trimIndent(),
             saveKtConfigString(Data("hello")),
         )
@@ -65,14 +65,14 @@ class CommentTest {
 
         assertEquals(
             """
-                # data2
-                
-                # data1
-                data1:
-                  # line1
-                  # line2
-                  data: hello
-                
+            # data2
+            
+            # data1
+            data1:
+              # line1
+              # line2
+              data: hello
+            
             """.trimIndent(),
             saveKtConfigString(Data2(Data1("hello"))),
         )

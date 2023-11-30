@@ -72,8 +72,8 @@ class TypeMismatchExceptionTest {
         assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>(
                 """
-                    data:
-                      1: not-null
+                data:
+                  1: not-null
                 """.trimIndent(),
                 KtConfigSetting(strictMapElement = true),
             )
@@ -84,8 +84,8 @@ class TypeMismatchExceptionTest {
         assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>(
                 """
-                    data:
-                      not-null: 1
+                data:
+                  not-null: 1
                 """.trimIndent(),
                 KtConfigSetting(strictMapElement = true),
             )
@@ -96,8 +96,8 @@ class TypeMismatchExceptionTest {
         assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>(
                 """
-                    data:
-                      not-null: not-null
+                data:
+                  not-null: not-null
                 """.trimIndent(),
                 KtConfigSetting(strictMapElement = true),
             )

@@ -13,8 +13,8 @@ class CollectionDeserializeTest {
             Data(listOf("[a]")),
             ktConfigString(
                 """
-                    data:
-                     - - a
+                data:
+                 - - a
                 """.trimIndent(),
             ),
         )
@@ -75,7 +75,10 @@ class CollectionDeserializeTest {
     fun ulong_list() {
         data class Data(val data: List<ULong>)
 
-        assertEquals(Data(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE)), ktConfigString("data: [1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]"))
+        assertEquals(
+            Data(listOf(1U, ULong.MAX_VALUE, ULong.MIN_VALUE)),
+            ktConfigString("data: [1, ${ULong.MAX_VALUE}, ${ULong.MIN_VALUE}]"),
+        )
     }
 
     @Test
@@ -117,7 +120,10 @@ class CollectionDeserializeTest {
     fun string_list_list() {
         data class Data(val data: List<List<String>>)
 
-        assertEquals(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))), ktConfigString("data: [[a, bc, def], [g], [], [hi]]"))
+        assertEquals(
+            Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))),
+            ktConfigString("data: [[a, bc, def], [g], [], [hi]]"),
+        )
     }
 
     @Test
@@ -159,12 +165,12 @@ class CollectionDeserializeTest {
             mapOf(1 to 2, 3 to 4, 5 to 6),
             ktConfigString<Data>(
                 """
-                    data:
-                      1: 2
-                      3: 4
-                      null: 0
-                      5: 6
-                      7: null
+                data:
+                  1: 2
+                  3: 4
+                  null: 0
+                  5: 6
+                  7: null
                 """.trimIndent(),
             )?.data,
         )
@@ -178,11 +184,11 @@ class CollectionDeserializeTest {
             mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
             ktConfigString<Data>(
                 """
-                    data:
-                      a: b
-                      c: d
-                      null: e
-                      5: f
+                data:
+                  a: b
+                  c: d
+                  null: e
+                  5: f
                 """.trimIndent(),
             )?.data,
         )
@@ -196,11 +202,11 @@ class CollectionDeserializeTest {
             hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
             ktConfigString<Data>(
                 """
-                    data:
-                      a: b
-                      c: d
-                      null: e
-                      5: f
+                data:
+                  a: b
+                  c: d
+                  null: e
+                  5: f
                 """.trimIndent(),
             )?.data,
         )
@@ -214,11 +220,11 @@ class CollectionDeserializeTest {
             linkedMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"),
             ktConfigString<Data>(
                 """
-                    data:
-                      a: b
-                      c: d
-                      null: e
-                      5: f
+                data:
+                  a: b
+                  c: d
+                  null: e
+                  5: f
                 """.trimIndent(),
             )?.data,
         )

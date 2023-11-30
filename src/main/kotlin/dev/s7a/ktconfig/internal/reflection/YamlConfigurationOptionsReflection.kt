@@ -5,11 +5,18 @@ import org.bukkit.configuration.file.YamlConfigurationOptions
 
 internal object YamlConfigurationOptionsReflection {
     private fun interface SetHeaderCommentMethod {
-        fun invoke(options: YamlConfigurationOptions, comments: List<String>)
+        fun invoke(
+            options: YamlConfigurationOptions,
+            comments: List<String>,
+        )
     }
 
     private fun interface SetValueCommentMethod {
-        fun invoke(section: ConfigurationSection, path: String, comment: List<String>?)
+        fun invoke(
+            section: ConfigurationSection,
+            path: String,
+            comment: List<String>?,
+        )
     }
 
     private val setHeaderCommentMethod: SetHeaderCommentMethod
@@ -17,26 +24,28 @@ internal object YamlConfigurationOptionsReflection {
 
     init {
         val optionsClass = YamlConfigurationOptions::class.java
-        setHeaderCommentMethod = try {
-            val method = optionsClass.getMethod("setHeader", List::class.java)
-            SetHeaderCommentMethod { options, comments ->
-                method.invoke(options, comments)
+        setHeaderCommentMethod =
+            try {
+                val method = optionsClass.getMethod("setHeader", List::class.java)
+                SetHeaderCommentMethod { options, comments ->
+                    method.invoke(options, comments)
+                }
+            } catch (_: NoSuchMethodException) {
+                val method = optionsClass.getMethod("header", String::class.java)
+                SetHeaderCommentMethod { options, comments ->
+                    method.invoke(options, comments.joinToString("\n"))
+                }
             }
-        } catch (_: NoSuchMethodException) {
-            val method = optionsClass.getMethod("header", String::class.java)
-            SetHeaderCommentMethod { options, comments ->
-                method.invoke(options, comments.joinToString("\n"))
-            }
-        }
         val sectionClass = ConfigurationSection::class.java
-        setValueCommentMethod = try {
-            val method = sectionClass.getMethod("setComments", String::class.java, List::class.java)
-            SetValueCommentMethod { section, path, comments ->
-                method.invoke(section, path, comments)
+        setValueCommentMethod =
+            try {
+                val method = sectionClass.getMethod("setComments", String::class.java, List::class.java)
+                SetValueCommentMethod { section, path, comments ->
+                    method.invoke(section, path, comments)
+                }
+            } catch (_: NoSuchMethodException) {
+                SetValueCommentMethod { _, _, _ -> } // Unsupported old version
             }
-        } catch (_: NoSuchMethodException) {
-            SetValueCommentMethod { _, _, _ -> } // Unsupported old version
-        }
     }
 
     fun YamlConfigurationOptions.setHeaderComment(comment: List<String>?) {
@@ -45,7 +54,10 @@ internal object YamlConfigurationOptionsReflection {
         }
     }
 
-    fun ConfigurationSection.setComment(path: String, comment: List<String>?) {
+    fun ConfigurationSection.setComment(
+        path: String,
+        comment: List<String>?,
+    ) {
         setValueCommentMethod.invoke(this, path, comment)
     }
 }

@@ -13,8 +13,8 @@ class PropertyTest {
 
         assertEquals(
             """
-                value1: 3
-                
+            value1: 3
+            
             """.trimIndent(),
             saveKtConfigString(Data(3)),
         )
@@ -28,8 +28,8 @@ class PropertyTest {
 
         assertEquals(
             """
-                value1: 3
-                
+            value1: 3
+            
             """.trimIndent(),
             saveKtConfigString(Data(3)),
         )
@@ -44,8 +44,8 @@ class PropertyTest {
 
         assertEquals(
             """
-                value1: 6
-                
+            value1: 6
+            
             """.trimIndent(),
             saveKtConfigString(Data(3)),
         )
@@ -60,8 +60,8 @@ class PropertyTest {
 
         assertEquals(
             """
-                value1: 3
-                
+            value1: 3
+            
             """.trimIndent(),
             saveKtConfigString(Data(3)),
         )
@@ -77,9 +77,9 @@ class PropertyTest {
 
         assertEquals(
             """
-                    value1: 3
-                    value2: 5
-                    
+            value1: 3
+            value2: 5
+            
             """.trimIndent(),
             saveKtConfigString(Data(3, 5)),
         )
@@ -95,27 +95,28 @@ class PropertyTest {
         open class Base(val value3: Int) {
             open val value2: Int = 9
         }
+
         class Data(val value1: Int, override val value2: Int) : Base(7)
 
         assertEquals(
             """
-                value1: 3
-                value2: 5
-                
+            value1: 3
+            value2: 5
+            
             """.trimIndent(),
             saveKtConfigString(Data(3, 5)),
         )
         assertEquals(
             """
-                value3: 7
-                
+            value3: 7
+            
             """.trimIndent(),
             saveKtConfigString(Base(7)),
         )
         assertEquals(
             """
-                value3: 7
-                
+            value3: 7
+            
             """.trimIndent(),
             saveKtConfigString<Base>(Data(3, 5)),
         )
@@ -126,20 +127,21 @@ class PropertyTest {
         abstract class Base(val value3: Int) {
             abstract val value2: Int
         }
+
         class Data(val value1: Int, override val value2: Int) : Base(7)
 
         assertEquals(
             """
-                value1: 3
-                value2: 5
-                
+            value1: 3
+            value2: 5
+            
             """.trimIndent(),
             saveKtConfigString(Data(3, 5)),
         )
         assertEquals(
             """
-                value3: 7
-                
+            value3: 7
+            
             """.trimIndent(),
             saveKtConfigString<Base>(Data(3, 5)),
         )

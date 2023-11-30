@@ -15,7 +15,10 @@ import kotlin.reflect.typeOf
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigString(text: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+inline fun <reified T : Any> ktConfigString(
+    text: String,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     return ktConfigString(T::class, typeOf<T>(), text, setting)
 }
 
@@ -31,7 +34,11 @@ inline fun <reified T : Any> ktConfigString(text: String, setting: KtConfigSetti
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigString(text: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+inline fun <reified T : Any> ktConfigString(
+    text: String,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigString(T::class, typeOf<T>(), text, default, setting)
 }
 
@@ -46,7 +53,10 @@ inline fun <reified T : Any> ktConfigString(text: String, default: T, setting: K
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigFile(file: File, setting: KtConfigSetting = KtConfigSetting()): T? {
+inline fun <reified T : Any> ktConfigFile(
+    file: File,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     return ktConfigFile(T::class, typeOf<T>(), file, setting)
 }
 
@@ -62,7 +72,10 @@ inline fun <reified T : Any> ktConfigFile(file: File, setting: KtConfigSetting =
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(
+    fileName: String,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     return ktConfigFile(T::class, typeOf<T>(), fileName, setting)
 }
 
@@ -78,7 +91,11 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, setting: 
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigFile(file: File, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+inline fun <reified T : Any> ktConfigFile(
+    file: File,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigFile(T::class, typeOf<T>(), file, default, setting)
 }
 
@@ -95,7 +112,11 @@ inline fun <reified T : Any> ktConfigFile(file: File, default: T, setting: KtCon
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(
+    fileName: String,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigFile(T::class, typeOf<T>(), fileName, default, setting)
 }
 
@@ -108,7 +129,10 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(fileName: String, default: 
  * @return Yaml data
  * @since 1.0.0
  */
-inline fun <reified T : Any> saveKtConfigString(content: T, setting: KtConfigSetting = KtConfigSetting()): String {
+inline fun <reified T : Any> saveKtConfigString(
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): String {
     return saveKtConfigString(T::class, typeOf<T>(), content, setting)
 }
 
@@ -121,7 +145,11 @@ inline fun <reified T : Any> saveKtConfigString(content: T, setting: KtConfigSet
  * @param T Config type
  * @since 1.0.0
  */
-inline fun <reified T : Any> saveKtConfigFile(file: File, content: T, setting: KtConfigSetting = KtConfigSetting()) {
+inline fun <reified T : Any> saveKtConfigFile(
+    file: File,
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+) {
     saveKtConfigFile(T::class, typeOf<T>(), file, content, setting)
 }
 
@@ -135,6 +163,10 @@ inline fun <reified T : Any> saveKtConfigFile(file: File, content: T, setting: K
  * @receiver [JavaPlugin]
  * @since 1.0.0
  */
-inline fun <reified T : Any> JavaPlugin.saveKtConfigFile(fileName: String, content: T, setting: KtConfigSetting = KtConfigSetting()) {
+inline fun <reified T : Any> JavaPlugin.saveKtConfigFile(
+    fileName: String,
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+) {
     saveKtConfigFile(T::class, typeOf<T>(), fileName, content, setting)
 }

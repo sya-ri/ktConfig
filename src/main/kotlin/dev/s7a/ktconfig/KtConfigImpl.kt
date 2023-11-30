@@ -17,7 +17,7 @@ import kotlin.reflect.typeOf
 /**
  * Change the path separator to be able to use Double or Float as key
  */
-private const val pathSeparator = 0x00.toChar()
+private const val PATH_SEPARATOR = 0x00.toChar()
 
 /**
  * Load config from [text].
@@ -33,13 +33,19 @@ private const val pathSeparator = 0x00.toChar()
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+fun <T : Any> ktConfigString(
+    clazz: KClass<T>,
+    type: KType,
+    text: String,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
     if (text.isBlank()) return null
-    val values = YamlConfiguration().apply {
-        options().pathSeparator(pathSeparator)
-        loadFromString(text)
-    }.getValues(false)
+    val values =
+        YamlConfiguration().apply {
+            options().pathSeparator(PATH_SEPARATOR)
+            loadFromString(text)
+        }.getValues(false)
     return section.deserialize(Deserializer(setting), "", values)
 }
 
@@ -58,7 +64,13 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, settin
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+fun <T : Any> ktConfigString(
+    clazz: KClass<T>,
+    type: KType,
+    text: String,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigString(clazz, type, text, setting) ?: default
 }
 
@@ -76,7 +88,12 @@ fun <T : Any> ktConfigString(clazz: KClass<T>, type: KType, text: String, defaul
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, setting: KtConfigSetting = KtConfigSetting()): T? {
+fun <T : Any> ktConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    file: File,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     return if (file.exists()) ktConfigString(clazz, type, file.readText(), setting) else null
 }
 
@@ -95,7 +112,12 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, setting: K
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String, setting: KtConfigSetting = KtConfigSetting()): T? {
+fun <T : Any> JavaPlugin.ktConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    fileName: String,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T? {
     return ktConfigFile(clazz, type, dataFolder.resolve(fileName), setting)
 }
 
@@ -114,7 +136,13 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+fun <T : Any> ktConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    file: File,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigFile(clazz, type, file, setting) ?: default.apply {
         saveKtConfigFile(clazz, type, file, this)
     }
@@ -136,7 +164,13 @@ fun <T : Any> ktConfigFile(clazz: KClass<T>, type: KType, file: File, default: T
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: String, default: T, setting: KtConfigSetting = KtConfigSetting()): T {
+fun <T : Any> JavaPlugin.ktConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    fileName: String,
+    default: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): T {
     return ktConfigFile(clazz, type, dataFolder.resolve(fileName), default, setting)
 }
 
@@ -152,14 +186,22 @@ fun <T : Any> JavaPlugin.ktConfigFile(clazz: KClass<T>, type: KType, fileName: S
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, setting: KtConfigSetting = KtConfigSetting()): String {
+fun <T : Any> saveKtConfigString(
+    clazz: KClass<T>,
+    type: KType,
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+): String {
     val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
     return YamlConfiguration().apply {
-        options().pathSeparator(pathSeparator).setHeaderComment(clazz.findComment())
+        options().pathSeparator(PATH_SEPARATOR).setHeaderComment(clazz.findComment())
 
-        fun setSection(parent: String?, section: Section) {
+        fun setSection(
+            parent: String?,
+            section: Section,
+        ) {
             section.values?.forEach { name, (comments, value) ->
-                val path = if (parent != null) "$parent$pathSeparator$name" else name
+                val path = if (parent != null) "$parent$PATH_SEPARATOR$name" else name
                 when (value) {
                     is Section -> {
                         setSection(path, value)
@@ -167,19 +209,20 @@ fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, sett
                     is Map<*, *> -> {
                         fun map(map: Map<*, *>): Map<*, *> {
                             return map.entries.associate { (p, v) ->
-                                p to when (v) {
-                                    is Section -> {
-                                        v.values?.entries?.associate {
-                                            it.key to it.value.value
+                                p to
+                                    when (v) {
+                                        is Section -> {
+                                            v.values?.entries?.associate {
+                                                it.key to it.value.value
+                                            }
+                                        }
+                                        is Map<*, *> -> {
+                                            map(v)
+                                        }
+                                        else -> {
+                                            v
                                         }
                                     }
-                                    is Map<*, *> -> {
-                                        map(v)
-                                    }
-                                    else -> {
-                                        v
-                                    }
-                                }
                             }
                         }
 
@@ -209,7 +252,13 @@ fun <T : Any> saveKtConfigString(clazz: KClass<T>, type: KType, content: T, sett
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> saveKtConfigFile(clazz: KClass<T>, type: KType, file: File, content: T, setting: KtConfigSetting = KtConfigSetting()) {
+fun <T : Any> saveKtConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    file: File,
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+) {
     file.parentFile?.mkdirs()
     file.writeText(saveKtConfigString(clazz, type, content, setting))
 }
@@ -227,6 +276,12 @@ fun <T : Any> saveKtConfigFile(clazz: KClass<T>, type: KType, file: File, conten
  * @since 1.0.0
  * @suppress
  */
-fun <T : Any> JavaPlugin.saveKtConfigFile(clazz: KClass<T>, type: KType, fileName: String, content: T, setting: KtConfigSetting = KtConfigSetting()) {
+fun <T : Any> JavaPlugin.saveKtConfigFile(
+    clazz: KClass<T>,
+    type: KType,
+    fileName: String,
+    content: T,
+    setting: KtConfigSetting = KtConfigSetting(),
+) {
     saveKtConfigFile(clazz, type, dataFolder.resolve(fileName), content, setting)
 }

@@ -13,9 +13,9 @@ class DocsTest {
             Data("[list1, list2]"),
             ktConfigString(
                 """
-                    data:
-                     - list1
-                     - list2
+                data:
+                 - list1
+                 - list2
                 """.trimIndent(),
             ),
         )
@@ -23,9 +23,9 @@ class DocsTest {
             Data(mapOf("key1" to "value1", "key2" to "value2")),
             ktConfigString(
                 """
-                    data:
-                      key1: value1
-                      key2: value2
+                data:
+                  key1: value1
+                  key2: value2
                 """.trimIndent(),
             ),
         )
@@ -40,9 +40,9 @@ class DocsTest {
             Data(mapOf(true to "value1", false to "value2")),
             ktConfigString(
                 """
-                    data:
-                      true: value1
-                      false: value2
+                data:
+                  true: value1
+                  false: value2
                 """.trimIndent(),
             ),
         )
@@ -56,15 +56,23 @@ class DocsTest {
         assertEquals(Data<Byte>(78), ktConfigString("data: 0x4E"))
         assertEquals(Data<Byte>(-126), ktConfigString("data: 130"))
         assertEquals(
-            Data(mapOf(5.toByte() to "value1", 12.toByte() to "value2", (-9).toByte() to "value3", 78.toByte() to "value4", (-126).toByte() to "value5")),
+            Data(
+                mapOf(
+                    5.toByte() to "value1",
+                    12.toByte() to "value2",
+                    (-9).toByte() to "value3",
+                    78.toByte() to "value4",
+                    (-126).toByte() to "value5",
+                ),
+            ),
             ktConfigString(
                 """
-                    data:
-                      5: value1
-                      '12': value2
-                      -9: value3
-                      0x4E: value4
-                      130: value5
+                data:
+                  5: value1
+                  '12': value2
+                  -9: value3
+                  0x4E: value4
+                  130: value5
                 """.trimIndent(),
             ),
         )

@@ -11,12 +11,12 @@ class CollectionSerializeTest {
         assertEquals("data: []\n", saveKtConfigString(Data(listOf())))
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - d
-                - bc
-                
+            data:
+            - a
+            - bc
+            - d
+            - bc
+            
             """.trimIndent(),
             saveKtConfigString(Data(listOf("a", "bc", "d", "bc"))),
         )
@@ -28,14 +28,14 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - - a
-                  - bc
-                  - def
-                - - g
-                - []
-                - - hi
-                
+            data:
+            - - a
+              - bc
+              - def
+            - - g
+            - []
+            - - hi
+            
             """.trimIndent(),
             saveKtConfigString(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")))),
         )
@@ -47,18 +47,18 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - - - a
-                    - bc
-                    - def
-                  - - g
-                  - []
-                  - - hi
-                - []
-                - - - j
-                - - - k
-                  - - i
-                
+            data:
+            - - - a
+                - bc
+                - def
+              - - g
+              - []
+              - - hi
+            - []
+            - - - j
+            - - - k
+              - - i
+            
             """.trimIndent(),
             saveKtConfigString(
                 Data(
@@ -79,11 +79,11 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
-                - bc
+            data:
+            - a
+            - bc
+            - def
+            - bc
 
             """.trimIndent(),
             saveKtConfigString(Data(mutableListOf("a", "bc", "def", "bc"))),
@@ -96,10 +96,10 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
+            data:
+            - a
+            - bc
+            - def
 
             """.trimIndent(),
             saveKtConfigString(Data(setOf("a", "bc", "def", "bc"))),
@@ -112,12 +112,12 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                  a: b
-                  c: d
-                  'null': e
-                  '5': f
-                
+            data:
+              a: b
+              c: d
+              'null': e
+              '5': f
+            
             """.trimIndent(),
             saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
@@ -129,12 +129,12 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                  a: b
-                  c: d
-                  'null': e
-                  '5': f
-                
+            data:
+              a: b
+              c: d
+              'null': e
+              '5': f
+            
             """.trimIndent(),
             saveKtConfigString(Data(hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
@@ -146,12 +146,12 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                  a: b
-                  c: d
-                  'null': e
-                  '5': f
-                
+            data:
+              a: b
+              c: d
+              'null': e
+              '5': f
+            
             """.trimIndent(),
             saveKtConfigString(Data(linkedMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
@@ -163,10 +163,10 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
+            data:
+            - a
+            - bc
+            - def
 
             """.trimIndent(),
             saveKtConfigString(Data(hashSetOf("a", "bc", "def", "bc"))),
@@ -179,10 +179,10 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
+            data:
+            - a
+            - bc
+            - def
 
             """.trimIndent(),
             saveKtConfigString(Data(linkedSetOf("a", "bc", "def", "bc"))),
@@ -195,10 +195,10 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
+            data:
+            - a
+            - bc
+            - def
 
             """.trimIndent(),
             saveKtConfigString(Data(mutableSetOf("a", "bc", "def", "bc"))),
@@ -211,11 +211,11 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
-                - bc
+            data:
+            - a
+            - bc
+            - def
+            - bc
 
             """.trimIndent(),
             saveKtConfigString(Data(listOf("a", "bc", "def", "bc"))),
@@ -228,11 +228,11 @@ class CollectionSerializeTest {
 
         assertEquals(
             """
-                data:
-                - a
-                - bc
-                - def
-                - bc
+            data:
+            - a
+            - bc
+            - def
+            - bc
 
             """.trimIndent(),
             saveKtConfigString(Data(listOf("a", "bc", "def", "bc"))),

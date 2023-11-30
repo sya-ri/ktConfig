@@ -8,7 +8,10 @@ import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.ScalarNode
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.TimeZone
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -304,11 +307,17 @@ internal class Deserializer(private val setting: KtConfigSetting) {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
-    fun <T : Any?> list(content: Content<T>, path: String, value: Any, isMarkedNullable: Boolean): List<T> {
-        val values = when (value) {
-            is List<*> -> value
-            else -> listOf(value)
-        }
+    fun <T : Any?> list(
+        content: Content<T>,
+        path: String,
+        value: Any,
+        isMarkedNullable: Boolean,
+    ): List<T> {
+        val values =
+            when (value) {
+                is List<*> -> value
+                else -> listOf(value)
+            }
         return when {
             isMarkedNullable -> {
                 values.mapIndexed { index, v ->
@@ -318,7 +327,9 @@ internal class Deserializer(private val setting: KtConfigSetting) {
             }
             setting.strictListElement -> {
                 values.mapIndexed { index, v ->
-                    v?.let { content.deserialize(this, "$path[$index]", v) } ?: throw TypeMismatchException(content.type, v, "$path[$index]")
+                    v?.let {
+                        content.deserialize(this, "$path[$index]", v)
+                    } ?: throw TypeMismatchException(content.type, v, "$path[$index]")
                 }
             }
             else -> {
@@ -329,23 +340,32 @@ internal class Deserializer(private val setting: KtConfigSetting) {
         }
     }
 
-    fun <K, V> map(type: KType, keyable: Content.Keyable<K>, content: Content<V>, path: String, value: Any, isMarkedNullable: Boolean): Map<K, V?> {
-        val entries = when (value) {
-            is ConfigurationSection -> value.getValues(false).entries
-            is Map<*, *> -> value.entries
-            else -> throw TypeMismatchException(type, value, path)
-        }
+    fun <K, V> map(
+        type: KType,
+        keyable: Content.Keyable<K>,
+        content: Content<V>,
+        path: String,
+        value: Any,
+        isMarkedNullable: Boolean,
+    ): Map<K, V?> {
+        val entries =
+            when (value) {
+                is ConfigurationSection -> value.getValues(false).entries
+                is Map<*, *> -> value.entries
+                else -> throw TypeMismatchException(type, value, path)
+            }
         return entries.mapNotNull { (key, value) ->
             keyable.deserialize(this, "$path.$key", key.toString()).let { deserializedKey ->
                 when {
                     deserializedKey != null -> {
-                        deserializedKey to content.deserialize(this, "$path.$key", value).let { deserializedValue ->
-                            when {
-                                deserializedValue != null || isMarkedNullable -> deserializedValue
-                                setting.strictMapElement -> throw TypeMismatchException(content.type, value, "$path.$key")
-                                else -> null
+                        deserializedKey to
+                            content.deserialize(this, "$path.$key", value).let { deserializedValue ->
+                                when {
+                                    deserializedValue != null || isMarkedNullable -> deserializedValue
+                                    setting.strictMapElement -> throw TypeMismatchException(content.type, value, "$path.$key")
+                                    else -> null
+                                }
                             }
-                        }
                     }
                     setting.strictMapElement -> {
                         throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
@@ -356,7 +376,10 @@ internal class Deserializer(private val setting: KtConfigSetting) {
         }.toMap()
     }
 
-    fun enum(classifier: KClass<*>, value: Any): Enum<*>? {
+    fun enum(
+        classifier: KClass<*>,
+        value: Any,
+    ): Enum<*>? {
         return try {
             @Suppress("UNCHECKED_CAST")
             java.lang.Enum.valueOf(classifier.java as Class<out Enum<*>>, value.toString())
