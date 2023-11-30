@@ -15,8 +15,8 @@ class CollectionDeserializeTest {
                 """
                     data:
                      - - a
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -130,10 +130,10 @@ class CollectionDeserializeTest {
                     listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
                     listOf(),
                     listOf(listOf("j")),
-                    listOf(listOf("k"), listOf("i"))
-                )
+                    listOf(listOf("k"), listOf("i")),
+                ),
             ),
-            ktConfigString("data: [[[a, bc, def], [g], [], [hi]], [], [[j]], [[k], [i]]]")
+            ktConfigString("data: [[[a, bc, def], [g], [], [hi]], [], [[j]], [[k], [i]]]"),
         )
     }
 
@@ -165,8 +165,8 @@ class CollectionDeserializeTest {
                       null: 0
                       5: 6
                       7: null
-                """.trimIndent()
-            )?.data
+                """.trimIndent(),
+            )?.data,
         )
     }
 
@@ -183,8 +183,8 @@ class CollectionDeserializeTest {
                       c: d
                       null: e
                       5: f
-                """.trimIndent()
-            )?.data
+                """.trimIndent(),
+            )?.data,
         )
     }
 
@@ -201,8 +201,8 @@ class CollectionDeserializeTest {
                       c: d
                       null: e
                       5: f
-                """.trimIndent()
-            )?.data
+                """.trimIndent(),
+            )?.data,
         )
     }
 
@@ -219,8 +219,8 @@ class CollectionDeserializeTest {
                       c: d
                       null: e
                       5: f
-                """.trimIndent()
-            )?.data
+                """.trimIndent(),
+            )?.data,
         )
     }
 

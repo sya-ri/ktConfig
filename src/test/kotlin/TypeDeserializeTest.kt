@@ -37,8 +37,8 @@ class TypeDeserializeTest {
             ktConfigString(
                 """
                     value: a
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         assertEquals(
             Data("a", "abc"),
@@ -46,8 +46,8 @@ class TypeDeserializeTest {
                 """
                     value: a
                     ignore: value
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         assertEquals(
             Data("a", "b"),
@@ -55,8 +55,8 @@ class TypeDeserializeTest {
                 """
                     value: a
                     optional: b
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         assertEquals(
             Data("a", "abc"),
@@ -64,14 +64,14 @@ class TypeDeserializeTest {
                 """
                     value: a
                     optional: null
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         assertFailsWith<TypeMismatchException> {
             ktConfigString<Data>(
                 """
                     value: null
-                """.trimIndent()
+                """.trimIndent(),
             )
         }
     }
@@ -344,8 +344,8 @@ class TypeDeserializeTest {
                       z: 3.4
                       yaw: 10.5
                       pitch: -42.6
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -358,7 +358,7 @@ class TypeDeserializeTest {
     }
 
     enum class EnumValue {
-        Value1
+        Value1,
     }
 
     @Test
@@ -381,8 +381,8 @@ class TypeDeserializeTest {
                       first: zero
                       second: 0
                     
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -399,8 +399,8 @@ class TypeDeserializeTest {
                       second: 0
                       third: 0.0
                     
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 }

@@ -16,7 +16,7 @@ class PropertyTest {
                 value1: 3
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3))
+            saveKtConfigString(Data(3)),
         )
     }
 
@@ -31,7 +31,7 @@ class PropertyTest {
                 value1: 3
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3))
+            saveKtConfigString(Data(3)),
         )
     }
 
@@ -47,7 +47,7 @@ class PropertyTest {
                 value1: 6
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3))
+            saveKtConfigString(Data(3)),
         )
     }
 
@@ -63,7 +63,7 @@ class PropertyTest {
                 value1: 3
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3))
+            saveKtConfigString(Data(3)),
         )
     }
 
@@ -81,7 +81,7 @@ class PropertyTest {
                     value2: 5
                     
             """.trimIndent(),
-            saveKtConfigString(Data(3, 5))
+            saveKtConfigString(Data(3, 5)),
         )
         assertFailsWith<UnsupportedTypeException> {
             saveKtConfigString<Base>(Data(3, 5))
@@ -103,21 +103,21 @@ class PropertyTest {
                 value2: 5
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3, 5))
+            saveKtConfigString(Data(3, 5)),
         )
         assertEquals(
             """
                 value3: 7
                 
             """.trimIndent(),
-            saveKtConfigString(Base(7))
+            saveKtConfigString(Base(7)),
         )
         assertEquals(
             """
                 value3: 7
                 
             """.trimIndent(),
-            saveKtConfigString<Base>(Data(3, 5))
+            saveKtConfigString<Base>(Data(3, 5)),
         )
     }
 
@@ -134,14 +134,14 @@ class PropertyTest {
                 value2: 5
                 
             """.trimIndent(),
-            saveKtConfigString(Data(3, 5))
+            saveKtConfigString(Data(3, 5)),
         )
         assertEquals(
             """
                 value3: 7
                 
             """.trimIndent(),
-            saveKtConfigString<Base>(Data(3, 5))
+            saveKtConfigString<Base>(Data(3, 5)),
         )
     }
 }

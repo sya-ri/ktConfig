@@ -204,8 +204,8 @@ class TypeSerializeTest {
                 
             """.trimIndent(),
             saveKtConfigString(
-                Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F))
-            )
+                Data(Location(null, 1.2, -5.0, 3.4, 10.5F, -42.6F)),
+            ),
         )
     }
 
@@ -218,7 +218,7 @@ class TypeSerializeTest {
     }
 
     enum class EnumValue {
-        Value1
+        Value1,
     }
 
     @Test
@@ -240,8 +240,8 @@ class TypeSerializeTest {
                 
             """.trimIndent(),
             saveKtConfigString(
-                Data("zero" to 0)
-            )
+                Data("zero" to 0),
+            ),
         )
     }
 
@@ -258,8 +258,8 @@ class TypeSerializeTest {
                 
             """.trimIndent(),
             saveKtConfigString(
-                Data(Triple("zero", 0, 0.0))
-            )
+                Data(Triple("zero", 0, 0.0)),
+            ),
         )
     }
 }

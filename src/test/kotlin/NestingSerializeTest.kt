@@ -15,7 +15,7 @@ class NestingSerializeTest {
                   data: hello
                 
             """.trimIndent(),
-            saveKtConfigString(Data2(Data1("hello")))
+            saveKtConfigString(Data2(Data1("hello"))),
         )
     }
 
@@ -31,7 +31,7 @@ class NestingSerializeTest {
                     data: hello
                 
             """.trimIndent(),
-            saveKtConfigString(Data2(mapOf("one" to Data1("hello"))))
+            saveKtConfigString(Data2(mapOf("one" to Data1("hello")))),
         )
     }
 
@@ -49,8 +49,8 @@ class NestingSerializeTest {
                 
             """.trimIndent(),
             saveKtConfigString(
-                Data(1, Data(21, Data(302, null)))
-            )
+                Data(1, Data(21, Data(302, null))),
+            ),
         )
     }
 }

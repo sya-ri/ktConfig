@@ -16,8 +16,8 @@ class DocsTest {
                     data:
                      - list1
                      - list2
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         assertEquals(
             Data(mapOf("key1" to "value1", "key2" to "value2")),
@@ -26,8 +26,8 @@ class DocsTest {
                     data:
                       key1: value1
                       key2: value2
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -43,8 +43,8 @@ class DocsTest {
                     data:
                       true: value1
                       false: value2
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -65,8 +65,8 @@ class DocsTest {
                       -9: value3
                       0x4E: value4
                       130: value5
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 }

@@ -14,8 +14,8 @@ class NestingDeserializeTest {
                 """
                     data1:
                       data: hello
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -31,8 +31,8 @@ class NestingDeserializeTest {
                     data1:
                       one:
                         data: hello
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -50,8 +50,8 @@ class NestingDeserializeTest {
                       data:
                         int: 302
                         data: null
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 }

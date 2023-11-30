@@ -17,7 +17,7 @@ class CommentTest {
                 data: hello
                 
             """.trimIndent(),
-            saveKtConfigString(Data("hello"))
+            saveKtConfigString(Data("hello")),
         )
     }
 
@@ -25,7 +25,7 @@ class CommentTest {
     fun value() {
         data class Data(
             @Comment("line1", "line2")
-            val data: String
+            val data: String,
         )
 
         assertEquals(
@@ -35,7 +35,7 @@ class CommentTest {
                 data: hello
                 
             """.trimIndent(),
-            saveKtConfigString(Data("hello"))
+            saveKtConfigString(Data("hello")),
         )
     }
 
@@ -43,7 +43,7 @@ class CommentTest {
     fun nullValue() {
         data class Data(
             @Comment("line1", "line2")
-            val data: String?
+            val data: String?,
         )
 
         assertEquals("", saveKtConfigString(Data(null)))
@@ -54,13 +54,13 @@ class CommentTest {
         @Comment("default")
         data class Data1(
             @Comment("line1", "line2")
-            val data: String
+            val data: String,
         )
 
         @Comment("data2")
         data class Data2(
             @Comment("data1")
-            val data1: Data1
+            val data1: Data1,
         )
 
         assertEquals(
@@ -74,7 +74,7 @@ class CommentTest {
                   data: hello
                 
             """.trimIndent(),
-            saveKtConfigString(Data2(Data1("hello")))
+            saveKtConfigString(Data2(Data1("hello"))),
         )
     }
 }

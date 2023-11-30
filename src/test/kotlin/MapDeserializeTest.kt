@@ -22,8 +22,8 @@ class MapDeserializeTest {
                       c: d
                       null: e
                       5: f
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -39,8 +39,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       -1: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -56,8 +56,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       ${UInt.MAX_VALUE}: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -73,8 +73,8 @@ class MapDeserializeTest {
                       true: ab
                       c: ignore
                       false: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -92,8 +92,8 @@ class MapDeserializeTest {
                       3.4028235E38: d
                       1.4E-45: e
                     
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -111,8 +111,8 @@ class MapDeserializeTest {
                       1.7976931348623157E308: d
                       4.9E-324: e
                     
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -128,8 +128,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       -1: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -145,8 +145,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       ${ULong.MAX_VALUE}: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -163,8 +163,8 @@ class MapDeserializeTest {
                       c: ignore
                       -1: c
                       0x5E: d
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -181,8 +181,8 @@ class MapDeserializeTest {
                       c: ignore
                       ${UByte.MAX_VALUE}: c
                       0x5E: d
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -198,8 +198,8 @@ class MapDeserializeTest {
                       0: ab
                       cc: ignore
                       d: e
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -215,8 +215,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       -1: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -232,8 +232,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       ${UShort.MAX_VALUE}: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -249,8 +249,8 @@ class MapDeserializeTest {
                       0: ab
                       c: ignore
                       1000000000000000000000000000: c
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -268,8 +268,8 @@ class MapDeserializeTest {
                       '1000000000000000000000000000': c
                       '1.0E-100': d
                       '1.0E-1000': e
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -285,8 +285,8 @@ class MapDeserializeTest {
                       '2000-01-02T00:00:00Z': ab
                       '2000-01-02T23:34:45Z': c
                       '2000-01-02T23:34:45.678Z': d
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -306,8 +306,8 @@ class MapDeserializeTest {
                       '2000-01-02T01:00:00+01:00': ab
                       '2000-01-02T23:34:45Z': c
                       '2000-01-02T23:34:45.678Z': d
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -323,13 +323,13 @@ class MapDeserializeTest {
                     data:
                       $uuid: ab
                       c: ignore
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
     enum class EnumValue {
-        Value1
+        Value1,
     }
 
     @Test
@@ -343,8 +343,8 @@ class MapDeserializeTest {
                     data:
                       Value1: ab
                       c: ignore
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 
@@ -359,8 +359,8 @@ class MapDeserializeTest {
                     mapOf("g" to "h"),
                     mapOf(),
                     mapOf("null" to "i"),
-                    mapOf("j" to "k")
-                )
+                    mapOf("j" to "k"),
+                ),
             ),
             ktConfigString(
                 """
@@ -373,8 +373,8 @@ class MapDeserializeTest {
                       - {}
                       - 'null': i
                       - j: k
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
     }
 }

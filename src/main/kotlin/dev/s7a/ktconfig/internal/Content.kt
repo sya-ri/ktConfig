@@ -190,7 +190,7 @@ internal sealed class Content<T>(val type: KType) {
                     property.isAccessible = true
                     property.name to Section.Value(property.findComment(), nameMap[property.name]?.serialize(path, property.get(value)))
                 }
-            }
+            },
         )
     }
 

@@ -18,7 +18,7 @@ class CollectionSerializeTest {
                 - bc
                 
             """.trimIndent(),
-            saveKtConfigString(Data(listOf("a", "bc", "d", "bc")))
+            saveKtConfigString(Data(listOf("a", "bc", "d", "bc"))),
         )
     }
 
@@ -37,7 +37,7 @@ class CollectionSerializeTest {
                 - - hi
                 
             """.trimIndent(),
-            saveKtConfigString(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi"))))
+            saveKtConfigString(Data(listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")))),
         )
     }
 
@@ -66,10 +66,10 @@ class CollectionSerializeTest {
                         listOf(listOf("a", "bc", "def"), listOf("g"), listOf(), listOf("hi")),
                         listOf(),
                         listOf(listOf("j")),
-                        listOf(listOf("k"), listOf("i"))
-                    )
-                )
-            )
+                        listOf(listOf("k"), listOf("i")),
+                    ),
+                ),
+            ),
         )
     }
 
@@ -86,7 +86,7 @@ class CollectionSerializeTest {
                 - bc
 
             """.trimIndent(),
-            saveKtConfigString(Data(mutableListOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(mutableListOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -102,7 +102,7 @@ class CollectionSerializeTest {
                 - def
 
             """.trimIndent(),
-            saveKtConfigString(Data(setOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(setOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -119,7 +119,7 @@ class CollectionSerializeTest {
                   '5': f
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
+            saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
     }
 
@@ -136,7 +136,7 @@ class CollectionSerializeTest {
                   '5': f
                 
             """.trimIndent(),
-            saveKtConfigString(Data(hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
+            saveKtConfigString(Data(hashMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
     }
 
@@ -153,7 +153,7 @@ class CollectionSerializeTest {
                   '5': f
                 
             """.trimIndent(),
-            saveKtConfigString(Data(linkedMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
+            saveKtConfigString(Data(linkedMapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
     }
 
@@ -169,7 +169,7 @@ class CollectionSerializeTest {
                 - def
 
             """.trimIndent(),
-            saveKtConfigString(Data(hashSetOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(hashSetOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -185,7 +185,7 @@ class CollectionSerializeTest {
                 - def
 
             """.trimIndent(),
-            saveKtConfigString(Data(linkedSetOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(linkedSetOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -201,7 +201,7 @@ class CollectionSerializeTest {
                 - def
 
             """.trimIndent(),
-            saveKtConfigString(Data(mutableSetOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(mutableSetOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -218,7 +218,7 @@ class CollectionSerializeTest {
                 - bc
 
             """.trimIndent(),
-            saveKtConfigString(Data(listOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(listOf("a", "bc", "def", "bc"))),
         )
     }
 
@@ -235,7 +235,7 @@ class CollectionSerializeTest {
                 - bc
 
             """.trimIndent(),
-            saveKtConfigString(Data(listOf("a", "bc", "def", "bc")))
+            saveKtConfigString(Data(listOf("a", "bc", "def", "bc"))),
         )
     }
 }

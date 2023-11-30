@@ -22,7 +22,7 @@ class GenericsTest {
                 - hello
                 
             """.trimIndent(),
-            saveKtConfigString(ListData(listOf("hello")))
+            saveKtConfigString(ListData(listOf("hello"))),
         )
         assertEquals(
             """
@@ -30,7 +30,7 @@ class GenericsTest {
                 - 5
                 
             """.trimIndent(),
-            saveKtConfigString(ListData(listOf(5)))
+            saveKtConfigString(ListData(listOf(5))),
         )
         assertEquals(
             """
@@ -38,7 +38,7 @@ class GenericsTest {
                 - - hello
                 
             """.trimIndent(),
-            saveKtConfigString(ListListData(listOf(listOf("hello"))))
+            saveKtConfigString(ListListData(listOf(listOf("hello")))),
         )
         assertEquals(
             """
@@ -47,7 +47,7 @@ class GenericsTest {
                   b: 2
                 
             """.trimIndent(),
-            saveKtConfigString(MapData(mapOf("a" to 1, "b" to 2)))
+            saveKtConfigString(MapData(mapOf("a" to 1, "b" to 2))),
         )
     }
 
@@ -60,39 +60,39 @@ class GenericsTest {
         assertEquals(Data<Boolean?>(null), ktConfigString("data: other"))
         assertEquals(
             ListData(listOf("hello")),
-            ktConfigString("data: hello")
+            ktConfigString("data: hello"),
         )
         assertEquals(
             ListData(listOf("hello")),
-            ktConfigString("data: [hello]")
+            ktConfigString("data: [hello]"),
         )
         assertEquals(
             ListData(listOf(5)),
-            ktConfigString("data: 5")
+            ktConfigString("data: 5"),
         )
         assertEquals(
             ListData<Int>(listOf()),
-            ktConfigString("data: string")
+            ktConfigString("data: string"),
         )
         assertEquals(
             ListData<Int?>(listOf(null)),
-            ktConfigString("data: string")
+            ktConfigString("data: string"),
         )
         assertEquals(
             ListListData(listOf(listOf("hello"))),
-            ktConfigString("data: hello")
+            ktConfigString("data: hello"),
         )
         assertEquals(
             ListListData(listOf(listOf("hello"))),
-            ktConfigString("data: [hello]")
+            ktConfigString("data: [hello]"),
         )
         assertEquals(
             ListListData(listOf(listOf("hello"))),
-            ktConfigString("data: [[hello]]")
+            ktConfigString("data: [[hello]]"),
         )
         assertEquals(
             MapData(mapOf("a" to 1, "b" to 2)),
-            ktConfigString("data: {'a': 1, 'b': 2}")
+            ktConfigString("data: {'a': 1, 'b': 2}"),
         )
     }
 }

@@ -22,7 +22,7 @@ class MapSerializeTest {
                   '5': f
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f")))
+            saveKtConfigString(Data(mapOf("a" to "b", "c" to "d", "null" to "e", "5" to "f"))),
         )
     }
 
@@ -39,7 +39,7 @@ class MapSerializeTest {
                   -2147483648: e
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0 to "ab", -1 to "c", Int.MAX_VALUE to "d", Int.MIN_VALUE to "e")))
+            saveKtConfigString(Data(mapOf(0 to "ab", -1 to "c", Int.MAX_VALUE to "d", Int.MIN_VALUE to "e"))),
         )
     }
 
@@ -54,7 +54,7 @@ class MapSerializeTest {
                   4294967295: c
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0U to "ab", UInt.MAX_VALUE to "c")))
+            saveKtConfigString(Data(mapOf(0U to "ab", UInt.MAX_VALUE to "c"))),
         )
     }
 
@@ -69,7 +69,7 @@ class MapSerializeTest {
                   false: c
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(true to "ab", false to "c")))
+            saveKtConfigString(Data(mapOf(true to "ab", false to "c"))),
         )
     }
 
@@ -86,7 +86,7 @@ class MapSerializeTest {
                   1.4E-45: e
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.5F to "ab", 1.0F to "c", Float.MAX_VALUE to "d", Float.MIN_VALUE to "e")))
+            saveKtConfigString(Data(mapOf(0.5F to "ab", 1.0F to "c", Float.MAX_VALUE to "d", Float.MIN_VALUE to "e"))),
         )
     }
 
@@ -103,7 +103,7 @@ class MapSerializeTest {
                   4.9E-324: e
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.5 to "ab", 1.0 to "c", Double.MAX_VALUE to "d", Double.MIN_VALUE to "e")))
+            saveKtConfigString(Data(mapOf(0.5 to "ab", 1.0 to "c", Double.MAX_VALUE to "d", Double.MIN_VALUE to "e"))),
         )
     }
 
@@ -120,7 +120,7 @@ class MapSerializeTest {
                   -9223372036854775808: e
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0L to "ab", -1L to "c", Long.MAX_VALUE to "d", Long.MIN_VALUE to "e")))
+            saveKtConfigString(Data(mapOf(0L to "ab", -1L to "c", Long.MAX_VALUE to "d", Long.MIN_VALUE to "e"))),
         )
     }
 
@@ -135,7 +135,7 @@ class MapSerializeTest {
                   18446744073709551615: c
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c")))
+            saveKtConfigString(Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c"))),
         )
     }
 
@@ -152,7 +152,7 @@ class MapSerializeTest {
                   -128: f
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.toByte() to "ab", 0x5E.toByte() to "d", Byte.MAX_VALUE to "e", Byte.MIN_VALUE to "f")))
+            saveKtConfigString(Data(mapOf(0.toByte() to "ab", 0x5E.toByte() to "d", Byte.MAX_VALUE to "e", Byte.MIN_VALUE to "f"))),
         )
     }
 
@@ -168,7 +168,7 @@ class MapSerializeTest {
                   94: d
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d")))
+            saveKtConfigString(Data(mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d"))),
         )
     }
 
@@ -183,7 +183,7 @@ class MapSerializeTest {
                   d: e
                 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf('0' to "ab", 'd' to "e")))
+            saveKtConfigString(Data(mapOf('0' to "ab", 'd' to "e"))),
         )
     }
 
@@ -200,7 +200,7 @@ class MapSerializeTest {
                   -32768: e
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c", Short.MAX_VALUE to "d", Short.MIN_VALUE to "e")))
+            saveKtConfigString(Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c", Short.MAX_VALUE to "d", Short.MIN_VALUE to "e"))),
         )
     }
 
@@ -215,7 +215,7 @@ class MapSerializeTest {
                   65535: c
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c")))
+            saveKtConfigString(Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c"))),
         )
     }
 
@@ -230,7 +230,7 @@ class MapSerializeTest {
                   1000000000000000000000000000: c
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c")))
+            saveKtConfigString(Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c"))),
         )
     }
 
@@ -247,7 +247,7 @@ class MapSerializeTest {
                   '1.0E-1000': e
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(BigDecimal.ZERO to "ab", BigDecimal("1000000000000000000000000000") to "c", BigDecimal("1.0E-100") to "d", BigDecimal("1.0E-1000") to "e")))
+            saveKtConfigString(Data(mapOf(BigDecimal.ZERO to "ab", BigDecimal("1000000000000000000000000000") to "c", BigDecimal("1.0E-100") to "d", BigDecimal("1.0E-1000") to "e"))),
         )
     }
 
@@ -263,7 +263,7 @@ class MapSerializeTest {
                   2000-01-02T23:34:45.678Z: d
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(Date(946771200000) to "ab", Date(946856085000) to "c", Date(946856085678) to "d")))
+            saveKtConfigString(Data(mapOf(Date(946771200000) to "ab", Date(946856085000) to "c", Date(946856085678) to "d"))),
         )
     }
 
@@ -283,7 +283,7 @@ class MapSerializeTest {
                   2000-01-02T23:34:45.678Z: d
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(calendar(946771200000, "UTC") to "ab", calendar(946856085000, "UTC") to "c", calendar(946856085678, "GMT-01:00") to "d")))
+            saveKtConfigString(Data(mapOf(calendar(946771200000, "UTC") to "ab", calendar(946856085000, "UTC") to "c", calendar(946856085678, "GMT-01:00") to "d"))),
         )
     }
 
@@ -298,12 +298,12 @@ class MapSerializeTest {
                   $uuid: ab
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(uuid to "ab")))
+            saveKtConfigString(Data(mapOf(uuid to "ab"))),
         )
     }
 
     enum class EnumValue {
-        Value1
+        Value1,
     }
 
     @Test
@@ -316,7 +316,7 @@ class MapSerializeTest {
                   Value1: ab
 
             """.trimIndent(),
-            saveKtConfigString(Data(mapOf(EnumValue.Value1 to "ab")))
+            saveKtConfigString(Data(mapOf(EnumValue.Value1 to "ab"))),
         )
     }
 
@@ -344,10 +344,10 @@ class MapSerializeTest {
                         mapOf("g" to "h"),
                         mapOf(),
                         mapOf("null" to "i"),
-                        mapOf("j" to "k")
-                    )
-                )
-            )
+                        mapOf("j" to "k"),
+                    ),
+                ),
+            ),
         )
     }
 }

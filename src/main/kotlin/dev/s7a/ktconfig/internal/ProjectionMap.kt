@@ -10,7 +10,7 @@ internal value class ProjectionMap private constructor(private val map: Map<KTyp
     constructor(clazz: KClass<*>, type: KType) : this(
         clazz.typeParameters.mapIndexed { index, parameter ->
             parameter to type.arguments[index]
-        }.toMap()
+        }.toMap(),
     )
 
     fun type(typeParameter: KTypeParameter): KType {
