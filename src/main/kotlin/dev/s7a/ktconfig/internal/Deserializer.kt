@@ -182,7 +182,7 @@ internal class Deserializer(private val setting: KtConfigSetting) {
     }
 
     private fun char(value: Number): Char {
-        return value.toChar()
+        return value.toInt().toChar()
     }
 
     fun char(value: String): Char? {
