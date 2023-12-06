@@ -59,20 +59,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
-      - name: Download artifact
+      - name: Download artifact (writerside)
         uses: actions/download-artifact@v3
         with:
           name: writerside
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dokka
       - name: Unzip artifact
         uses: montudor/action-zip@v1
         with:
           args: unzip -qq webHelpHI2-all.zip -d dir
-      - name: Move dokka artifact
-        run: mv build/dokka/html dir/api
+      - name: Download artifact (dokka)
+        uses: actions/download-artifact@v3
+        with:
+          name: dokka
+          path: dir/api
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
