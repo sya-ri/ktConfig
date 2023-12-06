@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-      - name: Clone Repository (gh-pages)
-        run: git clone https://github.com/${{ github.repository }} -b gh-pages --depth 1 dokka || mkdir dokka
       - name: Setup java
         uses: actions/setup-java@v4
         with:
@@ -30,9 +28,54 @@ jobs:
           java-version: 17
       - name: Build
         run: ./gradlew dokkaHtml
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dokka
+          name: dokka
+          path: |
+            ./build/dokka/html
+          retention-days: 7
+  writerside:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Build Writerside docs using Docker
+        uses: JetBrains/writerside-github-action@v4
+        with:
+          instance: Writerside/ktconfig
+          artifact: writerside-ktconfig-all.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: writerside
+          path: |
+            artifacts/writerside-ktconfig-all.zip
+          retention-days: 7
+  deploy:
+    needs: [writerside, dokka]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: writerside
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dokka
+      - name: Unzip artifact
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq writerside-ktconfig-all.zip -d dir
+      - name: Move dokka artifact
+        run: mv build/dokka/html dir/api
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: dir
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

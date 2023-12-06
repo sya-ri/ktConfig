@@ -2,8 +2,8 @@
 <!DOCTYPE instance-profile
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 
-<instance-profile id="hi" name="ktConfig"
-                 start-page="Intro.md">
+<instance-profile id="ktconfig" name="ktConfig"
+                  start-page="Intro.md">
 
     <toc-element topic="Intro.md"/>
     <toc-element topic="Installation.md"/>
