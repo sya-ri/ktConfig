@@ -67,7 +67,7 @@ jobs:
       - name: Unzip artifact
         uses: montudor/action-zip@v1
         with:
-          args: unzip -qq writerside-ktconfig-all.zip -d dir
+          args: unzip -qq webHelpHI2-all.zip -d dir
       - name: Move dokka artifact
         run: mv build/dokka/html dir/api
       - name: Setup Pages
