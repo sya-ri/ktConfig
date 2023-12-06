@@ -64,7 +64,7 @@ jobs:
         with:
           name: writerside
       - name: Create api-docs directory
-        run: mkdir dir/api-docs
+        run: mkdir dir/api-docs -p
       - name: Download artifact (dokka)
         uses: actions/download-artifact@v3
         with:
