@@ -20,4 +20,6 @@
         <toc-element topic="Support-types-Boolean.md"/>
         <toc-element topic="Support-types-Byte.md"/>
     </toc-element>
+    <toc-element toc-title="API Document"
+                 href="https://gh.s7a.dev/ktConfig/api-docs"/>
 </instance-profile>

@@ -29,7 +29,7 @@ message: You can use default values
 ## 🔗 Links
 
 - [Website](https://gh.s7a.dev/ktConfig)
-- [API Document](https://gh.s7a.dev/ktConfig/api)
+- [API Document](https://gh.s7a.dev/ktConfig/api-docs)
 
 ## 🔑 License
 

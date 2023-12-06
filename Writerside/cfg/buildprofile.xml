@@ -1,0 +1,11 @@
+<buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <variables>
+    </variables>
+    <build-profile instance="hi"/>
+    <footer>
+        <copyright>sya-ri 2022-2023</copyright>
+        <link href="https://github.com/sya-ri/ktConfig/">GitHub</link>
+        <link href="https://gh.s7a.dev/ktConfig/api-docs/">API Document</link>
+    </footer>
+</buildprofiles>
