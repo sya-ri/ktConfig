@@ -74,7 +74,7 @@ jobs:
       - name: Move dokka artifact
         run: mv build/dokka/html dir/api
       - name: Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
