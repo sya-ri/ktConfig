@@ -44,13 +44,13 @@ jobs:
         uses: JetBrains/writerside-github-action@v4
         with:
           instance: Writerside/ktconfig
-          artifact: writerside-ktconfig-all.zip
+          artifact: webHelpKTCONFIG2-all.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: writerside
           path: |
-            artifacts/writerside-ktconfig-all.zip
+            artifacts/webHelpKTCONFIG2-all.zip
           retention-days: 7
   deploy:
     needs: [writerside, dokka]
