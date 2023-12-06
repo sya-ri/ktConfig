@@ -28,8 +28,8 @@ message: You can use default values
 
 ## 🔗 Links
 
-- [Website](https://ktConfig.s7a.dev)
-- [API Document](https://gh.s7a.dev/ktConfig)
+- [Website](https://gh.s7a.dev/ktConfig)
+- [API Document](https://gh.s7a.dev/ktConfig/api)
 
 ## 🔑 License
 

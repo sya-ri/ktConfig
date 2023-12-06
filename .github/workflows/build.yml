@@ -67,11 +67,13 @@ jobs:
         uses: montudor/action-zip@v1
         with:
           args: unzip -qq webHelpHI2-all.zip -d dir
+      - name: Create api-docs directory
+        run: mkdir dir/api-docs
       - name: Download artifact (dokka)
         uses: actions/download-artifact@v3
         with:
           name: dokka
-          path: dir/api
+          path: dir/api-docs
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
