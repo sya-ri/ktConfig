@@ -46,6 +46,7 @@ jobs:
         with:
           instance: Writerside/hi
           artifact: webHelpHI2-all.zip
+          docker-version: 2.1.1479-p3869
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
