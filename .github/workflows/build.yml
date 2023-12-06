@@ -43,14 +43,14 @@ jobs:
       - name: Build Writerside docs using Docker
         uses: JetBrains/writerside-github-action@v4
         with:
-          instance: Writerside/ktconfig
-          artifact: webHelpKTCONFIG2-all.zip
+          instance: Writerside/hi
+          artifact: webHelpHI2-all.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: writerside
           path: |
-            artifacts/webHelpKTCONFIG2-all.zip
+            artifacts/webHelpHI2-all.zip
           retention-days: 7
   deploy:
     needs: [writerside, dokka]
