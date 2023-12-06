@@ -36,6 +36,7 @@ jobs:
             ./build/dokka/html
           retention-days: 7
   writerside:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
