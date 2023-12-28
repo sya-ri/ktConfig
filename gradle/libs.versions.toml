@@ -3,7 +3,7 @@
 kotlin = "1.9.22"
 kover = "0.7.5"
 dokka = "1.9.10"
-kotlinter = "4.1.0"
+kotlinter = "4.1.1"
 pluginYml = "0.6.0"
 minecraftServer = "3.0.0"
 shadow = "8.1.1"
