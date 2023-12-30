@@ -15,11 +15,7 @@
         <toc-element topic="Features-Serializer.md"/>
         <toc-element topic="Features-Setting.md"/>
     </toc-element>
-    <toc-element toc-title="Support types">
-        <toc-element topic="Support-types-String.md"/>
-        <toc-element topic="Support-types-Boolean.md"/>
-        <toc-element topic="Support-types-Byte.md"/>
-    </toc-element>
+    <toc-element topic="Support-types.md" />
     <toc-element toc-title="API Document"
                  href="https://gh.s7a.dev/ktConfig/api-docs"/>
 </instance-profile>
