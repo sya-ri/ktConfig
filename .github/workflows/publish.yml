@@ -20,6 +20,6 @@ jobs:
           distribution: 'zulu'
           java-version: 17
           cache: gradle
-      - name: Deploy
+      - name: Publish
         run: |
           ./gradlew publish --no-daemon --stacktrace
