@@ -7,6 +7,7 @@ import kotlin.test.assertEquals
 class NestingDeserializeTest {
     @Test
     fun another() {
+        @Suppress("ktlint:standard:annotation")
         data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
         data class Data2(val data1: Data1)
@@ -24,6 +25,7 @@ class NestingDeserializeTest {
 
     @Test
     fun another_list() {
+        @Suppress("ktlint:standard:annotation")
         data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
         data class Data2(val data1: List<Data1>)
@@ -50,6 +52,7 @@ class NestingDeserializeTest {
 
     @Test
     fun another_map() {
+        @Suppress("ktlint:standard:annotation")
         data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
         data class Data2(val data1: Map<String, Data1>)
