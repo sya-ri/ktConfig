@@ -23,6 +23,32 @@ class NestingDeserializeTest {
     }
 
     @Test
+    fun another_list() {
+        data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
+
+        data class Data2(val data1: List<Data1>)
+
+        assertEquals(
+            Data2(listOf(Data1("hello"))),
+            ktConfigString(
+                """
+                data1:
+                  data: h_e_l_l_o
+                """.trimIndent(),
+            ),
+        )
+        assertEquals(
+            Data2(listOf(Data1("hello"))),
+            ktConfigString(
+                """
+                data1:
+                  - data: h_e_l_l_o
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
     fun another_map() {
         data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
@@ -54,6 +80,27 @@ class NestingDeserializeTest {
                   data:
                     int: 302
                     data: null
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun recursive_list() {
+        data class Data(val int: Int, val data: List<Data>?)
+
+        assertEquals(
+            Data(1, listOf(Data(21, listOf(Data(302, listOf(Data(4003, null))))))),
+            ktConfigString(
+                """
+                int: 1
+                data:
+                - int: 21
+                  data:
+                  - int: 302
+                    data:
+                    - int: 4003
+                      data: null
                 """.trimIndent(),
             ),
         )

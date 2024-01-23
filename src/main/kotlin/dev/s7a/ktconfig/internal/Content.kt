@@ -275,7 +275,14 @@ internal sealed class Content<T>(val type: KType) {
             path: String,
             value: T?,
         ) = value?.mapIndexed { index, v ->
-            content.serialize("$path[$index]", v)
+            val serialized = content.serialize("$path[$index]", v)
+            if (serialized is Section) {
+                serialized.values?.mapValues {
+                    it.value.value
+                }
+            } else {
+                serialized
+            }
         }
 
         class ListType<U : Any?>(type: KType, content: Content<U>, isMarkedNullable: Boolean) : IterableType<List<U>, U>(
