@@ -1,4 +1,4 @@
-name: Deploy
+name: Publish
 on:
   workflow_dispatch:
 
@@ -9,7 +9,7 @@ env:
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
 
 jobs:
-  deploy-linux:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
