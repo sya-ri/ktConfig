@@ -1,11 +1,13 @@
+import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.ktConfigString
+import serializer.StringSerializerForNesting
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class NestingDeserializeTest {
     @Test
     fun another() {
-        data class Data1(val data: String)
+        data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
         data class Data2(val data1: Data1)
 
@@ -14,7 +16,7 @@ class NestingDeserializeTest {
             ktConfigString(
                 """
                 data1:
-                  data: hello
+                  data: h_e_l_l_o
                 """.trimIndent(),
             ),
         )
@@ -22,7 +24,7 @@ class NestingDeserializeTest {
 
     @Test
     fun another_map() {
-        data class Data1(val data: String)
+        data class Data1(val data: @UseSerializer(StringSerializerForNesting::class) String)
 
         data class Data2(val data1: Map<String, Data1>)
 
@@ -32,7 +34,7 @@ class NestingDeserializeTest {
                 """
                 data1:
                   one:
-                    data: hello
+                    data: h_e_l_l_o
                 """.trimIndent(),
             ),
         )
