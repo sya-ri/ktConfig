@@ -56,6 +56,7 @@ inline fun <reified T : Any> ktConfigFile(
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
+@JvmName("ktConfigFile_")
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     setting: KtConfigSetting = KtConfigSetting(),
@@ -161,6 +162,7 @@ inline fun <reified T : Any> ktConfigFile(
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
+@JvmName("ktConfigFile_")
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     noinline default: () -> T,
@@ -182,6 +184,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
+@JvmName("ktConfigFile_")
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     default: T,
@@ -236,6 +239,7 @@ inline fun <reified T : Any> saveKtConfigFile(
  * @receiver [JavaPlugin]
  * @since 1.0.0
  */
+@JvmName("saveKtConfigFile_")
 inline fun <reified T : Any> JavaPlugin.saveKtConfigFile(
     path: String,
     content: T,
@@ -285,6 +289,7 @@ inline fun <reified T : Any> KtConfigFile(
  * @receiver [JavaPlugin]
  * @since 1.0.0
  */
+@JvmName("KtConfigFile_")
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     setting: KtConfigSetting = KtConfigSetting(),
@@ -379,6 +384,7 @@ inline fun <reified T : Any> KtConfigFile(
  * @since 1.0.0
  */
 @Suppress("FunctionName")
+@JvmName("KtConfigFile_")
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     noinline default: () -> T,
@@ -398,6 +404,7 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
  * @since 1.0.0
  */
 @Suppress("FunctionName")
+@JvmName("KtConfigFile_")
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     default: T,
