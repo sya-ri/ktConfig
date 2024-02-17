@@ -1,7 +1,7 @@
 [versions]
 # Plugins
 kotlin = "1.9.22"
-kover = "0.7.5"
+kover = "0.7.6"
 dokka = "1.9.10"
 kotlinter = "4.2.0"
 pluginYml = "0.6.0"
