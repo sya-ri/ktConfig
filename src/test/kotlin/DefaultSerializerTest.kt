@@ -1,13 +1,15 @@
 import be.seeseemelk.mockbukkit.MockBukkit
 import be.seeseemelk.mockbukkit.ServerMock
 import dev.s7a.ktconfig.ktConfigString
+import dev.s7a.ktconfig.model.IntVector2
+import dev.s7a.ktconfig.model.IntVector3
 import dev.s7a.ktconfig.model.LazyBlock
 import dev.s7a.ktconfig.model.LazyChunk
 import dev.s7a.ktconfig.model.LazyLocation
+import dev.s7a.ktconfig.model.Vector2
+import dev.s7a.ktconfig.model.Vector3
 import dev.s7a.ktconfig.saveKtConfigString
-import dev.s7a.ktconfig.serializer.VectorString
 import org.bukkit.Location
-import org.bukkit.util.Vector
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -81,12 +83,38 @@ class DefaultSerializerTest {
     }
 
     @Test
-    fun vector() {
-        data class Data(val data: VectorString?)
+    fun intVector2() {
+        data class Data(val data: IntVector2?)
 
-        assertEquals("data: 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Vector(5.0, 2.0, -1.5))))
+        assertEquals("data: 5, -1\n", saveKtConfigString(Data(IntVector2(5, -1))))
         assertEquals(Data(null), ktConfigString("data: 5"))
-        assertEquals(Data(null), ktConfigString("data: 5, 2"))
-        assertEquals(Data(Vector(5.0, 2.0, -1.5)), ktConfigString("data: 5, 2, -1.5"))
+        assertEquals(Data(IntVector2(5, -1)), ktConfigString("data: 5, -1"))
+    }
+
+    @Test
+    fun intVector3() {
+        data class Data(val data: IntVector3?)
+
+        assertEquals("data: 5, 2, -1\n", saveKtConfigString(Data(IntVector3(5, 2, -1))))
+        assertEquals(Data(null), ktConfigString("data: 5"))
+        assertEquals(Data(IntVector3(5, 2, -1)), ktConfigString("data: 5, 2, -1"))
+    }
+
+    @Test
+    fun vector2() {
+        data class Data(val data: Vector2?)
+
+        assertEquals("data: 5.0, -1.5\n", saveKtConfigString(Data(Vector2(5.0, -1.5))))
+        assertEquals(Data(null), ktConfigString("data: 5"))
+        assertEquals(Data(Vector2(5.0, -1.5)), ktConfigString("data: 5, -1.5"))
+    }
+
+    @Test
+    fun vector3() {
+        data class Data(val data: Vector3?)
+
+        assertEquals("data: 5.0, 2.0, -1.5\n", saveKtConfigString(Data(Vector3(5.0, 2.0, -1.5))))
+        assertEquals(Data(null), ktConfigString("data: 5"))
+        assertEquals(Data(Vector3(5.0, 2.0, -1.5)), ktConfigString("data: 5, 2, -1.5"))
     }
 }
