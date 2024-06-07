@@ -1,3 +1,4 @@
+import dev.s7a.ktconfig.IgnoreInvalidElement
 import dev.s7a.ktconfig.ktConfigString
 import dev.s7a.ktconfig.saveKtConfigString
 import kotlin.test.Test
@@ -6,7 +7,7 @@ import kotlin.test.assertEquals
 class GenericsTest {
     private data class Data<T>(val data: T)
 
-    private data class ListData<T>(val data: List<T>)
+    private data class ListData<T>(val data: @IgnoreInvalidElement List<T>)
 
     private data class ListListData<T>(val data: List<List<T>>)
 

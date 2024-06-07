@@ -1,3 +1,4 @@
+import dev.s7a.ktconfig.IgnoreInvalidElement
 import dev.s7a.ktconfig.ktConfigString
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +23,7 @@ class CollectionDeserializeTest {
 
     @Test
     fun int_list() {
-        data class Data(val data: List<Int>)
+        data class Data(val data: @IgnoreInvalidElement List<Int>)
 
         assertEquals(Data(listOf(1, 20, 31)), ktConfigString("data: [1, 20, 31, string]"))
         assertEquals(Data(listOf()), ktConfigString("data: string"))
@@ -159,7 +160,7 @@ class CollectionDeserializeTest {
 
     @Test
     fun int_int_map() {
-        data class Data(val data: Map<Int, Int>)
+        data class Data(val data: @IgnoreInvalidElement Map<Int, Int>)
 
         assertEquals(
             mapOf(1 to 2, 3 to 4, 5 to 6),

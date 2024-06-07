@@ -10,18 +10,14 @@ import kotlin.reflect.typeOf
  * Load config from [file].
  *
  * @param file Yaml file
- * @param setting Config setting
  * @param T Config type
  * @return Config data or null
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigFile(
-    file: File,
-    setting: KtConfigSetting = KtConfigSetting(),
-): T? {
-    return KtConfigFile<T>(file, setting).load()
+inline fun <reified T : Any> ktConfigFile(file: File): T? {
+    return KtConfigFile<T>(file).load()
 }
 
 /**
@@ -29,7 +25,6 @@ inline fun <reified T : Any> ktConfigFile(
  *
  * @param plugin JavaPlugin
  * @param path File path in plugin data folder
- * @param setting Config setting
  * @param T Config type
  * @return Config data or null
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -39,16 +34,14 @@ inline fun <reified T : Any> ktConfigFile(
 inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T? {
-    return KtConfigFile<T>(plugin, path, setting).load()
+    return KtConfigFile<T>(plugin, path).load()
 }
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path].
  *
  * @param path File path in plugin data folder
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or null
@@ -57,11 +50,8 @@ inline fun <reified T : Any> ktConfigFile(
  * @since 1.0.0
  */
 @JvmName("ktConfigFile_")
-inline fun <reified T : Any> JavaPlugin.ktConfigFile(
-    path: String,
-    setting: KtConfigSetting = KtConfigSetting(),
-): T? {
-    return KtConfigFile<T>(this, path, setting).load()
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(path: String): T? {
+    return KtConfigFile<T>(this, path).load()
 }
 
 /**
@@ -69,7 +59,6 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
  *
  * @param file Yaml file
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @return Config data or [default]
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -79,9 +68,8 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
 inline fun <reified T : Any> ktConfigFile(
     file: File,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile<T>(file, default, setting).load()
+    return KtConfigFile<T>(file, default).load()
 }
 
 /**
@@ -89,7 +77,6 @@ inline fun <reified T : Any> ktConfigFile(
  *
  * @param file Yaml file
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @return Config data or [default]
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -99,9 +86,8 @@ inline fun <reified T : Any> ktConfigFile(
 inline fun <reified T : Any> ktConfigFile(
     file: File,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile<T>(file, default, setting).load()
+    return KtConfigFile<T>(file, default).load()
 }
 
 /**
@@ -110,7 +96,6 @@ inline fun <reified T : Any> ktConfigFile(
  * @param plugin JavaPlugin
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
@@ -122,9 +107,8 @@ inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile(plugin, path, default, setting).load()
+    return KtConfigFile(plugin, path, default).load()
 }
 
 /**
@@ -133,7 +117,6 @@ inline fun <reified T : Any> ktConfigFile(
  * @param plugin JavaPlugin
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @return Config data or [default]
  * @throws dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -144,9 +127,8 @@ inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile(plugin, path, default, setting).load()
+    return KtConfigFile(plugin, path, default).load()
 }
 
 /**
@@ -154,7 +136,6 @@ inline fun <reified T : Any> ktConfigFile(
  *
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
@@ -166,9 +147,8 @@ inline fun <reified T : Any> ktConfigFile(
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile(this, path, default, setting).load()
+    return KtConfigFile(this, path, default).load()
 }
 
 /**
@@ -176,7 +156,6 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
  *
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @return Config data or [default]
@@ -188,9 +167,8 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): T {
-    return KtConfigFile(this, path, default, setting).load()
+    return KtConfigFile(this, path, default).load()
 }
 
 /**
@@ -198,16 +176,14 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
  *
  * @param file Yaml file
  * @param content Config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
 inline fun <reified T : Any> saveKtConfigFile(
     file: File,
     content: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ) {
-    KtConfigFile<T>(file, setting).save(content)
+    KtConfigFile<T>(file).save(content)
 }
 
 /**
@@ -216,7 +192,6 @@ inline fun <reified T : Any> saveKtConfigFile(
  * @param plugin JavaPlugin
  * @param path File path in plugin data folder
  * @param content Config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -224,9 +199,8 @@ inline fun <reified T : Any> saveKtConfigFile(
     plugin: JavaPlugin,
     path: String,
     content: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ) {
-    KtConfigFile<T>(plugin, path, setting).save(content)
+    KtConfigFile<T>(plugin, path).save(content)
 }
 
 /**
@@ -234,7 +208,6 @@ inline fun <reified T : Any> saveKtConfigFile(
  *
  * @param path File path in plugin data folder
  * @param content Config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @since 1.0.0
@@ -243,24 +216,19 @@ inline fun <reified T : Any> saveKtConfigFile(
 inline fun <reified T : Any> JavaPlugin.saveKtConfigFile(
     path: String,
     content: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ) {
-    KtConfigFile<T>(this, path, setting).save(content)
+    KtConfigFile<T>(this, path).save(content)
 }
 
 /**
  * Handle config as [File].
  *
  * @param file Yaml file
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
-inline fun <reified T : Any> KtConfigFile(
-    file: File,
-    setting: KtConfigSetting = KtConfigSetting(),
-): KtConfigFile<T> {
-    return KtConfigFile(T::class, typeOf<T>(), file, setting)
+inline fun <reified T : Any> KtConfigFile(file: File): KtConfigFile<T> {
+    return KtConfigFile(T::class, typeOf<T>(), file)
 }
 
 /**
@@ -268,33 +236,27 @@ inline fun <reified T : Any> KtConfigFile(
  *
  * @param plugin [JavaPlugin]
  * @param path File path in plugin data folder
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
 inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile<T> {
-    return KtConfigFile(plugin.dataFolder.resolve(path), setting)
+    return KtConfigFile(plugin.dataFolder.resolve(path))
 }
 
 /**
  * Handle config as [File].
  *
  * @param path File path in plugin data folder
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @since 1.0.0
  */
 @JvmName("KtConfigFile_")
-inline fun <reified T : Any> JavaPlugin.KtConfigFile(
-    path: String,
-    setting: KtConfigSetting = KtConfigSetting(),
-): KtConfigFile<T> {
-    return KtConfigFile(dataFolder.resolve(path), setting)
+inline fun <reified T : Any> JavaPlugin.KtConfigFile(path: String): KtConfigFile<T> {
+    return KtConfigFile(dataFolder.resolve(path))
 }
 
 /**
@@ -302,7 +264,6 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
  *
  * @param file Yaml file
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -310,9 +271,8 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
 inline fun <reified T : Any> KtConfigFile(
     file: File,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile.Default(T::class, typeOf<T>(), file, default, setting)
+    return KtConfigFile.Default(T::class, typeOf<T>(), file, default)
 }
 
 /**
@@ -320,7 +280,6 @@ inline fun <reified T : Any> KtConfigFile(
  *
  * @param file Yaml file
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -328,9 +287,8 @@ inline fun <reified T : Any> KtConfigFile(
 inline fun <reified T : Any> KtConfigFile(
     file: File,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(file, { default }, setting)
+    return KtConfigFile(file, { default })
 }
 
 /**
@@ -339,7 +297,6 @@ inline fun <reified T : Any> KtConfigFile(
  * @param plugin [JavaPlugin]
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -348,9 +305,8 @@ inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(plugin.dataFolder.resolve(path), default, setting)
+    return KtConfigFile(plugin.dataFolder.resolve(path), default)
 }
 
 /**
@@ -359,7 +315,6 @@ inline fun <reified T : Any> KtConfigFile(
  * @param plugin [JavaPlugin]
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -368,9 +323,8 @@ inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(plugin, path, { default }, setting)
+    return KtConfigFile(plugin, path, { default })
 }
 
 /**
@@ -378,7 +332,6 @@ inline fun <reified T : Any> KtConfigFile(
  *
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @since 1.0.0
@@ -388,9 +341,8 @@ inline fun <reified T : Any> KtConfigFile(
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     noinline default: () -> T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(dataFolder.resolve(path), default, setting)
+    return KtConfigFile(dataFolder.resolve(path), default)
 }
 
 /**
@@ -398,7 +350,6 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
  *
  * @param path File path in plugin data folder
  * @param default Default config data
- * @param setting Config setting
  * @param T Config type
  * @receiver [JavaPlugin]
  * @since 1.0.0
@@ -408,9 +359,8 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     default: T,
-    setting: KtConfigSetting = KtConfigSetting(),
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(this, path, { default }, setting)
+    return KtConfigFile(this, path, { default })
 }
 
 /**
@@ -419,7 +369,6 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
  * @param clazz [KClass]<[T]>
  * @param type [typeOf]<[T]>()
  * @param file Yaml file
- * @param setting Config setting
  * @param T Config type
  * @since 1.0.0
  */
@@ -427,8 +376,7 @@ open class KtConfigFile<T : Any>(
     clazz: KClass<T>,
     type: KType,
     private val file: File,
-    setting: KtConfigSetting = KtConfigSetting(),
-) : KtConfig<T>(clazz, type, setting) {
+) : KtConfig<T>(clazz, type) {
     /**
      * Load config from [file].
      *
@@ -460,7 +408,6 @@ open class KtConfigFile<T : Any>(
      * @param type [typeOf]<[T]>()
      * @param file Yaml file
      * @param default Default config data
-     * @param setting Config setting
      * @param T Config type
      * @since 1.0.0
      */
@@ -469,8 +416,7 @@ open class KtConfigFile<T : Any>(
         type: KType,
         file: File,
         private val default: () -> T,
-        setting: KtConfigSetting = KtConfigSetting(),
-    ) : KtConfigFile<T>(clazz, type, file, setting) {
+    ) : KtConfigFile<T>(clazz, type, file) {
         /**
          * Load config from [file]. If [file] is empty, return [default].
          *

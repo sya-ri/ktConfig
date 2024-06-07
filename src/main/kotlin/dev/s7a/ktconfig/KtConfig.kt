@@ -14,7 +14,6 @@ import kotlin.reflect.KType
 abstract class KtConfig<T : Any>(
     private val clazz: KClass<T>,
     private val type: KType,
-    private val setting: KtConfigSetting,
 ) {
     companion object {
         /**
@@ -31,7 +30,7 @@ abstract class KtConfig<T : Any>(
                 options().pathSeparator(PATH_SEPARATOR)
                 loadFromString(text)
             }.getValues(false)
-        return section.deserialize(Deserializer(setting), "", values)
+        return section.deserialize(Deserializer(), "", values)
     }
 
     protected fun saveToString(content: T): String {

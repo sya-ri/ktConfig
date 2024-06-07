@@ -1,6 +1,5 @@
 package dev.s7a.ktconfig.internal
 
-import dev.s7a.ktconfig.KtConfigSetting
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.internal.reflection.SnakeYamlReflection
 import org.bukkit.configuration.ConfigurationSection
@@ -15,7 +14,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-internal class Deserializer(private val setting: KtConfigSetting) {
+internal class Deserializer() {
     private val safeConstructor = SnakeYamlReflection.getSafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
     private val constructYamlInt = safeConstructor.ConstructYamlInt()
@@ -312,6 +311,7 @@ internal class Deserializer(private val setting: KtConfigSetting) {
         path: String,
         value: Any,
         isMarkedNullable: Boolean,
+        ignoreInvalidElement: Boolean,
     ): List<T> {
         val values =
             when (value) {
@@ -325,16 +325,16 @@ internal class Deserializer(private val setting: KtConfigSetting) {
                     v?.let { content.deserialize(this, "$path[$index]", v) } as T
                 }
             }
-            setting.strictListElement -> {
+            ignoreInvalidElement -> {
+                values.filterNotNull().mapIndexedNotNull { index, v ->
+                    content.deserialize(this, "$path[$index]", v)
+                }
+            }
+            else -> {
                 values.mapIndexed { index, v ->
                     v?.let {
                         content.deserialize(this, "$path[$index]", v)
                     } ?: throw TypeMismatchException(content.type, v, "$path[$index]")
-                }
-            }
-            else -> {
-                values.filterNotNull().mapIndexedNotNull { index, v ->
-                    content.deserialize(this, "$path[$index]", v)
                 }
             }
         }
@@ -347,6 +347,7 @@ internal class Deserializer(private val setting: KtConfigSetting) {
         path: String,
         value: Any,
         isMarkedNullable: Boolean,
+        ignoreInvalidElement: Boolean,
     ): Map<K, V?> {
         val entries =
             when (value) {
@@ -362,15 +363,13 @@ internal class Deserializer(private val setting: KtConfigSetting) {
                             content.deserialize(this, "$path.$key", value).let { deserializedValue ->
                                 when {
                                     deserializedValue != null || isMarkedNullable -> deserializedValue
-                                    setting.strictMapElement -> throw TypeMismatchException(content.type, value, "$path.$key")
-                                    else -> null
+                                    ignoreInvalidElement -> null
+                                    else -> throw TypeMismatchException(content.type, value, "$path.$key")
                                 }
                             }
                     }
-                    setting.strictMapElement -> {
-                        throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
-                    }
-                    else -> null
+                    ignoreInvalidElement -> null
+                    else -> throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
                 }
             }
         }.toMap()

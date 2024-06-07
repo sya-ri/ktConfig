@@ -1,3 +1,0 @@
-# Setting
-
-Start typing here...

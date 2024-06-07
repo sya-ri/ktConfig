@@ -1,3 +1,4 @@
+import dev.s7a.ktconfig.IgnoreInvalidElement
 import dev.s7a.ktconfig.ktConfigString
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -29,7 +30,7 @@ class MapDeserializeTest {
 
     @Test
     fun int_string_map() {
-        data class Data(val data: Map<Int, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Int, String>)
 
         assertEquals(
             Data(mapOf(0 to "ab", -1 to "c")),
@@ -46,7 +47,7 @@ class MapDeserializeTest {
 
     @Test
     fun uint_string_map() {
-        data class Data(val data: Map<UInt, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<UInt, String>)
 
         assertEquals(
             Data(mapOf(0U to "ab", UInt.MAX_VALUE to "c")),
@@ -63,7 +64,7 @@ class MapDeserializeTest {
 
     @Test
     fun boolean_string_map() {
-        data class Data(val data: Map<Boolean, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Boolean, String>)
 
         assertEquals(
             Data(mapOf(true to "ab", false to "c")),
@@ -118,7 +119,7 @@ class MapDeserializeTest {
 
     @Test
     fun long_string_map() {
-        data class Data(val data: Map<Long, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Long, String>)
 
         assertEquals(
             Data(mapOf(0L to "ab", -1L to "c")),
@@ -135,7 +136,7 @@ class MapDeserializeTest {
 
     @Test
     fun ulong_string_map() {
-        data class Data(val data: Map<ULong, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<ULong, String>)
 
         assertEquals(
             Data(mapOf(0.toULong() to "ab", ULong.MAX_VALUE to "c")),
@@ -152,7 +153,7 @@ class MapDeserializeTest {
 
     @Test
     fun byte_string_map() {
-        data class Data(val data: Map<Byte, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Byte, String>)
 
         assertEquals(
             Data(mapOf(0.toByte() to "ab", (-1).toByte() to "c", 0x5E.toByte() to "d")),
@@ -170,7 +171,7 @@ class MapDeserializeTest {
 
     @Test
     fun ubyte_string_map() {
-        data class Data(val data: Map<UByte, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<UByte, String>)
 
         assertEquals(
             Data(mapOf(0.toUByte() to "ab", UByte.MAX_VALUE to "c", 0x5E.toUByte() to "d")),
@@ -188,7 +189,7 @@ class MapDeserializeTest {
 
     @Test
     fun char_string_map() {
-        data class Data(val data: Map<Char, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Char, String>)
 
         assertEquals(
             Data(mapOf('0' to "ab", 'd' to "e")),
@@ -205,7 +206,7 @@ class MapDeserializeTest {
 
     @Test
     fun short_string_map() {
-        data class Data(val data: Map<Short, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<Short, String>)
 
         assertEquals(
             Data(mapOf(0.toShort() to "ab", (-1).toShort() to "c")),
@@ -222,7 +223,7 @@ class MapDeserializeTest {
 
     @Test
     fun ushort_string_map() {
-        data class Data(val data: Map<UShort, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<UShort, String>)
 
         assertEquals(
             Data(mapOf(0.toUShort() to "ab", UShort.MAX_VALUE to "c")),
@@ -239,7 +240,7 @@ class MapDeserializeTest {
 
     @Test
     fun big_integer_string_map() {
-        data class Data(val data: Map<BigInteger, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<BigInteger, String>)
 
         assertEquals(
             Data(mapOf(BigInteger.ZERO to "ab", BigInteger("1000000000000000000000000000") to "c")),
@@ -256,7 +257,7 @@ class MapDeserializeTest {
 
     @Test
     fun big_decimal_string_map() {
-        data class Data(val data: Map<BigDecimal, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<BigDecimal, String>)
 
         assertEquals(
             Data(
@@ -320,7 +321,7 @@ class MapDeserializeTest {
 
     @Test
     fun uuid_string_map() {
-        data class Data(val data: Map<UUID, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<UUID, String>)
 
         val uuid = UUID.randomUUID()
         assertEquals(
@@ -341,7 +342,7 @@ class MapDeserializeTest {
 
     @Test
     fun enum_string_map() {
-        data class Data(val data: Map<EnumValue, String>)
+        data class Data(val data: @IgnoreInvalidElement Map<EnumValue, String>)
 
         assertEquals(
             Data(mapOf(EnumValue.Value1 to "ab")),
