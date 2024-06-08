@@ -23,8 +23,8 @@ abstract class KtConfig<T : Any>(
     }
 
     protected fun loadFromString(text: String): T? {
-        val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
         if (text.isBlank()) return null
+        val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
         val values =
             YamlConfiguration().apply {
                 options().pathSeparator(PATH_SEPARATOR)
