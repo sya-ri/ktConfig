@@ -14,7 +14,7 @@ import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-internal class Deserializer() {
+internal class Deserializer {
     private val safeConstructor = SnakeYamlReflection.getSafeConstructor()
     private val constructYamlBool = safeConstructor.ConstructYamlBool()
     private val constructYamlInt = safeConstructor.ConstructYamlInt()
@@ -311,7 +311,6 @@ internal class Deserializer() {
         path: String,
         value: Any,
         isMarkedNullable: Boolean,
-        ignoreInvalidElement: Boolean,
     ): List<T> {
         val values =
             when (value) {
@@ -323,11 +322,6 @@ internal class Deserializer() {
                 values.mapIndexed { index, v ->
                     @Suppress("UNCHECKED_CAST")
                     v?.let { content.deserialize(this, "$path[$index]", v) } as T
-                }
-            }
-            ignoreInvalidElement -> {
-                values.filterNotNull().mapIndexedNotNull { index, v ->
-                    content.deserialize(this, "$path[$index]", v)
                 }
             }
             else -> {
@@ -347,7 +341,6 @@ internal class Deserializer() {
         path: String,
         value: Any,
         isMarkedNullable: Boolean,
-        ignoreInvalidElement: Boolean,
     ): Map<K, V?> {
         val entries =
             when (value) {
@@ -355,24 +348,15 @@ internal class Deserializer() {
                 is Map<*, *> -> value.entries
                 else -> throw TypeMismatchException(type, value, path)
             }
-        return entries.mapNotNull { (key, value) ->
-            keyable.deserialize(this, "$path.$key", key.toString()).let { deserializedKey ->
-                when {
-                    deserializedKey != null -> {
-                        deserializedKey to
-                            content.deserialize(this, "$path.$key", value).let { deserializedValue ->
-                                when {
-                                    deserializedValue != null || isMarkedNullable -> deserializedValue
-                                    ignoreInvalidElement -> null
-                                    else -> throw TypeMismatchException(content.type, value, "$path.$key")
-                                }
-                            }
-                    }
-                    ignoreInvalidElement -> null
-                    else -> throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
-                }
+        return entries.associate { (key, value) ->
+            val deserializedKey =
+                keyable.deserialize(this, "$path.$key", key.toString()) ?: throw TypeMismatchException(keyable.type, key, "$path.$key(key)")
+            val deserializedValue = content.deserialize(this, "$path.$key", value)
+            if (deserializedValue == null && isMarkedNullable.not()) {
+                throw TypeMismatchException(content.type, value, "$path.$key")
             }
-        }.toMap()
+            deserializedKey to deserializedValue
+        }
     }
 
     fun enum(

@@ -270,7 +270,6 @@ internal sealed class Content<T>(val type: KType) {
         type: KType,
         protected val content: Content<U>,
         protected val isMarkedNullable: Boolean,
-        protected val ignoreInvalidElement: Boolean,
     ) : Content<T>(type) {
         override fun serialize(
             path: String,
@@ -290,52 +289,48 @@ internal sealed class Content<T>(val type: KType) {
             type: KType,
             content: Content<U>,
             isMarkedNullable: Boolean,
-            ignoreInvalidElement: Boolean,
-        ) : IterableType<List<U>, U>(type, content, isMarkedNullable, ignoreInvalidElement) {
+        ) : IterableType<List<U>, U>(type, content, isMarkedNullable) {
             override fun deserialize(
                 deserializer: Deserializer,
                 path: String,
                 value: Any,
-            ) = deserializer.list(content, path, value, isMarkedNullable, ignoreInvalidElement)
+            ) = deserializer.list(content, path, value, isMarkedNullable)
         }
 
         class SetType<U : Any?>(
             type: KType,
             content: Content<U>,
             isMarkedNullable: Boolean,
-            ignoreInvalidElement: Boolean,
-        ) : IterableType<Set<U>, U>(type, content, isMarkedNullable, ignoreInvalidElement) {
+        ) : IterableType<Set<U>, U>(type, content, isMarkedNullable) {
             override fun deserialize(
                 deserializer: Deserializer,
                 path: String,
                 value: Any,
-            ) = deserializer.list(content, path, value, isMarkedNullable, ignoreInvalidElement).toSet()
+            ) = deserializer.list(content, path, value, isMarkedNullable).toSet()
         }
 
         class HashSetType<U>(
             type: KType,
             content: Content<U>,
             isMarkedNullable: Boolean,
-            ignoreInvalidElement: Boolean,
-        ) : IterableType<HashSet<U>, U>(type, content, isMarkedNullable, ignoreInvalidElement) {
+        ) : IterableType<HashSet<U>, U>(type, content, isMarkedNullable) {
             override fun deserialize(
                 deserializer: Deserializer,
                 path: String,
                 value: Any,
-            ) = deserializer.list(content, path, value, isMarkedNullable, ignoreInvalidElement).toHashSet()
+            ) = deserializer.list(content, path, value, isMarkedNullable).toHashSet()
         }
 
         class LinkedHashSetType<U>(
             type: KType,
             content: Content<U>,
             isMarkedNullable: Boolean,
-            ignoreInvalidElement: Boolean,
-        ) : IterableType<LinkedHashSet<U>, U>(type, content, isMarkedNullable, ignoreInvalidElement) {
+        ) : IterableType<LinkedHashSet<U>, U>(type, content, isMarkedNullable) {
             override fun deserialize(
                 deserializer: Deserializer,
                 path: String,
                 value: Any,
-            ) = LinkedHashSet(deserializer.list(content, path, value, isMarkedNullable, ignoreInvalidElement))
+            ) = LinkedHashSet(deserializer.list(content, path, value, isMarkedNullable))
         }
     }
 
@@ -344,13 +339,12 @@ internal sealed class Content<T>(val type: KType) {
         private val keyable: Keyable<K>,
         private val content: Content<V>,
         private val isMarkedNullable: Boolean,
-        private val ignoreInvalidElement: Boolean,
     ) : Content<Map<K, V?>>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
             value: Any,
-        ) = deserializer.map(type, keyable, content, path, value, isMarkedNullable, ignoreInvalidElement)
+        ) = deserializer.map(type, keyable, content, path, value, isMarkedNullable)
 
         override fun serialize(
             path: String,

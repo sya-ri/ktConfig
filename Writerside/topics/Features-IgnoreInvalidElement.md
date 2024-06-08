@@ -1,3 +1,0 @@
-# IgnoreInvalidElement
-
-Start typing here...

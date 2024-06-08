@@ -1,6 +1,5 @@
 package dev.s7a.ktconfig.internal
 
-import dev.s7a.ktconfig.IgnoreInvalidElement
 import dev.s7a.ktconfig.KtConfigSerializer
 import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.exception.UnsupportedTypeException
@@ -70,23 +69,19 @@ internal class ContentSerializer {
             UUID::class -> Content.UUIDType(type)
             Iterable::class, Collection::class, List::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                val ignoreInvalidElement = type.ignoreInvalidElement()
-                Content.IterableType.ListType(type, from(type0, projectionMap), type0.isMarkedNullable, ignoreInvalidElement)
+                Content.IterableType.ListType(type, from(type0, projectionMap), type0.isMarkedNullable)
             }
             Set::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                val ignoreInvalidElement = type.ignoreInvalidElement()
-                Content.IterableType.SetType(type, from(type0, projectionMap), type0.isMarkedNullable, ignoreInvalidElement)
+                Content.IterableType.SetType(type, from(type0, projectionMap), type0.isMarkedNullable)
             }
             HashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                val ignoreInvalidElement = type.ignoreInvalidElement()
-                Content.IterableType.HashSetType(type, from(type0, projectionMap), type0.isMarkedNullable, ignoreInvalidElement)
+                Content.IterableType.HashSetType(type, from(type0, projectionMap), type0.isMarkedNullable)
             }
             LinkedHashSet::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
-                val ignoreInvalidElement = type.ignoreInvalidElement()
-                Content.IterableType.LinkedHashSetType(type, from(type0, projectionMap), type0.isMarkedNullable, ignoreInvalidElement)
+                Content.IterableType.LinkedHashSetType(type, from(type0, projectionMap), type0.isMarkedNullable)
             }
             Map::class, HashMap::class, LinkedHashMap::class -> {
                 val type0 = projectionMap.typeArgument(type, 0)
@@ -94,8 +89,7 @@ internal class ContentSerializer {
                 val keyable = from(type0, projectionMap)
                 if (keyable !is Content.Keyable) throw UnsupportedTypeException(type0, "cannot be used as a key")
                 val type1 = projectionMap.typeArgument(type, 1)
-                val ignoreInvalidElement = type.ignoreInvalidElement()
-                Content.MapType(type, keyable, from(type1, projectionMap), type1.isMarkedNullable, ignoreInvalidElement)
+                Content.MapType(type, keyable, from(type1, projectionMap), type1.isMarkedNullable)
             }
             is KClass<*> -> {
                 classifier.findSerializer()?.let { serializer ->
@@ -138,10 +132,6 @@ internal class ContentSerializer {
         private fun KAnnotatedElement.findSerializer(): KtConfigSerializer<*, *>? {
             val serializer = findAnnotation<UseSerializer>()?.with ?: return null
             return serializer.objectInstance ?: serializer.createInstance()
-        }
-
-        private fun KAnnotatedElement.ignoreInvalidElement(): Boolean {
-            return findAnnotation<IgnoreInvalidElement>() != null
         }
     }
 }
