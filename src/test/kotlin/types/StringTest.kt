@@ -1,0 +1,223 @@
+package types
+
+import utils.Data
+import utils.NullableData
+import utils.assertKtConfigString
+import utils.assertSaveKtConfigString
+import kotlin.test.Test
+
+class StringTest {
+    @Test
+    fun `should get string from config`() {
+        assertKtConfigString(
+            Data("config string"),
+            """
+            value: config string
+            """.trimIndent(),
+        )
+        assertKtConfigString(
+            NullableData("config string"),
+            """
+            value: config string
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get char from config`() {
+        assertKtConfigString(
+            Data("a"),
+            """
+            value: a
+            """.trimIndent(),
+        )
+        assertKtConfigString(
+            NullableData("a"),
+            """
+            value: a
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get 'null' from config`() {
+        assertKtConfigString(
+            Data("null"),
+            """
+            value: "null"
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get null from config`() {
+        assertKtConfigString(
+            NullableData<String>(null),
+            """
+            value: null
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get int string from config`() {
+        assertKtConfigString(
+            Data("12"),
+            """
+            value: 12
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get byte array as string from config`() {
+        assertKtConfigString(
+            Data(2.toChar().toString()),
+            """
+            value: !!binary |-
+              Ag==
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get string as list from config`() {
+        assertKtConfigString(
+            Data(listOf("config string")),
+            """
+            value: config string
+            """.trimIndent(),
+        )
+        assertKtConfigString(
+            NullableData(listOf("config string")),
+            """
+            value: config string
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get string list (single value) from config`() {
+        assertKtConfigString(
+            Data(listOf("config string")),
+            """
+            value:
+             - config string
+            """.trimIndent(),
+        )
+        assertKtConfigString(
+            NullableData(listOf("config string")),
+            """
+            value:
+             - config string
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should get string list (multiple values) from config`() {
+        assertKtConfigString(
+            Data(listOf("config string", "other string", "")),
+            """
+            value:
+             - config string
+             - other string
+             - ""
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `should save string to config`() {
+        assertSaveKtConfigString(
+            """
+            value: config string
+            
+            """.trimIndent(),
+            Data("config string"),
+        )
+        assertSaveKtConfigString(
+            """
+            value: config string
+            
+            """.trimIndent(),
+            NullableData("config string"),
+        )
+    }
+
+    @Test
+    fun `should save 'null' to config`() {
+        assertSaveKtConfigString(
+            """
+            value: 'null'
+            
+            """.trimIndent(),
+            Data("null"),
+        )
+    }
+
+    @Test
+    fun `should save null to config`() {
+        assertSaveKtConfigString(
+            "",
+            NullableData<String>(null),
+        )
+    }
+
+    @Test
+    fun `should save int string to config`() {
+        assertSaveKtConfigString(
+            """
+            value: '12'
+            
+            """.trimIndent(),
+            Data("12"),
+        )
+    }
+
+    @Test
+    fun `should save byte array as string to config`() {
+        assertSaveKtConfigString(
+            """
+            value: !!binary |-
+              Ag==
+            
+            """.trimIndent(),
+            Data(2.toChar().toString()),
+        )
+    }
+
+    @Test
+    fun `should save string list (single value) to config`() {
+        assertSaveKtConfigString(
+            """
+            value:
+            - config string
+            
+            """.trimIndent(),
+            Data(listOf("config string")),
+        )
+        assertSaveKtConfigString(
+            """
+            value:
+            - config string
+            
+            """.trimIndent(),
+            NullableData(listOf("config string")),
+        )
+    }
+
+    @Test
+    fun `should save string list (multiple values) to config`() {
+        assertSaveKtConfigString(
+            """
+            value:
+            - config string
+            - other string
+            - ''
+            
+            """.trimIndent(),
+            Data(listOf("config string", "other string", "")),
+        )
+    }
+}

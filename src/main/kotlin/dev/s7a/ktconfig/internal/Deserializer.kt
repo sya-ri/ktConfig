@@ -25,6 +25,13 @@ internal class Deserializer {
         return SnakeYamlReflection.getScalarNode(value)
     }
 
+    fun string(value: Any): String {
+        return when (value) {
+            is ByteArray -> value.decodeToString()
+            else -> value.toString()
+        }
+    }
+
     private fun number(value: String): Number? {
         return runCatching {
             constructYamlInt.construct(node(value)) as Number
@@ -179,6 +186,7 @@ internal class Deserializer {
         return when (value) {
             is Number -> char(value)
             is String -> char(value)
+            is ByteArray -> char(value)
             else -> null
         }
     }
@@ -189,6 +197,10 @@ internal class Deserializer {
 
     private fun char(value: String): Char? {
         return value.singleOrNull()
+    }
+
+    private fun char(value: ByteArray): Char? {
+        return char(value.decodeToString())
     }
 
     fun short(value: Any): Short? {

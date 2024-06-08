@@ -37,7 +37,7 @@ internal sealed class Content<T>(val type: KType) {
             deserializer: Deserializer,
             path: String,
             value: Any,
-        ) = value.toString()
+        ) = deserializer.string(value)
 
         override fun serialize(
             path: String,
