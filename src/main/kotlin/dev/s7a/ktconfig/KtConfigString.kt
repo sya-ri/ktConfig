@@ -97,7 +97,7 @@ inline fun <reified T : Any> KtConfigString(noinline default: () -> T): KtConfig
  */
 @Suppress("FunctionName")
 inline fun <reified T : Any> KtConfigString(default: T): KtConfigString.Default<T> {
-    return KtConfigString({ default })
+    return KtConfigString { default }
 }
 
 /**

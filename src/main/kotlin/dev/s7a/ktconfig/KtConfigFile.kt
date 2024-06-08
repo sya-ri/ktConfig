@@ -288,7 +288,7 @@ inline fun <reified T : Any> KtConfigFile(
     file: File,
     default: T,
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(file, { default })
+    return KtConfigFile(file) { default }
 }
 
 /**
@@ -324,7 +324,7 @@ inline fun <reified T : Any> KtConfigFile(
     path: String,
     default: T,
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(plugin, path, { default })
+    return KtConfigFile(plugin, path) { default }
 }
 
 /**
@@ -360,7 +360,7 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     default: T,
 ): KtConfigFile.Default<T> {
-    return KtConfigFile(this, path, { default })
+    return KtConfigFile(this, path) { default }
 }
 
 /**
