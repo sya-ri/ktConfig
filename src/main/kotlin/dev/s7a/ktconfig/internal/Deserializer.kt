@@ -39,11 +39,11 @@ internal class Deserializer {
         }
     }
 
-    fun int(value: Number): Int {
+    private fun int(value: Number): Int {
         return value.toInt()
     }
 
-    fun int(value: String): Int? {
+    private fun int(value: String): Int? {
         return number(value)?.let(::int)
     }
 
@@ -59,7 +59,7 @@ internal class Deserializer {
         return int(value).toUInt()
     }
 
-    fun uint(value: String): UInt? {
+    private fun uint(value: String): UInt? {
         return number(value)?.let(::uint)
     }
 
@@ -71,7 +71,7 @@ internal class Deserializer {
         }
     }
 
-    fun boolean(value: String): Boolean? {
+    private fun boolean(value: String): Boolean? {
         return runCatching {
             constructYamlBool.construct(node(value)) as Boolean
         }.getOrNull()
@@ -89,7 +89,7 @@ internal class Deserializer {
         return value.toDouble()
     }
 
-    fun double(value: String): Double? {
+    private fun double(value: String): Double? {
         return runCatching {
             constructYamlFloat.construct(node(value)) as Double
         }.getOrNull()
@@ -107,7 +107,7 @@ internal class Deserializer {
         return double(value).toFloat()
     }
 
-    fun float(value: String): Float? {
+    private fun float(value: String): Float? {
         return double(value)?.toFloat()
     }
 
@@ -123,7 +123,7 @@ internal class Deserializer {
         return value.toLong()
     }
 
-    fun long(value: String): Long? {
+    private fun long(value: String): Long? {
         return number(value)?.let(::long)
     }
 
@@ -139,7 +139,7 @@ internal class Deserializer {
         return long(value).toULong()
     }
 
-    fun ulong(value: String): ULong? {
+    private fun ulong(value: String): ULong? {
         return number(value)?.let(::ulong)
     }
 
@@ -155,7 +155,7 @@ internal class Deserializer {
         return value.toByte()
     }
 
-    fun byte(value: String): Byte? {
+    private fun byte(value: String): Byte? {
         return number(value)?.let(::byte)
     }
 
@@ -167,11 +167,11 @@ internal class Deserializer {
         }
     }
 
-    fun ubyte(value: Number): UByte {
+    private fun ubyte(value: Number): UByte {
         return byte(value).toUByte()
     }
 
-    fun ubyte(value: String): UByte? {
+    private fun ubyte(value: String): UByte? {
         return number(value)?.let(::ubyte)
     }
 
@@ -187,7 +187,7 @@ internal class Deserializer {
         return value.toInt().toChar()
     }
 
-    fun char(value: String): Char? {
+    private fun char(value: String): Char? {
         return value.singleOrNull()
     }
 
@@ -203,7 +203,7 @@ internal class Deserializer {
         return value.toShort()
     }
 
-    fun short(value: String): Short? {
+    private fun short(value: String): Short? {
         return number(value)?.let(::short)
     }
 
@@ -219,7 +219,7 @@ internal class Deserializer {
         return short(value).toUShort()
     }
 
-    fun ushort(value: String): UShort? {
+    private fun ushort(value: String): UShort? {
         return number(value)?.let(::ushort)
     }
 
@@ -231,11 +231,11 @@ internal class Deserializer {
         }
     }
 
-    fun bigInteger(value: Number): BigInteger {
+    private fun bigInteger(value: Number): BigInteger {
         return BigInteger(value.toString())
     }
 
-    fun bigInteger(value: String): BigInteger? {
+    private fun bigInteger(value: String): BigInteger? {
         return number(value)?.run {
             if (this is BigInteger) {
                 this
@@ -257,7 +257,7 @@ internal class Deserializer {
         return BigDecimal(value.toString())
     }
 
-    fun bigDecimal(value: String): BigDecimal? {
+    private fun bigDecimal(value: String): BigDecimal? {
         return runCatching {
             BigDecimal(value)
         }.getOrNull()
@@ -271,7 +271,7 @@ internal class Deserializer {
         }
     }
 
-    fun date(value: String): Date? {
+    private fun date(value: String): Date? {
         return runCatching {
             constructYamlTimestamp.construct(node(value)) as Date
         }.getOrNull()
@@ -302,7 +302,7 @@ internal class Deserializer {
         }
     }
 
-    fun uuid(value: String): UUID? {
+    private fun uuid(value: String): UUID? {
         return runCatching { UUID.fromString(value) }.getOrNull()
     }
 
