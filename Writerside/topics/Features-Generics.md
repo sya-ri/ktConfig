@@ -1,3 +1,0 @@
-# Generics
-
-Start typing here...

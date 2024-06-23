@@ -1,3 +1,0 @@
-# Comment
-
-Start typing here...

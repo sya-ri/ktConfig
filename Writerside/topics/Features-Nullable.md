@@ -1,3 +1,0 @@
-# Nullable
-
-Start typing here...
