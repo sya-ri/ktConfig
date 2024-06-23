@@ -12,6 +12,7 @@ shadow = "8.1.1"
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
 spigotLatest = "1.20.2-experimental-SNAPSHOT"
 mockBukkit = "3.78.0"
+kotest = "5.9.1"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -26,3 +27,6 @@ shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 spigot8 = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot8" }
 spigotLatest = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigotLatest" }
 mockBukkit = { group = "com.github.seeseemelk", name = "MockBukkit-v1.20", version.ref = "mockBukkit" }
+kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
+kotest-assertions-core = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+kotest-framework-datatest = { group = "io.kotest", name = "kotest-framework-datatest", version.ref = "kotest" }

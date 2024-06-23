@@ -1,142 +1,74 @@
 package types
 
+import dev.s7a.ktconfig.exception.TypeMismatchException
+import dev.s7a.ktconfig.ktConfigString
+import dev.s7a.ktconfig.saveKtConfigString
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.datatest.withData
+import io.kotest.matchers.shouldBe
 import utils.Data
+import utils.GetTestData
 import utils.NullableData
-import utils.assertKtConfigString
-import utils.assertSaveKtConfigString
-import kotlin.test.Test
+import utils.SaveTestData
 
-class StringTest {
-    @Test
-    fun `should get string from config`() {
-        assertKtConfigString(
-            Data("config string"),
-            """
-            value: config string
-            """.trimIndent(),
-        )
-        assertKtConfigString(
-            NullableData("config string"),
-            """
-            value: config string
-            """.trimIndent(),
-        )
-    }
+@Suppress("unused")
+class StringTest :
+    FunSpec({
+        context("should get value from config") {
+            withData(
+                GetTestData("value: config string", "config string"),
+                GetTestData("value: a", "a"),
+                GetTestData("value: 'null'", "null"),
+                GetTestData("value: 12", "12"),
+                GetTestData(
+                    """
+                    value: !!binary |-
+                      Ag==
+                    """.trimIndent(),
+                    2.toChar().toString(),
+                ),
+            ) { (yaml, value) ->
+                ktConfigString<Data<String>>(yaml) shouldBe Data(value)
+                ktConfigString<NullableData<String>>(yaml) shouldBe Data(value)
+            }
+        }
 
-    @Test
-    fun `should get char from config`() {
-        assertKtConfigString(
-            Data("a"),
-            """
-            value: a
-            """.trimIndent(),
-        )
-        assertKtConfigString(
-            NullableData("a"),
-            """
-            value: a
-            """.trimIndent(),
-        )
-    }
+        context("should get null from config") {
+            test("not-null") {
+                val exception =
+                    shouldThrow<TypeMismatchException> {
+                        ktConfigString<Data<String>>("value: null")
+                    }
+                exception.message shouldBe "Expected kotlin.String, but null: value"
+            }
+            test("nullable") {
+                ktConfigString<NullableData<String>>("value: null") shouldBe Data(null)
+            }
+        }
 
-    @Test
-    fun `should get 'null' from config`() {
-        assertKtConfigString(
-            Data("null"),
-            """
-            value: "null"
-            """.trimIndent(),
-        )
-    }
+        context("should save value to config") {
+            withData(
+                SaveTestData("config string", "value: config string\n"),
+                SaveTestData("null", "value: 'null'\n"),
+                SaveTestData("12", "value: '12'\n"),
+                SaveTestData(
+                    2.toChar().toString(),
+                    """
+                    value: !!binary |-
+                      Ag==
+                    
+                    """.trimIndent(),
+                ),
+            ) { (value, yaml) ->
+                saveKtConfigString(Data(value)) shouldBe yaml
+                saveKtConfigString(NullableData(value)) shouldBe yaml
+            }
+        }
 
-    @Test
-    fun `should get null from config`() {
-        assertKtConfigString(
-            NullableData<String>(null),
-            """
-            value: null
-            """.trimIndent(),
-        )
-    }
-
-    @Test
-    fun `should get int string from config`() {
-        assertKtConfigString(
-            Data("12"),
-            """
-            value: 12
-            """.trimIndent(),
-        )
-    }
-
-    @Test
-    fun `should get byte array as string from config`() {
-        assertKtConfigString(
-            Data(2.toChar().toString()),
-            """
-            value: !!binary |-
-              Ag==
-            """.trimIndent(),
-        )
-    }
-
-    @Test
-    fun `should save string to config`() {
-        assertSaveKtConfigString(
-            """
-            value: config string
-            
-            """.trimIndent(),
-            Data("config string"),
-        )
-        assertSaveKtConfigString(
-            """
-            value: config string
-            
-            """.trimIndent(),
-            NullableData("config string"),
-        )
-    }
-
-    @Test
-    fun `should save 'null' to config`() {
-        assertSaveKtConfigString(
-            """
-            value: 'null'
-            
-            """.trimIndent(),
-            Data("null"),
-        )
-    }
-
-    @Test
-    fun `should save null to config`() {
-        assertSaveKtConfigString(
-            "",
-            NullableData<String>(null),
-        )
-    }
-
-    @Test
-    fun `should save int string to config`() {
-        assertSaveKtConfigString(
-            """
-            value: '12'
-            
-            """.trimIndent(),
-            Data("12"),
-        )
-    }
-
-    @Test
-    fun `should save byte array as string to config`() {
-        assertSaveKtConfigString(
-            """
-            value: !!binary |-
-              Ag==
-            
-            """.trimIndent(),
-            Data(2.toChar().toString()),
-        )
-    }
-}
+        context("should save null to config") {
+            test("nullable") {
+                saveKtConfigString(NullableData<String>(null)) shouldBe ""
+            }
+        }
+    })
