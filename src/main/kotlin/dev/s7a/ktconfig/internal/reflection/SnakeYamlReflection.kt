@@ -65,11 +65,7 @@ internal object SnakeYamlReflection {
             }
     }
 
-    fun getSafeConstructor(): SafeConstructor {
-        return safeConstructorMethod.invoke()
-    }
+    fun getSafeConstructor(): SafeConstructor = safeConstructorMethod.invoke()
 
-    fun getScalarNode(value: String): ScalarNode {
-        return scalarNodeConstructorMethod.invoke(value)
-    }
+    fun getScalarNode(value: String): ScalarNode = scalarNodeConstructorMethod.invoke(value)
 }

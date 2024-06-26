@@ -10,7 +10,11 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  */
 @UseSerializer(IntVector3.Serializer::class)
-data class IntVector3(val x: Int, val y: Int, val z: Int) {
+data class IntVector3(
+    val x: Int,
+    val y: Int,
+    val z: Int,
+) {
     /**
      * Serializer of [IntVector3] separated by commas.
      *
@@ -31,8 +35,6 @@ data class IntVector3(val x: Int, val y: Int, val z: Int) {
             }.getOrNull()
         }
 
-        override fun serialize(value: IntVector3): String {
-            return "${value.x}, ${value.y}, ${value.z}"
-        }
+        override fun serialize(value: IntVector3): String = "${value.x}, ${value.y}, ${value.z}"
     }
 }

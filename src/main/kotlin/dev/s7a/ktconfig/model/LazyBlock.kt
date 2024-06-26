@@ -13,16 +13,19 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  */
 @UseSerializer(LazyBlock.Serializer::class)
-data class LazyBlock(val world: String, val x: Int, val y: Int, val z: Int) {
+data class LazyBlock(
+    val world: String,
+    val x: Int,
+    val y: Int,
+    val z: Int,
+) {
     companion object {
         /**
          * Generate [LazyBlock] from [Block].
          *
          * @since 1.0.0
          */
-        fun from(block: Block): LazyBlock {
-            return LazyBlock(block.world.name, block.x, block.y, block.z)
-        }
+        fun from(block: Block): LazyBlock = LazyBlock(block.world.name, block.x, block.y, block.z)
     }
 
     /**
@@ -30,9 +33,7 @@ data class LazyBlock(val world: String, val x: Int, val y: Int, val z: Int) {
      *
      * @since 1.0.0
      */
-    fun get(): Block? {
-        return Bukkit.getWorld(world)?.getBlockAt(x, y, z)
-    }
+    fun get(): Block? = Bukkit.getWorld(world)?.getBlockAt(x, y, z)
 
     /**
      * Serializer of [LazyBlock] separated by commas.
@@ -55,8 +56,6 @@ data class LazyBlock(val world: String, val x: Int, val y: Int, val z: Int) {
             }.getOrNull()
         }
 
-        override fun serialize(value: LazyBlock): String {
-            return "${value.world}, ${value.x}, ${value.y}, ${value.z}"
-        }
+        override fun serialize(value: LazyBlock): String = "${value.world}, ${value.x}, ${value.y}, ${value.z}"
     }
 }

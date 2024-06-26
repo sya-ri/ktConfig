@@ -13,16 +13,22 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  */
 @UseSerializer(LazyLocation.Serializer::class)
-data class LazyLocation(val world: String, val x: Double, val y: Double, val z: Double, val yaw: Float = 0F, val pitch: Float = 0F) {
+data class LazyLocation(
+    val world: String,
+    val x: Double,
+    val y: Double,
+    val z: Double,
+    val yaw: Float = 0F,
+    val pitch: Float = 0F,
+) {
     companion object {
         /**
          * Generate [LazyLocation] from [Location]. If [Location.getWorld] is null, returns null.
          *
          * @since 1.0.0
          */
-        fun from(location: Location): LazyLocation? {
-            return location.world?.name?.let { LazyLocation(it, location.x, location.y, location.z, location.yaw, location.pitch) }
-        }
+        fun from(location: Location): LazyLocation? =
+            location.world?.name?.let { LazyLocation(it, location.x, location.y, location.z, location.yaw, location.pitch) }
     }
 
     /**
@@ -30,9 +36,7 @@ data class LazyLocation(val world: String, val x: Double, val y: Double, val z: 
      *
      * @since 1.0.0
      */
-    fun get(): Location {
-        return Location(Bukkit.getWorld(world), x, y, z, yaw, pitch)
-    }
+    fun get(): Location = Location(Bukkit.getWorld(world), x, y, z, yaw, pitch)
 
     /**
      * Serializer of [LazyLocation] separated by commas.
@@ -57,12 +61,11 @@ data class LazyLocation(val world: String, val x: Double, val y: Double, val z: 
             }.getOrNull()
         }
 
-        override fun serialize(value: LazyLocation): String {
-            return if (value.yaw == 0F && value.pitch == 0F) {
+        override fun serialize(value: LazyLocation): String =
+            if (value.yaw == 0F && value.pitch == 0F) {
                 "${value.world}, ${value.x}, ${value.y}, ${value.z}"
             } else {
                 "${value.world}, ${value.x}, ${value.y}, ${value.z}, ${value.yaw}, ${value.pitch}"
             }
-        }
     }
 }

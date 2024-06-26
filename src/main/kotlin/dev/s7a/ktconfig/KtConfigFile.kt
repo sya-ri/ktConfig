@@ -16,9 +16,7 @@ import kotlin.reflect.typeOf
  * @throws dev.s7a.ktconfig.exception.TypeMismatchException
  * @since 1.0.0
  */
-inline fun <reified T : Any> ktConfigFile(file: File): T? {
-    return KtConfigFile<T>(file).load()
-}
+inline fun <reified T : Any> ktConfigFile(file: File): T? = KtConfigFile<T>(file).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path].
@@ -34,9 +32,7 @@ inline fun <reified T : Any> ktConfigFile(file: File): T? {
 inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
-): T? {
-    return KtConfigFile<T>(plugin, path).load()
-}
+): T? = KtConfigFile<T>(plugin, path).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path].
@@ -50,9 +46,7 @@ inline fun <reified T : Any> ktConfigFile(
  * @since 1.0.0
  */
 @JvmName("ktConfigFile_")
-inline fun <reified T : Any> JavaPlugin.ktConfigFile(path: String): T? {
-    return KtConfigFile<T>(this, path).load()
-}
+inline fun <reified T : Any> JavaPlugin.ktConfigFile(path: String): T? = KtConfigFile<T>(this, path).load()
 
 /**
  * Load config from [file]. If [file] doesn't exist or is empty, save [default].
@@ -68,9 +62,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(path: String): T? {
 inline fun <reified T : Any> ktConfigFile(
     file: File,
     noinline default: () -> T,
-): T {
-    return KtConfigFile<T>(file, default).load()
-}
+): T = KtConfigFile<T>(file, default).load()
 
 /**
  * Load config from [file]. If [file] doesn't exist or is empty, save [default].
@@ -86,9 +78,7 @@ inline fun <reified T : Any> ktConfigFile(
 inline fun <reified T : Any> ktConfigFile(
     file: File,
     default: T,
-): T {
-    return KtConfigFile<T>(file, default).load()
-}
+): T = KtConfigFile<T>(file, default).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path]. If the file doesn't exist or is empty, save [default].
@@ -107,9 +97,7 @@ inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
     noinline default: () -> T,
-): T {
-    return KtConfigFile(plugin, path, default).load()
-}
+): T = KtConfigFile(plugin, path, default).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path]. If the file doesn't exist or is empty, save [default].
@@ -127,9 +115,7 @@ inline fun <reified T : Any> ktConfigFile(
     plugin: JavaPlugin,
     path: String,
     default: T,
-): T {
-    return KtConfigFile(plugin, path, default).load()
-}
+): T = KtConfigFile(plugin, path, default).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path]. If the file doesn't exist or is empty, save [default].
@@ -147,9 +133,7 @@ inline fun <reified T : Any> ktConfigFile(
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     noinline default: () -> T,
-): T {
-    return KtConfigFile(this, path, default).load()
-}
+): T = KtConfigFile(this, path, default).load()
 
 /**
  * Load config from [JavaPlugin.dataFolder]/[path]. If the file doesn't exist or is empty, save [default].
@@ -167,9 +151,7 @@ inline fun <reified T : Any> JavaPlugin.ktConfigFile(
 inline fun <reified T : Any> JavaPlugin.ktConfigFile(
     path: String,
     default: T,
-): T {
-    return KtConfigFile(this, path, default).load()
-}
+): T = KtConfigFile(this, path, default).load()
 
 /**
  * Save config to [file].
@@ -227,9 +209,7 @@ inline fun <reified T : Any> JavaPlugin.saveKtConfigFile(
  * @param T Config type
  * @since 1.0.0
  */
-inline fun <reified T : Any> KtConfigFile(file: File): KtConfigFile<T> {
-    return KtConfigFile(T::class, typeOf<T>(), file)
-}
+inline fun <reified T : Any> KtConfigFile(file: File): KtConfigFile<T> = KtConfigFile(T::class, typeOf<T>(), file)
 
 /**
  * Handle config as [File].
@@ -242,9 +222,7 @@ inline fun <reified T : Any> KtConfigFile(file: File): KtConfigFile<T> {
 inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
-): KtConfigFile<T> {
-    return KtConfigFile(plugin.dataFolder.resolve(path))
-}
+): KtConfigFile<T> = KtConfigFile(plugin.dataFolder.resolve(path))
 
 /**
  * Handle config as [File].
@@ -255,9 +233,7 @@ inline fun <reified T : Any> KtConfigFile(
  * @since 1.0.0
  */
 @JvmName("KtConfigFile_")
-inline fun <reified T : Any> JavaPlugin.KtConfigFile(path: String): KtConfigFile<T> {
-    return KtConfigFile(dataFolder.resolve(path))
-}
+inline fun <reified T : Any> JavaPlugin.KtConfigFile(path: String): KtConfigFile<T> = KtConfigFile(dataFolder.resolve(path))
 
 /**
  * Handle config as [File].
@@ -271,9 +247,7 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(path: String): KtConfigFile
 inline fun <reified T : Any> KtConfigFile(
     file: File,
     noinline default: () -> T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile.Default(T::class, typeOf<T>(), file, default)
-}
+): KtConfigFile.Default<T> = KtConfigFile.Default(T::class, typeOf<T>(), file, default)
 
 /**
  * Handle config as [File].
@@ -287,9 +261,7 @@ inline fun <reified T : Any> KtConfigFile(
 inline fun <reified T : Any> KtConfigFile(
     file: File,
     default: T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile(file) { default }
-}
+): KtConfigFile.Default<T> = KtConfigFile(file) { default }
 
 /**
  * Handle config as [File].
@@ -305,9 +277,7 @@ inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
     noinline default: () -> T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile(plugin.dataFolder.resolve(path), default)
-}
+): KtConfigFile.Default<T> = KtConfigFile(plugin.dataFolder.resolve(path), default)
 
 /**
  * Handle config as [File].
@@ -323,9 +293,7 @@ inline fun <reified T : Any> KtConfigFile(
     plugin: JavaPlugin,
     path: String,
     default: T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile(plugin, path) { default }
-}
+): KtConfigFile.Default<T> = KtConfigFile(plugin, path) { default }
 
 /**
  * Handle config as [File].
@@ -341,9 +309,7 @@ inline fun <reified T : Any> KtConfigFile(
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     noinline default: () -> T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile(dataFolder.resolve(path), default)
-}
+): KtConfigFile.Default<T> = KtConfigFile(dataFolder.resolve(path), default)
 
 /**
  * Handle config as [File].
@@ -359,9 +325,7 @@ inline fun <reified T : Any> JavaPlugin.KtConfigFile(
 inline fun <reified T : Any> JavaPlugin.KtConfigFile(
     path: String,
     default: T,
-): KtConfigFile.Default<T> {
-    return KtConfigFile(this, path) { default }
-}
+): KtConfigFile.Default<T> = KtConfigFile(this, path) { default }
 
 /**
  * Handle config as [File].
@@ -385,9 +349,7 @@ open class KtConfigFile<T : Any>(
      * @throws dev.s7a.ktconfig.exception.TypeMismatchException
      * @since 1.0.0
      */
-    open fun load(): T? {
-        return if (file.exists()) loadFromString(file.readText()) else null
-    }
+    open fun load(): T? = if (file.exists()) loadFromString(file.readText()) else null
 
     /**
      * Save config to [file].
@@ -425,8 +387,6 @@ open class KtConfigFile<T : Any>(
          * @throws dev.s7a.ktconfig.exception.TypeMismatchException
          * @since 1.0.0
          */
-        override fun load(): T {
-            return super.load() ?: default().apply(::save)
-        }
+        override fun load(): T = super.load() ?: default().apply(::save)
     }
 }

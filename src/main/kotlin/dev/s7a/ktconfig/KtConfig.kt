@@ -26,19 +26,21 @@ abstract class KtConfig<T : Any>(
         if (text.isBlank()) return null
         val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
         val values =
-            YamlConfiguration().apply {
-                options().pathSeparator(PATH_SEPARATOR)
-                loadFromString(text)
-            }.getValues(false)
+            YamlConfiguration()
+                .apply {
+                    options().pathSeparator(PATH_SEPARATOR)
+                    loadFromString(text)
+                }.getValues(false)
         return section.deserialize(Deserializer(), "", values)
     }
 
     protected fun saveToString(content: T): String {
         val section = ContentSerializer().section(clazz, type, ProjectionMap(clazz, type))
-        return YamlConfiguration().apply {
-            options().pathSeparator(PATH_SEPARATOR).setHeaderComment(clazz.findComment())
-            setSection(null, section.serialize("", content))
-        }.saveToString()
+        return YamlConfiguration()
+            .apply {
+                options().pathSeparator(PATH_SEPARATOR).setHeaderComment(clazz.findComment())
+                setSection(null, section.serialize("", content))
+            }.saveToString()
     }
 
     private fun YamlConfiguration.setSection(
@@ -52,8 +54,8 @@ abstract class KtConfig<T : Any>(
                     setSection(path, value)
                 }
                 is Map<*, *> -> {
-                    fun map(map: Map<*, *>): Map<*, *> {
-                        return map.entries.associate { (p, v) ->
+                    fun map(map: Map<*, *>): Map<*, *> =
+                        map.entries.associate { (p, v) ->
                             p to
                                 when (v) {
                                     is Section -> {
@@ -69,7 +71,6 @@ abstract class KtConfig<T : Any>(
                                     }
                                 }
                         }
-                    }
 
                     set(path, map(value))
                 }

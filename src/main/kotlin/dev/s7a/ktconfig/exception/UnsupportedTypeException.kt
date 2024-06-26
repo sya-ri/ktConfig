@@ -7,4 +7,7 @@ import kotlin.reflect.KType
  *
  * @since 1.0.0
  */
-class UnsupportedTypeException(type: KType, reason: String) : IllegalArgumentException("$type is unsupported type ($reason)")
+class UnsupportedTypeException(
+    type: KType,
+    reason: String,
+) : IllegalArgumentException("$type is unsupported type ($reason)")

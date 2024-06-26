@@ -10,7 +10,10 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  */
 @UseSerializer(Vector2.Serializer::class)
-data class Vector2(val x: Double, val y: Double) {
+data class Vector2(
+    val x: Double,
+    val y: Double,
+) {
     /**
      * Serializer of [Vector2] separated by commas.
      *
@@ -30,8 +33,6 @@ data class Vector2(val x: Double, val y: Double) {
             }.getOrNull()
         }
 
-        override fun serialize(value: Vector2): String {
-            return "${value.x}, ${value.y}"
-        }
+        override fun serialize(value: Vector2): String = "${value.x}, ${value.y}"
     }
 }

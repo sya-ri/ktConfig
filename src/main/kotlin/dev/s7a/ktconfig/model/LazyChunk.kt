@@ -13,16 +13,18 @@ import kotlin.reflect.typeOf
  * @since 1.0.0
  */
 @UseSerializer(LazyChunk.Serializer::class)
-data class LazyChunk(val world: String, val x: Int, val z: Int) {
+data class LazyChunk(
+    val world: String,
+    val x: Int,
+    val z: Int,
+) {
     companion object {
         /**
          * Generate [LazyChunk] from [Chunk].
          *
          * @since 1.0.0
          */
-        fun from(chunk: Chunk): LazyChunk {
-            return LazyChunk(chunk.world.name, chunk.x, chunk.z)
-        }
+        fun from(chunk: Chunk): LazyChunk = LazyChunk(chunk.world.name, chunk.x, chunk.z)
     }
 
     /**
@@ -30,9 +32,7 @@ data class LazyChunk(val world: String, val x: Int, val z: Int) {
      *
      * @since 1.0.0
      */
-    fun get(): Chunk? {
-        return Bukkit.getWorld(world)?.getChunkAt(x, z)
-    }
+    fun get(): Chunk? = Bukkit.getWorld(world)?.getChunkAt(x, z)
 
     /**
      * Serializer of [LazyChunk] separated by commas.
@@ -54,8 +54,6 @@ data class LazyChunk(val world: String, val x: Int, val z: Int) {
             }.getOrNull()
         }
 
-        override fun serialize(value: LazyChunk): String {
-            return "${value.world}, ${value.x}, ${value.z}"
-        }
+        override fun serialize(value: LazyChunk): String = "${value.world}, ${value.x}, ${value.z}"
     }
 }

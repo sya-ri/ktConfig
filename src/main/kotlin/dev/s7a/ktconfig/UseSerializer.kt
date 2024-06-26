@@ -9,4 +9,6 @@ import kotlin.reflect.KClass
  * @since 1.0.0
  */
 @Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS)
-annotation class UseSerializer(val with: KClass<out KtConfigSerializer<*, *>>)
+annotation class UseSerializer(
+    val with: KClass<out KtConfigSerializer<*, *>>,
+)

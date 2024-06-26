@@ -18,8 +18,12 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.isAccessible
 
-internal sealed class Content<T>(val type: KType) {
-    sealed class Keyable<T>(type: KType) : Content<T>(type)
+internal sealed class Content<T>(
+    val type: KType,
+) {
+    sealed class Keyable<T>(
+        type: KType,
+    ) : Content<T>(type)
 
     abstract fun deserialize(
         deserializer: Deserializer,
@@ -32,7 +36,9 @@ internal sealed class Content<T>(val type: KType) {
         value: T?,
     ): Any?
 
-    class StringType(type: KType) : Keyable<String>(type) {
+    class StringType(
+        type: KType,
+    ) : Keyable<String>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -45,7 +51,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class IntType(type: KType) : Keyable<Int>(type) {
+    class IntType(
+        type: KType,
+    ) : Keyable<Int>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -58,7 +66,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class UIntType(type: KType) : Keyable<UInt>(type) {
+    class UIntType(
+        type: KType,
+    ) : Keyable<UInt>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -71,7 +81,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.toLong()
     }
 
-    class BooleanType(type: KType) : Keyable<Boolean>(type) {
+    class BooleanType(
+        type: KType,
+    ) : Keyable<Boolean>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -84,7 +96,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class DoubleType(type: KType) : Keyable<Double>(type) {
+    class DoubleType(
+        type: KType,
+    ) : Keyable<Double>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -97,7 +111,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class FloatType(type: KType) : Keyable<Float>(type) {
+    class FloatType(
+        type: KType,
+    ) : Keyable<Float>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -110,7 +126,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class LongType(type: KType) : Keyable<Long>(type) {
+    class LongType(
+        type: KType,
+    ) : Keyable<Long>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -123,7 +141,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class ULongType(type: KType) : Keyable<ULong>(type) {
+    class ULongType(
+        type: KType,
+    ) : Keyable<ULong>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -136,7 +156,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.toString()?.let(::BigInteger)
     }
 
-    class ByteType(type: KType) : Keyable<Byte>(type) {
+    class ByteType(
+        type: KType,
+    ) : Keyable<Byte>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -149,7 +171,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class UByteType(type: KType) : Keyable<UByte>(type) {
+    class UByteType(
+        type: KType,
+    ) : Keyable<UByte>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -162,7 +186,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.toShort()
     }
 
-    class CharType(type: KType) : Keyable<Char>(type) {
+    class CharType(
+        type: KType,
+    ) : Keyable<Char>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -175,7 +201,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class ShortType(type: KType) : Keyable<Short>(type) {
+    class ShortType(
+        type: KType,
+    ) : Keyable<Short>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -188,7 +216,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class UShortType(type: KType) : Keyable<UShort>(type) {
+    class UShortType(
+        type: KType,
+    ) : Keyable<UShort>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -201,7 +231,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.toInt()
     }
 
-    class BigIntegerType(type: KType) : Keyable<BigInteger>(type) {
+    class BigIntegerType(
+        type: KType,
+    ) : Keyable<BigInteger>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -214,7 +246,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class BigDecimalType(type: KType) : Keyable<BigDecimal>(type) {
+    class BigDecimalType(
+        type: KType,
+    ) : Keyable<BigDecimal>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -227,7 +261,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.toString()
     }
 
-    class DateType(type: KType) : Keyable<Date>(type) {
+    class DateType(
+        type: KType,
+    ) : Keyable<Date>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -240,7 +276,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class CalendarType(type: KType) : Keyable<Calendar>(type) {
+    class CalendarType(
+        type: KType,
+    ) : Keyable<Calendar>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -253,7 +291,9 @@ internal sealed class Content<T>(val type: KType) {
         ) = value?.time
     }
 
-    class UUIDType(type: KType) : Keyable<UUID>(type) {
+    class UUIDType(
+        type: KType,
+    ) : Keyable<UUID>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -349,12 +389,15 @@ internal sealed class Content<T>(val type: KType) {
         override fun serialize(
             path: String,
             value: Map<K, V?>?,
-        ) = value?.map { (k, v) ->
-            keyable.serialize(path, k) to v?.let { content.serialize(path, v) }
-        }?.toMap()
+        ) = value
+            ?.map { (k, v) ->
+                keyable.serialize(path, k) to v?.let { content.serialize(path, v) }
+            }?.toMap()
     }
 
-    class ConfigurationSerializableType(type: KType) : Content<ConfigurationSerializable>(type) {
+    class ConfigurationSerializableType(
+        type: KType,
+    ) : Content<ConfigurationSerializable>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -367,7 +410,10 @@ internal sealed class Content<T>(val type: KType) {
         ) = value
     }
 
-    class EnumType(type: KType, private val classifier: KClass<*>) : Keyable<Enum<*>>(type) {
+    class EnumType(
+        type: KType,
+        private val classifier: KClass<*>,
+    ) : Keyable<Enum<*>>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -399,26 +445,28 @@ internal sealed class Content<T>(val type: KType) {
                     is Map<*, *> -> value.entries.filterIsInstance<Map.Entry<String, Any?>>().associate { it.key to it.value }
                     else -> throw TypeMismatchException(type, value, path)
                 }
-            return contents.entries.mapNotNull { (parameter, content) ->
-                val name = parameter.name!!
-                val mapPath = if (path.isEmpty()) name else "$path.$name"
-                val mapValue = values[name]
-                val deserializeValue = mapValue?.let { content.deserialize(deserializer, mapPath, it) }
-                when {
-                    deserializeValue != null -> {
-                        parameter to deserializeValue
+            return contents.entries
+                .mapNotNull { (parameter, content) ->
+                    val name = parameter.name!!
+                    val mapPath = if (path.isEmpty()) name else "$path.$name"
+                    val mapValue = values[name]
+                    val deserializeValue = mapValue?.let { content.deserialize(deserializer, mapPath, it) }
+                    when {
+                        deserializeValue != null -> {
+                            parameter to deserializeValue
+                        }
+                        content.type.isMarkedNullable -> {
+                            parameter to null
+                        }
+                        parameter.isOptional -> {
+                            null
+                        }
+                        else -> {
+                            throw TypeMismatchException(content.type, mapValue, mapPath)
+                        }
                     }
-                    content.type.isMarkedNullable -> {
-                        parameter to null
-                    }
-                    parameter.isOptional -> {
-                        null
-                    }
-                    else -> {
-                        throw TypeMismatchException(content.type, mapValue, mapPath)
-                    }
-                }
-            }.toMap().run(constructor::callBy)
+                }.toMap()
+                .run(constructor::callBy)
         }
 
         override fun serialize(
@@ -451,7 +499,11 @@ internal sealed class Content<T>(val type: KType) {
             value: Z?,
         ) = value?.let { content.serialize(path, serializer.serialize(value)) }
 
-        class Keyable<T, Z>(type: KType, serializer: KtConfigSerializer<T, Z>, content: Content<Any?>) : Content.Keyable<Z>(type) {
+        class Keyable<T, Z>(
+            type: KType,
+            serializer: KtConfigSerializer<T, Z>,
+            content: Content<Any?>,
+        ) : Content.Keyable<Z>(type) {
             private val useSerializerType = UseSerializerType(type, serializer, content)
 
             override fun deserialize(
@@ -471,7 +523,10 @@ internal sealed class Content<T>(val type: KType) {
         }
     }
 
-    class Cache<T>(type: KType, val content: () -> Content<T>) : Content<T>(type) {
+    class Cache<T>(
+        type: KType,
+        val content: () -> Content<T>,
+    ) : Content<T>(type) {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
