@@ -27,10 +27,22 @@ class CharTest :
                     """.trimIndent(),
                     2.toChar(),
                 ),
+                GetTestData("value: ' '", ' '),
+                GetTestData("value: '@'", '@'),
+                GetTestData("value: |2+\n\n", '\n'),
+                GetTestData("value: \"\\t\"", '\t'),
             ) { (yaml, value) ->
                 ktConfigString<Data<Char>>(yaml) shouldBe Data(value)
                 ktConfigString<NullableData<Char>>(yaml) shouldBe Data(value)
             }
+        }
+
+        test("should throw exception for invalid char value") {
+            val exception =
+                shouldThrow<TypeMismatchException> {
+                    ktConfigString<Data<Char>>("value: 'ab'")
+                }
+            exception.message shouldBe "Expected kotlin.Char, but kotlin.String(ab): value"
         }
 
         context("should get null from config") {
@@ -55,9 +67,13 @@ class CharTest :
                     """
                     value: !!binary |-
                       Ag==
-                    
+
                     """.trimIndent(),
                 ),
+                SaveTestData(' ', "value: ' '\n"),
+                SaveTestData('@', "value: '@'\n"),
+                SaveTestData('\n', "value: |2+\n\n"),
+                SaveTestData('\t', "value: \"\\t\"\n"),
             ) { (value, yaml) ->
                 saveKtConfigString(Data(value)) shouldBe yaml
                 saveKtConfigString(NullableData(value)) shouldBe yaml

@@ -28,6 +28,17 @@ class StringTest :
                     """.trimIndent(),
                     2.toChar().toString(),
                 ),
+                GetTestData("value: ''", ""),
+                GetTestData("value: '特殊文字!@#\$%^&*()'", "特殊文字!@#\$%^&*()"),
+                GetTestData("value: '123abc'", "123abc"),
+                GetTestData(
+                    """
+                    value: |
+                      multiple
+                      lines
+                    """.trimIndent(),
+                    "multiple\nlines",
+                ),
             ) { (yaml, value) ->
                 ktConfigString<Data<String>>(yaml) shouldBe Data(value)
                 ktConfigString<NullableData<String>>(yaml) shouldBe Data(value)
@@ -57,6 +68,30 @@ class StringTest :
                     """
                     value: !!binary |-
                       Ag==
+                    
+                    """.trimIndent(),
+                ),
+                SaveTestData("", "value: ''\n"),
+                SaveTestData(
+                    "特殊文字!@#\$%^&*()",
+                    """
+                    value: 特殊文字!@#${'$'}%^&*()
+                    
+                    """.trimIndent(),
+                ),
+                SaveTestData(
+                    "123abc",
+                    """
+                    value: 123abc
+                    
+                    """.trimIndent(),
+                ),
+                SaveTestData(
+                    "multiple\nlines",
+                    """
+                    value: |-
+                      multiple
+                      lines
                     
                     """.trimIndent(),
                 ),
