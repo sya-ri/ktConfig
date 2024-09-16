@@ -21,4 +21,137 @@ open class Benchmark {
 
         return ktConfigString<Data>("value: benchmark")
     }
+
+    @Benchmark
+    fun saveSingle(): String {
+        data class Data(
+            val value: String,
+        )
+
+        return saveKtConfigString<Data>(Data("benchmark"))
+    }
+
+    @Benchmark
+    fun list(): Any? {
+        data class Data(
+            val value: List<String>,
+        )
+
+        return ktConfigString<Data>(
+            """
+            value:
+            - text
+            - 1
+            - 9223372036854775807
+            - テスト
+            - ""
+            """.trimIndent(),
+        )
+    }
+
+    @Benchmark
+    fun saveList(): String {
+        data class Data(
+            val value: List<String>,
+        )
+
+        return saveKtConfigString<Data>(
+            Data(
+                listOf(
+                    "text",
+                    "1",
+                    "9223372036854775807",
+                    "テスト",
+                ),
+            ),
+        )
+    }
+
+    @Benchmark
+    fun map(): Any? {
+        data class Data(
+            val value: Map<String, String>,
+        )
+
+        return ktConfigString<Data>(
+            """
+            value:
+              key: value
+              some: text
+              number: 1
+              long-number: 9223372036854775807
+            """.trimIndent(),
+        )
+    }
+
+    @Benchmark
+    fun saveMap(): String {
+        data class Data(
+            val value: Map<String, String>,
+        )
+
+        return saveKtConfigString<Data>(
+            Data(
+                mapOf(
+                    "key" to "value",
+                    "some" to "text",
+                    "number" to "1",
+                    "long-number" to "9223372036854775807",
+                ),
+            ),
+        )
+    }
+
+    @Benchmark
+    fun recursive(): Any? {
+        data class Data(
+            val value: Data?,
+        )
+
+        return ktConfigString<Data>(
+            """
+            value:
+              value:
+                value:
+                  value:
+                    value:
+                      value:
+                        value:
+                          value:
+                            value:
+                              value: null
+            """.trimIndent(),
+        )
+    }
+
+    @Benchmark
+    fun saveRecursive(): String {
+        data class Data(
+            val value: Data?,
+        )
+
+        return saveKtConfigString<Data>(
+            Data(
+                Data(
+                    Data(
+                        Data(
+                            Data(
+                                Data(
+                                    Data(
+                                        Data(
+                                            Data(
+                                                Data(
+                                                    null,
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+    }
 }
