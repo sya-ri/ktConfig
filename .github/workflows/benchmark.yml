@@ -23,7 +23,7 @@ jobs:
           java-version: 17
       - name: Run JMH
         run: |
-          ./gradlew jvh
+          ./gradlew jmh
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
