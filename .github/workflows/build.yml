@@ -88,13 +88,15 @@ jobs:
           fail-on-alert: true
           alert-comment-cc-users: '@sya-ri'
           summary-always: true
+      - name: Switch branch
+        run: git checkout benchmark
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: benchmark
           path: |
-            ./index.html
-            ./data.js
+            index.html
+            data.js
           retention-days: 7
   deploy:
     needs: [writerside, dokka, benchmark]
