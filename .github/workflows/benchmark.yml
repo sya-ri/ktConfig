@@ -38,7 +38,7 @@ jobs:
           alert-comment-cc-users: '@sya-ri'
           summary-always: true
       - name: Install SSH Client
-        uses: webfactory/ssh-agent@v0.7.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.BENCHMARK_DEPLOY_KEY }}
       - name: Push benchmark result
