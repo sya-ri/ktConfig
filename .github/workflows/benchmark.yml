@@ -1,0 +1,31 @@
+name: Benchmark
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: Run JMH
+        run: |
+          ./gradlew jmh
+      - name: JMH Benchmark Action
+        uses: kitlangton/jmh-benchmark-action@main
+        with:
+          jmh-output-path: build/results/jmh/results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}

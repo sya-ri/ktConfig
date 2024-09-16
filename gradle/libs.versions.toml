@@ -7,6 +7,7 @@ kotlinter = "4.4.1"
 pluginYml = "0.6.0"
 minecraftServer = "3.1.0"
 shadow = "8.1.1"
+jmh-gradle = "0.7.2"
 
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
@@ -18,6 +19,7 @@ kotest = "5.9.1"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+jmh = { id = "me.champeau.jmh", version.ref = "jmh-gradle" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 pluginYml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }

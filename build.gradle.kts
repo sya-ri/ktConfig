@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kover)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.jmh)
     alias(libs.plugins.kotlinter)
     alias(libs.plugins.pluginYml.bukkit) apply false
     alias(libs.plugins.minecraftServer) apply false
@@ -54,6 +55,13 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+jmh {
+    iterations.set(3)
+    warmupIterations.set(3)
+    fork.set(1)
+    resultFormat.set("json")
 }
 
 val sourceJar by tasks.registering(Jar::class) {
