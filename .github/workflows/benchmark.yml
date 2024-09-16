@@ -23,9 +23,23 @@ jobs:
           java-version: 17
       - name: Run JMH
         run: |
-          ./gradlew jmh
-      - name: JMH Benchmark Action
-        uses: sya-ri/jmh-benchmark-action@main
+          ./gradlew benchmark
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
         with:
-          jmh-output-path: build/results/jmh/results.json
+          name: JMH Benchmark
+          tool: 'jmh'
+          output-file-path: build/results/jmh/results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@sya-ri'
+          summary-always: true
+      - name: Install SSH Client 🔑
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.BENCHMARK_DEPLOY_KEY }}
+      - name: Push benchmark result
+        run: git push 'git@github.com:sya-ri-bot/ktConfig-benchmark.git' gh-pages:gh-pages
