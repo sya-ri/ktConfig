@@ -37,7 +37,7 @@ jobs:
           fail-on-alert: true
           alert-comment-cc-users: '@sya-ri'
           summary-always: true
-      - name: Install SSH Client 🔑
+      - name: Install SSH Client
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.BENCHMARK_DEPLOY_KEY }}
