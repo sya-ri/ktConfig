@@ -13,4 +13,6 @@
     <toc-element topic="Custom-serializer.md"/>
     <toc-element toc-title="API Document"
                  href="https://gh.s7a.dev/ktConfig/api-docs"/>
+    <toc-element toc-title="Benchmark"
+                 href="https://gh.s7a.dev/ktConfig/benchmark"/>
 </instance-profile>
