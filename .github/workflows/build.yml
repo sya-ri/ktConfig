@@ -80,7 +80,9 @@ jobs:
           tool: 'jmh'
           output-file-path: build/results/jmh/results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: false
+          auto-push: true
+          gh-pages-branch: benchmark
+          benchmark-data-dir-path: .
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: true
