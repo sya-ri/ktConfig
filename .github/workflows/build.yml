@@ -1,6 +1,8 @@
 name: Build
 on:
   push:
+    branches:
+      - master
   pull_request:
 jobs:
   build:
@@ -56,21 +58,43 @@ jobs:
           path: |
             artifacts/webHelpHI2-all.zip
           retention-days: 7
-  html:
+  benchmark:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: Run JMH
+        run: |
+          ./gradlew jmh
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: JMH Benchmark
+          tool: 'jmh'
+          output-file-path: build/results/jmh/results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@sya-ri'
+          summary-always: true
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: html
+          name: benchmark
           path: |
-            ./html
+            ./dev/bench
           retention-days: 7
   deploy:
-    needs: [writerside, dokka, html]
+    needs: [writerside, dokka, benchmark]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     permissions:
@@ -92,10 +116,10 @@ jobs:
         uses: montudor/action-zip@v1
         with:
           args: unzip -qq webHelpHI2-all.zip -d dir
-      - name: Download artifact (html)
+      - name: Download artifact (benchmark)
         uses: actions/download-artifact@v4
         with:
-          name: html
+          name: benchmark
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
