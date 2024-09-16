@@ -56,8 +56,21 @@ jobs:
           path: |
             artifacts/webHelpHI2-all.zip
           retention-days: 7
+  html:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html
+          path: |
+            ./html
+          retention-days: 7
   deploy:
-    needs: [writerside, dokka]
+    needs: [writerside, dokka, html]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     permissions:
@@ -74,11 +87,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dokka
-          path: dir/api-docs
+          path: dir/api-docs (dokka)
       - name: Unzip artifact
         uses: montudor/action-zip@v1
         with:
           args: unzip -qq webHelpHI2-all.zip -d dir
+      - name: Download artifact (html)
+        uses: actions/download-artifact@v4
+        with:
+          name: html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
