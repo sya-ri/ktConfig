@@ -25,7 +25,7 @@ jobs:
         run: |
           ./gradlew jmh
       - name: JMH Benchmark Action
-        uses: kitlangton/jmh-benchmark-action@main
+        uses: sya-ri/jmh-benchmark-action@main
         with:
           jmh-output-path: build/results/jmh/results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
