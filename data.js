@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1726499559868,
+  "lastUpdate": 1726499955331,
   "repoUrl": "https://github.com/sya-ri/ktConfig",
   "entries": {
     "JMH Benchmark": [
@@ -58,6 +58,36 @@ window.BENCHMARK_DATA = {
           {
             "name": "dev.s7a.ktconfig.Benchmark.single",
             "value": 0.007560895509473055,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "git@s7a.dev",
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "committer": {
+            "email": "git@s7a.dev",
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "distinct": true,
+          "id": "fddda188ccff0b27cc91addbda4551bf242c67b2",
+          "message": "ci: Fix not found benchmark files",
+          "timestamp": "2024-09-17T00:15:58+09:00",
+          "tree_id": "5bfb084127ec8798ecaa6033476a14b939985715",
+          "url": "https://github.com/sya-ri/ktConfig/commit/fddda188ccff0b27cc91addbda4551bf242c67b2"
+        },
+        "date": 1726499954446,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.single",
+            "value": 0.007176845493238178,
             "unit": "ms/op",
             "extra": "iterations: 3\nforks: 1\nthreads: 1"
           }
