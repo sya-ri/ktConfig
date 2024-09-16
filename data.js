@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1726498721469,
+  "lastUpdate": 1726499559868,
   "repoUrl": "https://github.com/sya-ri/ktConfig",
   "entries": {
     "JMH Benchmark": [
@@ -28,6 +28,36 @@ window.BENCHMARK_DATA = {
           {
             "name": "dev.s7a.ktconfig.Benchmark.single",
             "value": 0.007161375338282236,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "git@s7a.dev",
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "committer": {
+            "email": "git@s7a.dev",
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "distinct": true,
+          "id": "662845e04bb8e3c1ec72e6f214321121b06cd9a4",
+          "message": "ci: Fix gh-pages-branch path",
+          "timestamp": "2024-09-17T00:08:15+09:00",
+          "tree_id": "65fca51fc9859fbeb810b8f5bcdb1bf9b3978361",
+          "url": "https://github.com/sya-ri/ktConfig/commit/662845e04bb8e3c1ec72e6f214321121b06cd9a4"
+        },
+        "date": 1726499559063,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.single",
+            "value": 0.007560895509473055,
             "unit": "ms/op",
             "extra": "iterations: 3\nforks: 1\nthreads: 1"
           }
