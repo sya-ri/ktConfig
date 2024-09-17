@@ -33,6 +33,10 @@ internal sealed class Content<T>(
         ) = serialize(path, value)
     }
 
+    interface HasDefault<T> {
+        fun default(): T
+    }
+
     abstract fun deserialize(
         deserializer: Deserializer,
         path: String,
@@ -333,7 +337,8 @@ internal sealed class Content<T>(
         type: KType,
         protected val content: Content<U>,
         protected val isMarkedNullable: Boolean,
-    ) : Content<T>(type) {
+    ) : Content<T>(type),
+        HasDefault<T> {
         override fun serialize(
             path: String,
             value: T?,
@@ -358,6 +363,8 @@ internal sealed class Content<T>(
                 path: String,
                 value: Any,
             ) = deserializer.list(content, path, value, isMarkedNullable)
+
+            override fun default() = emptyList<U>()
         }
 
         class SetType<U : Any?>(
@@ -370,6 +377,8 @@ internal sealed class Content<T>(
                 path: String,
                 value: Any,
             ) = deserializer.list(content, path, value, isMarkedNullable).toSet()
+
+            override fun default() = emptySet<U>()
         }
 
         class HashSetType<U>(
@@ -382,6 +391,8 @@ internal sealed class Content<T>(
                 path: String,
                 value: Any,
             ) = deserializer.list(content, path, value, isMarkedNullable).toHashSet()
+
+            override fun default() = HashSet<U>()
         }
 
         class LinkedHashSetType<U>(
@@ -394,6 +405,8 @@ internal sealed class Content<T>(
                 path: String,
                 value: Any,
             ) = LinkedHashSet(deserializer.list(content, path, value, isMarkedNullable))
+
+            override fun default() = LinkedHashSet<U>()
         }
     }
 
@@ -402,7 +415,8 @@ internal sealed class Content<T>(
         private val keyable: Keyable<K>,
         private val content: Content<V>,
         private val isMarkedNullable: Boolean,
-    ) : Content<Map<K, V?>>(type) {
+    ) : Content<Map<K, V?>>(type),
+        HasDefault<Map<K, V?>> {
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -416,6 +430,8 @@ internal sealed class Content<T>(
             ?.map { (k, v) ->
                 keyable.serializeKey(path, k) to v?.let { content.serialize(path, v) }
             }?.toMap()
+
+        override fun default() = emptyMap<K, V?>()
     }
 
     class ConfigurationSerializableType(
@@ -483,6 +499,9 @@ internal sealed class Content<T>(
                         }
                         parameter.isOptional -> {
                             null
+                        }
+                        content is HasDefault<*> -> {
+                            parameter to content.default()
                         }
                         else -> {
                             throw TypeMismatchException(content.type, mapValue, mapPath)
