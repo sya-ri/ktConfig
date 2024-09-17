@@ -78,9 +78,10 @@
         align-items: center;
         flex-wrap: wrap;
         width: 100%;
+        gap: 10px;
       }
       .benchmark-chart {
-        max-width: 1000px;
+        max-width: 600px;
       }
     </style>
     <title>Benchmarks</title>
@@ -147,7 +148,7 @@
           const data = window.BENCHMARK_DATA;
 
           // Render header
-          document.getElementById('last-update').textContent = new Date(data.lastUpdate).toString();
+          document.getElementById('last-update').textContent = new Date(data.lastUpdate).toLocaleString();
           const repoLink = document.getElementById('repository-link');
           repoLink.href = data.repoUrl;
           repoLink.textContent = data.repoUrl;
@@ -189,14 +190,6 @@
             };
             const options = {
               scales: {
-                xAxes: [
-                  {
-                    scaleLabel: {
-                      display: true,
-                      labelString: 'commit',
-                    },
-                  }
-                ],
                 yAxes: [
                   {
                     scaleLabel: {
