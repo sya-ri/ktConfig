@@ -1,4 +1,5 @@
 package types
+
 import dev.s7a.ktconfig.exception.TypeMismatchException
 import dev.s7a.ktconfig.ktConfigString
 import dev.s7a.ktconfig.saveKtConfigString
