@@ -340,7 +340,9 @@ internal sealed class Content<T>(
         ) = value?.mapIndexed { index, v ->
             val serialized = content.serialize("$path[$index]", v)
             if (serialized is Section) {
-                serialized.values
+                serialized.values?.associate {
+                    it.name to it.value
+                }
             } else {
                 serialized
             }
