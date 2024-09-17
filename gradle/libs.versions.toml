@@ -12,7 +12,7 @@ jmh-gradle = "0.7.2"
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
 spigotLatest = "1.21-R0.1-SNAPSHOT"
-mockBukkit = "3.78.0"
+mockBukkit = "3.93.2"
 kotest = "5.9.1"
 
 [plugins]
