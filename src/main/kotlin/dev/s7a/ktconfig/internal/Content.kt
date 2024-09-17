@@ -6,6 +6,9 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -23,7 +26,12 @@ internal sealed class Content<T>(
 ) {
     sealed class Keyable<T>(
         type: KType,
-    ) : Content<T>(type)
+    ) : Content<T>(type) {
+        open fun serializeKey(
+            path: String,
+            value: T?,
+        ) = serialize(path, value)
+    }
 
     abstract fun deserialize(
         deserializer: Deserializer,
@@ -264,6 +272,11 @@ internal sealed class Content<T>(
     class DateType(
         type: KType,
     ) : Keyable<Date>(type) {
+        companion object {
+            fun toString(date: Date): String =
+                ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+        }
+
         override fun deserialize(
             deserializer: Deserializer,
             path: String,
@@ -274,6 +287,11 @@ internal sealed class Content<T>(
             path: String,
             value: Date?,
         ) = value
+
+        override fun serializeKey(
+            path: String,
+            value: Date?,
+        ) = value?.let(DateType::toString)
     }
 
     class CalendarType(
@@ -289,6 +307,11 @@ internal sealed class Content<T>(
             path: String,
             value: Calendar?,
         ) = value?.time
+
+        override fun serializeKey(
+            path: String,
+            value: Calendar?,
+        ) = value?.time?.let(DateType::toString)
     }
 
     class UUIDType(
@@ -389,7 +412,7 @@ internal sealed class Content<T>(
             value: Map<K, V?>?,
         ) = value
             ?.map { (k, v) ->
-                keyable.serialize(path, k) to v?.let { content.serialize(path, v) }
+                keyable.serializeKey(path, k) to v?.let { content.serialize(path, v) }
             }?.toMap()
     }
 
