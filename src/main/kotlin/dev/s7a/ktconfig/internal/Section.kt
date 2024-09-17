@@ -1,6 +1,6 @@
 package dev.s7a.ktconfig.internal
 
-class Section(
+internal class Section(
     val values: Map<String, Value>?,
 ) {
     data class Value(
