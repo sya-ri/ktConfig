@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1726578106390,
+  "lastUpdate": 1726579065982,
   "repoUrl": "https://github.com/sya-ri/ktConfig",
   "entries": {
     "JMH Benchmark": [
@@ -444,6 +444,78 @@ window.BENCHMARK_DATA = {
           {
             "name": "dev.s7a.ktconfig.Benchmark.single",
             "value": 0.00759898087555666,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6d0c7af6b43204a09b8197fc095d069394f3303f",
+          "message": "fix(deps): update dependency com.github.seeseemelk:mockbukkit-v1.20 to v3.93.2 (#195)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2024-09-17T22:07:41+09:00",
+          "tree_id": "7004653fe26d1b0e6fd16e2a9919a70fc537e904",
+          "url": "https://github.com/sya-ri/ktConfig/commit/6d0c7af6b43204a09b8197fc095d069394f3303f"
+        },
+        "date": 1726579065710,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.list",
+            "value": 0.013892535423781662,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.map",
+            "value": 0.01728511538490719,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.recursive",
+            "value": 0.08440629813287744,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveList",
+            "value": 0.010983117706311838,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveMap",
+            "value": 0.014412627966335584,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveRecursive",
+            "value": 0.06596920838935283,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveSingle",
+            "value": 0.006198178715526174,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.single",
+            "value": 0.0075794480659665125,
             "unit": "ms/op",
             "extra": "iterations: 3\nforks: 1\nthreads: 1"
           }
