@@ -124,7 +124,9 @@ internal class ContentSerializer {
                 @Suppress("UNCHECKED_CAST")
                 from(projectionMap.type(it.type), projectionMap) as Content<Any?>
             }
-        val properties = clazz.memberProperties
+
+        val declaredIndex = constructor.parameters.associate { it.name to it.index }
+        val properties = clazz.memberProperties.sortedBy { declaredIndex[it.name] }
         return Content.SectionType(type, constructor, properties, contents)
     }
 

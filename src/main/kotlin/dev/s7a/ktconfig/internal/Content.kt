@@ -317,9 +317,7 @@ internal sealed class Content<T>(
         ) = value?.mapIndexed { index, v ->
             val serialized = content.serialize("$path[$index]", v)
             if (serialized is Section) {
-                serialized.values?.mapValues {
-                    it.value.value
-                }
+                serialized.values
             } else {
                 serialized
             }
@@ -474,10 +472,11 @@ internal sealed class Content<T>(
             value: T?,
         ) = Section(
             value?.let {
-                properties.associate { property ->
-                    property.isAccessible = true
-                    property.name to Section.Value(property.findComment(), nameMap[property.name]?.serialize(path, property.get(value)))
-                }
+                properties
+                    .map { property ->
+                        property.isAccessible = true
+                        Section.Value(property.name, property.findComment(), nameMap[property.name]?.serialize(path, property.get(value)))
+                    }
             },
         )
     }
