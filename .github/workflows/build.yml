@@ -46,7 +46,7 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
       - name: Build Writerside docs using Docker
-        uses: JetBrains/writerside-github-action@v4
+        uses: JetBrains/writerside-github-action@v5
         with:
           instance: Writerside/hi
           artifact: webHelpHI2-all.zip
