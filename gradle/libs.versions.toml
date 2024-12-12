@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 kover = "0.8.3"
 dokka = "1.9.20"
 kotlinter = "5.0.0"
