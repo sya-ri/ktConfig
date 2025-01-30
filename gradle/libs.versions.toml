@@ -7,7 +7,7 @@ kotlinter = "5.0.1"
 pluginYml = "0.6.0"
 minecraftServer = "3.2.1"
 shadow = "8.1.1"
-jmh-gradle = "0.7.2"
+jmh-gradle = "0.7.3"
 
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
