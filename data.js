@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1747943619890,
+  "lastUpdate": 1747954630681,
   "repoUrl": "https://github.com/sya-ri/ktConfig",
   "entries": {
     "JMH Benchmark": [
@@ -3214,6 +3214,78 @@ window.BENCHMARK_DATA = {
           {
             "name": "dev.s7a.ktconfig.Benchmark.single",
             "value": 0.007485758627653935,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "274a2f6af452ed4f6ed3c9502d9370da9c5a610d",
+          "message": "chore(deps): update dependency gradle to v8.14.1 (#235)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2025-05-22T22:47:07Z",
+          "tree_id": "b5ddf162e25da9254c2541914b40b6bd1f32b952",
+          "url": "https://github.com/sya-ri/ktConfig/commit/274a2f6af452ed4f6ed3c9502d9370da9c5a610d"
+        },
+        "date": 1747954629787,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.list",
+            "value": 0.013941612679951405,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.map",
+            "value": 0.017467919788183545,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.recursive",
+            "value": 0.08351532581590747,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveList",
+            "value": 0.01065073482865559,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveMap",
+            "value": 0.015931554646991284,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveRecursive",
+            "value": 0.06492722721636529,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveSingle",
+            "value": 0.0061697292667364035,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.single",
+            "value": 0.007510283683255321,
             "unit": "ms/op",
             "extra": "iterations: 3\nforks: 1\nthreads: 1"
           }
