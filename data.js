@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1749257858660,
+  "lastUpdate": 1749257879078,
   "repoUrl": "https://github.com/sya-ri/ktConfig",
   "entries": {
     "JMH Benchmark": [
@@ -3634,6 +3634,74 @@ window.BENCHMARK_DATA = {
           {
             "name": "dev.s7a.ktconfig.Benchmark.single",
             "value": 0.007600406126314445,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "committer": {
+            "name": "sya-ri",
+            "username": "sya-ri"
+          },
+          "id": "8cc9f290ad92d7594f0d371cf621deedfeeef2e2",
+          "message": "chore(deps): update dependency org.jmailen.kotlinter to v5.1.1",
+          "timestamp": "2025-06-07T00:47:48Z",
+          "url": "https://github.com/sya-ri/ktConfig/pull/238/commits/8cc9f290ad92d7594f0d371cf621deedfeeef2e2"
+        },
+        "date": 1749257878724,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.list",
+            "value": 0.014503995813647268,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.map",
+            "value": 0.01746038862201424,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.recursive",
+            "value": 0.08170658784626446,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveList",
+            "value": 0.010686997208474098,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveMap",
+            "value": 0.01591931833424065,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveRecursive",
+            "value": 0.06411800015192974,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.saveSingle",
+            "value": 0.006167646461800226,
+            "unit": "ms/op",
+            "extra": "iterations: 3\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "dev.s7a.ktconfig.Benchmark.single",
+            "value": 0.007595426380776926,
             "unit": "ms/op",
             "extra": "iterations: 3\nforks: 1\nthreads: 1"
           }
