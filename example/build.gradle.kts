@@ -11,8 +11,10 @@ plugins {
 }
 
 dependencies {
+    library(kotlin("stdlib"))
     compileOnly(libs.spigotLatest)
     implementation(project(":"))
+    shadow(project(":"))
     ksp(project(":ksp"))
 }
 
@@ -24,7 +26,14 @@ configure<BukkitPluginDescription> {
 }
 
 tasks.getting(ShadowJar::class) {
-    configurations = listOf(project.configurations.getByName("implementation"))
+    dependencies {
+        exclude(dependency("org.jetbrains.kotlin:.*"))
+        exclude(dependency("org.jetbrains:annotations:.*"))
+    }
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
 }
 
 tasks.register<LaunchMinecraftServerTask>("testPlugin") {
@@ -32,7 +41,7 @@ tasks.register<LaunchMinecraftServerTask>("testPlugin") {
 
     doFirst {
         copy {
-            from(layout.buildDirectory.file("libs/${project.name}.jar"))
+            from(layout.buildDirectory.file("libs/${project.name}-all.jar"))
             into(layout.buildDirectory.file("MinecraftServer/plugins"))
         }
     }
