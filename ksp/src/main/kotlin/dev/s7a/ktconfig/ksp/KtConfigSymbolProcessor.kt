@@ -175,9 +175,6 @@ class KtConfigSymbolProcessor(
                 "kotlin.Float" to "Float",
                 "kotlin.Int" to "Int",
                 "kotlin.Long" to "Long",
-                // Number type is not supported because it lacks type safety and could lead to precision loss
-                // when converting between different numeric types
-                // "kotlin.Number" to "Number",
                 "kotlin.Short" to "Short",
                 "kotlin.String" to "String",
                 "kotlin.UByte" to "UByte",
@@ -185,7 +182,13 @@ class KtConfigSymbolProcessor(
                 "kotlin.ULong" to "ULong",
                 "kotlin.UShort" to "UShort",
                 // Collection
+                "kotlin.collections.ArrayDeque" to "ArrayDeque",
                 "kotlin.collections.List" to "List",
+                "kotlin.collections.Set" to "Set",
+                "kotlin.UByteArray" to "UByteArray",
+                "kotlin.UIntArray" to "UIntArray",
+                "kotlin.ULongArray" to "ULongArray",
+                "kotlin.UShortArray" to "UShortArray",
             )
 
         /**

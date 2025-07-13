@@ -12,4 +12,6 @@ class ListSerializer<E>(
     valueSerializer: ValueSerializer<E>,
 ) : CollectionSerializer<E, List<E>>(valueSerializer) {
     override fun toCollection(value: List<E>) = value
+
+    override fun toList(value: List<E>) = value
 }

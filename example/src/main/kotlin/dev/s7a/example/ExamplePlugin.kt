@@ -11,6 +11,7 @@ class ExamplePlugin : JavaPlugin() {
         testSerializer()
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     private fun testSerializer() {
         val expected =
             SerializerTestConfig(
@@ -27,6 +28,12 @@ class ExamplePlugin : JavaPlugin() {
                 uLong = Random.nextLong().toULong(),
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 list = List(5) { UUID.randomUUID().toString() },
+                set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
+                arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
+                uByteArray = UByteArray(3) { Random.nextInt(0, 255).toUByte() },
+                uIntArray = UIntArray(3) { Random.nextInt().toUInt() },
+                uLongArray = ULongArray(3) { Random.nextLong().toULong() },
+                uShortArray = UShortArray(3) { Random.nextInt(0, 65535).toUShort() },
                 nullable = null,
             )
 
@@ -57,6 +64,24 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uLong != actual.uLong) logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
+            if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
+            if (expected.arrayDeque != actual.arrayDeque) {
+                logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
+            }
+            if (expected.uByteArray.contentEquals(actual.uByteArray).not()) {
+                logger.info("uByteArray: expected=${expected.uByteArray.contentToString()}, actual=${actual.uByteArray.contentToString()}")
+            }
+            if (expected.uIntArray.contentEquals(actual.uIntArray).not()) {
+                logger.info("uIntArray: expected=${expected.uIntArray.contentToString()}, actual=${actual.uIntArray.contentToString()}")
+            }
+            if (expected.uLongArray.contentEquals(actual.uLongArray).not()) {
+                logger.info("uLongArray: expected=${expected.uLongArray.contentToString()}, actual=${actual.uLongArray.contentToString()}")
+            }
+            if (expected.uShortArray.contentEquals(actual.uShortArray).not()) {
+                logger.info(
+                    "uShortArray: expected=${expected.uShortArray.contentToString()}, actual=${actual.uShortArray.contentToString()}",
+                )
+            }
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
