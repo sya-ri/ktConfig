@@ -7,10 +7,15 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSVisitorVoid
-import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 
 class KtConfigSymbolProcessor(
@@ -29,33 +34,118 @@ class KtConfigSymbolProcessor(
         return emptyList()
     }
 
-    private fun KSClassDeclaration.isDataClass() = modifiers.contains(Modifier.DATA)
-
     private inner class Visitor : KSVisitorVoid() {
+        private val ktConfigLoaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
+        private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
+        private val primitiveSerializers =
+            mapOf(
+                "kotlin.String" to Parameter.Serializer("StringSerializer"),
+            )
+
         override fun visitClassDeclaration(
             classDeclaration: KSClassDeclaration,
             data: Unit,
         ) {
-            if (classDeclaration.isDataClass().not()) {
-                logger.error("Classes annotated with @ForKtConfig must be data classes", classDeclaration)
+            // Get primary constructor from data class
+            val primaryConstructor = classDeclaration.primaryConstructor
+            if (primaryConstructor == null) {
+                logger.error("Classes annotated with @ForKtConfig must have a primary constructor", classDeclaration)
                 return
             }
 
-            val packageName = classDeclaration.packageName.asString()
-            val className = classDeclaration.simpleName.asString()
-            val loaderClassName = "${className}Loader"
+            // Get parameters from data class constructor
+            val parameters =
+                primaryConstructor.parameters.map {
+                    val name = it.name?.asString()
+                    if (name == null) {
+                        logger.error("Primary constructor parameters must have a name", it)
+                        return
+                    }
 
-            logger.info("Generate $packageName.$loaderClassName")
+                    val type = it.type.resolve()
+                    val className = type.declaration.qualifiedName?.asString()
+                    if (className == null) {
+                        logger.error("Primary constructor parameters must be a class", it)
+                    }
+
+                    val serializer = primitiveSerializers[className]
+                    if (serializer == null) {
+                        logger.error("Unsupported type: $className", it)
+                        return
+                    }
+
+                    Parameter(name, name, serializer)
+                }
+
+            val packageName = classDeclaration.packageName.asString()
+            val simpleName = classDeclaration.simpleName.asString()
+            val className = ClassName(packageName, simpleName)
+            val loaderSimpleName = "${simpleName}Loader"
 
             FileSpec
-                .builder(packageName, loaderClassName)
+                .builder(packageName, loaderSimpleName)
                 .apply {
                     addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
 
-                    addFunction(FunSpec.builder("load$className").addStatement("println(%S)", "TODO: load$className").build())
-                    addFunction(FunSpec.builder("save$className").addStatement("println(%S)", "TODO: save$className").build())
+                    addType(
+                        TypeSpec
+                            .objectBuilder(loaderSimpleName)
+                            .superclass(ktConfigLoaderClassName.parameterizedBy(className))
+                            .addFunction(
+                                // Add `load` function to KtConfig loader class
+                                FunSpec
+                                    .builder("load")
+                                    .addModifiers(KModifier.OVERRIDE)
+                                    .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
+                                    .addCode(
+                                        "return %T(\n",
+                                        className,
+                                    ).apply {
+                                        parameters.forEach { parameter ->
+                                            addStatement(
+                                                "%M(configuration, %S)",
+                                                parameter.serializer.getOrThrowFun,
+                                                parameter.pathName,
+                                            )
+                                        }
+                                    }.addCode(")")
+                                    .returns(className)
+                                    .build(),
+                            ).addFunction(
+                                // Add `save` function to KtConfig loader class
+                                FunSpec
+                                    .builder("save")
+                                    .addModifiers(KModifier.OVERRIDE)
+                                    .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
+                                    .addParameter(ParameterSpec("value", className))
+                                    .apply {
+                                        parameters.forEach {
+                                            addStatement(
+                                                "%M(configuration, %S, value.%N)",
+                                                it.serializer.saveFun,
+                                                it.pathName,
+                                                it.name,
+                                            )
+                                        }
+                                    }.build(),
+                            ).build(),
+                    )
                 }.build()
                 .writeTo(codeGenerator, false)
+        }
+    }
+
+    private data class Parameter(
+        val pathName: String,
+        val name: String,
+        val serializer: Serializer,
+    ) {
+        data class Serializer(
+            val name: String,
+        ) {
+            val className = ClassName("dev.s7a.ktconfig.serializer", name)
+            val getOrThrowFun = MemberName(className, "getOrThrow")
+            val saveFun = MemberName(className, "save")
         }
     }
 }
