@@ -78,18 +78,15 @@ abstract class KtConfigLoader<T> {
     /**
      * Saves configuration data to a string.
      *
-     * @param file The file to save configuration to
      * @param value The configuration object to save
      * @return The saved configuration as a YAML string
      * @since 2.0.0
      */
-    fun saveToString(
-        file: File,
-        value: T,
-    ) = configuration()
-        .apply {
-            save(this, value)
-        }.saveToString()
+    fun saveToString(value: T) =
+        configuration()
+            .apply {
+                save(this, value)
+            }.saveToString()
 
     /**
      * Abstract method to save configuration data to a YamlConfiguration object.
