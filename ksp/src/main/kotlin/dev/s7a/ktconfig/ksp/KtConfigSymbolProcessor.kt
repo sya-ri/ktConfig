@@ -39,7 +39,19 @@ class KtConfigSymbolProcessor(
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
         private val primitiveSerializers =
             mapOf(
+                "kotlin.Byte" to Parameter.Serializer("ByteSerializer"),
+                "kotlin.Char" to Parameter.Serializer("CharSerializer"),
+                "kotlin.Double" to Parameter.Serializer("DoubleSerializer"),
+                "kotlin.Float" to Parameter.Serializer("FloatSerializer"),
+                "kotlin.Int" to Parameter.Serializer("IntSerializer"),
+                "kotlin.Long" to Parameter.Serializer("LongSerializer"),
+                "kotlin.Number" to Parameter.Serializer("NumberSerializer"),
+                "kotlin.Short" to Parameter.Serializer("ShortSerializer"),
                 "kotlin.String" to Parameter.Serializer("StringSerializer"),
+                "kotlin.UByte" to Parameter.Serializer("UByteSerializer"),
+                "kotlin.UInt" to Parameter.Serializer("UIntSerializer"),
+                "kotlin.ULong" to Parameter.Serializer("ULongSerializer"),
+                "kotlin.UShort" to Parameter.Serializer("UShortSerializer"),
             )
 
         override fun visitClassDeclaration(
@@ -103,7 +115,7 @@ class KtConfigSymbolProcessor(
                                     ).apply {
                                         parameters.forEach { parameter ->
                                             addStatement(
-                                                "%M(configuration, %S)",
+                                                "%M(configuration, %S),",
                                                 parameter.serializer.getOrThrowFun,
                                                 parameter.pathName,
                                             )

@@ -2,7 +2,7 @@ package dev.s7a.ktconfig.serializer
 
 import org.bukkit.configuration.file.YamlConfiguration
 
-interface PrimitiveSerializer<T> {
+interface Serializer<T> {
     fun getOrThrow(
         configuration: YamlConfiguration,
         path: String,

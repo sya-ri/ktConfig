@@ -3,7 +3,6 @@ package dev.s7a.ktconfig
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
-
 /**
  * Abstract class for loading and saving configuration data to/from YAML files.
  * Provides basic functionality for serialization and deserialization of configuration objects.

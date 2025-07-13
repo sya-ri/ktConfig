@@ -2,22 +2,16 @@ package dev.s7a.ktconfig.serializer
 
 import org.bukkit.configuration.file.YamlConfiguration
 
-/**
- * Serializer for String type.
- * Handles conversion between String values and YAML configuration.
- *
- * @since 2.0.0
- */
-object StringSerializer : Serializer<String> {
+object NumberSerializer : Serializer<Number> {
     override fun get(
         configuration: YamlConfiguration,
         path: String,
-    ): String? = configuration.get(path, null)?.toString()
+    ) = configuration.get(path) as? Number?
 
     override fun save(
         configuration: YamlConfiguration,
         path: String,
-        value: String?,
+        value: Number?,
     ) {
         configuration.set(path, value)
     }
