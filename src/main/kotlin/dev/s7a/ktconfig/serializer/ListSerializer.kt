@@ -1,23 +1,15 @@
 package dev.s7a.ktconfig.serializer
 
-import org.bukkit.configuration.file.YamlConfiguration
-
+/**
+ * Serializer implementation for List collections.
+ * Handles serialization and deserialization of List<E> types using the provided value serializer.
+ *
+ * @param E The type of elements in the list
+ * @param valueSerializer The serializer used to handle individual list elements
+ * @since 2.0.0
+ */
 class ListSerializer<E>(
-    val valueSerializer: ValueSerializer<E>,
-) : Serializer<List<E>> {
-    override fun get(
-        configuration: YamlConfiguration,
-        path: String,
-    ): List<E>? =
-        configuration.getList(path)?.map {
-            valueSerializer.deserialize(it!!)
-        }
-
-    override fun save(
-        configuration: YamlConfiguration,
-        path: String,
-        value: List<E>?,
-    ) {
-        configuration.set(path, value?.map(valueSerializer::serialize))
-    }
+    valueSerializer: ValueSerializer<E>,
+) : CollectionSerializer<E, List<E>>(valueSerializer) {
+    override fun toCollection(value: List<E>) = value
 }
