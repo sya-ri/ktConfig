@@ -21,6 +21,10 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 
+/**
+ * Symbol processor that generates loader classes for configurations annotated with @ForKtConfig.
+ * This processor handles the code generation for configuration classes by creating corresponding loader implementations.
+ */
 class KtConfigSymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
@@ -29,6 +33,11 @@ class KtConfigSymbolProcessor(
         private const val FOR_KT_CONFIG = "dev.s7a.ktconfig.ForKtConfig"
     }
 
+    /**
+     * Processes all classes annotated with @ForKtConfig and generates their corresponding loader classes.
+     * @param resolver The symbol resolver to find annotated classes
+     * @return Empty list as all symbols are processed in a single round
+     */
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(FOR_KT_CONFIG)
         symbols
@@ -42,6 +51,10 @@ class KtConfigSymbolProcessor(
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
 
+        /**
+         * Visits each class declaration and generates a corresponding loader class.
+         * Processes the class's primary constructor parameters to create load/save implementations.
+         */
         override fun visitClassDeclaration(
             classDeclaration: KSClassDeclaration,
             data: Unit,
@@ -150,6 +163,10 @@ class KtConfigSymbolProcessor(
                 "kotlin.collections.List" to "List",
             )
 
+        /**
+         * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
+         * Returns null if the parameter is invalid or unsupported.
+         */
         private fun createParameter(declaration: KSValueParameter): Parameter? {
             val name = declaration.name?.asString()
             if (name == null) {
@@ -169,6 +186,10 @@ class KtConfigSymbolProcessor(
             return Parameter(name, name, serializer)
         }
 
+        /**
+         * Resolves the appropriate serializer for a given parameter type.
+         * Handles both simple types and generic collections, returning null for unsupported types.
+         */
         private fun getSerializer(
             declaration: KSValueParameter,
             type: KSType,
