@@ -1,42 +1,30 @@
-# ktConfig
+# ktConfig v2
 
 > [!WARNING]
 > This library is under development, so you can't use it.
 
-Spigot configuration library using Kotlin data classes.
+Spigot configuration library for Kotlin using class annotations. The library generates configuration loaders at
+build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
+
+## ⚡ Features
+
+- Zero runtimes overhead. All configuration loaders are generated at build-time
+- Type-safe configuration using Kotlin classes
+- Simple annotation-based setup
 
 ```kotlin
-class Main : JavaPlugin() { 
-    @Comment("config.yml", "This is header comments")
-    data class SimpleConfig(
-        val message: String = "You can use default values"
-    )
-
-    override fun onEnable() {
-        val config = this.ktConfigFile("config.yml", SimpleConfig())
-        logger.info(config.message)
-    }
-}
+@ForKtConfig // Just this alone
+data class StringConfig(
+    val value: String,
+)
 ```
-
-```yaml
-# config.yml
-# This is header comments
-
-message: You can use default values
-```
-
-## 🔗 Links
-
-- [Website](https://gh.s7a.dev/ktConfig)
-- [API Document](https://gh.s7a.dev/ktConfig/api-docs)
 
 ## 🔑 License
 
 ```
 MIT License
 
-Copyright (c) 2022 sya-ri
+Copyright (c) 2025 sya-ri
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
