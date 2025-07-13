@@ -4,17 +4,14 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kover)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.jmh)
     alias(libs.plugins.kotlinter)
     alias(libs.plugins.pluginYml.bukkit) apply false
-    alias(libs.plugins.minecraftServer) apply false
-    alias(libs.plugins.shadow) apply false
     `maven-publish`
     signing
 }
 
 group = "dev.s7a"
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 allprojects {
     apply(plugin = "kotlin")
@@ -36,32 +33,12 @@ allprojects {
     }
 }
 
-repositories {
-    maven("https://repo.papermc.io/repository/maven-public/")
-}
-
 dependencies {
     if (project.hasProperty("USE_SPIGOT_8")) {
         compileOnly(libs.spigot8)
     } else {
         compileOnly(libs.spigotLatest)
     }
-    implementation(kotlin("reflect"))
-    testImplementation(libs.kotest.runner.junit5)
-    testImplementation(libs.kotest.assertions.core)
-    testImplementation(libs.kotest.framework.datatest)
-    testImplementation(libs.mockBukkit)
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-jmh {
-    iterations.set(3)
-    warmupIterations.set(3)
-    fork.set(1)
-    resultFormat.set("json")
 }
 
 val sourceJar by tasks.registering(Jar::class) {

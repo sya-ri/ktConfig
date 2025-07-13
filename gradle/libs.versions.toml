@@ -1,34 +1,29 @@
 [versions]
 # Plugins
 kotlin = "2.2.0"
+ksp = "2.2.0-2.0.2"
 kover = "0.9.1"
 dokka = "2.0.0"
 kotlinter = "5.1.1"
-pluginYml = "0.6.0"
+pluginYml = "0.7.1"
 minecraftServer = "3.2.1"
 shadow = "8.1.1"
-jmh-gradle = "0.7.3"
 
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
-spigotLatest = "1.21-R0.1-SNAPSHOT"
-mockBukkit = "3.93.2"
-kotest = "5.9.1"
+spigotLatest = "1.21.7-R0.1-SNAPSHOT"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-jmh = { id = "me.champeau.jmh", version.ref = "jmh-gradle" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
-pluginYml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginYml" }
+pluginYml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 
 [libraries]
+ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 spigot8 = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot8" }
 spigotLatest = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigotLatest" }
-mockBukkit = { group = "com.github.seeseemelk", name = "MockBukkit-v1.20", version.ref = "mockBukkit" }
-kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
-kotest-assertions-core = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
-kotest-framework-datatest = { group = "io.kotest", name = "kotest-framework-datatest", version.ref = "kotest" }
