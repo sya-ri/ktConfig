@@ -17,4 +17,5 @@ data class SerializerTestConfig(
     val uInt: UInt,
     val uLong: ULong,
     val uShort: UShort,
+    val list: List<String>,
 )
