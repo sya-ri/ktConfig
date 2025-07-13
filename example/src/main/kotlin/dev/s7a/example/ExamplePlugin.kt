@@ -30,6 +30,10 @@ class ExamplePlugin : JavaPlugin() {
                 list = List(5) { UUID.randomUUID().toString() },
                 set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
                 arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
+                byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
+                intArray = IntArray(3) { Random.nextInt() },
+                longArray = LongArray(3) { Random.nextLong() },
+                shortArray = ShortArray(3) { Random.nextInt(-32768, 32767).toShort() },
                 uByteArray = UByteArray(3) { Random.nextInt(0, 255).toUByte() },
                 uIntArray = UIntArray(3) { Random.nextInt().toUInt() },
                 uLongArray = ULongArray(3) { Random.nextLong().toULong() },
@@ -67,6 +71,18 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
             if (expected.arrayDeque != actual.arrayDeque) {
                 logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
+            }
+            if (expected.byteArray.contentEquals(actual.byteArray).not()) {
+                logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
+            }
+            if (expected.intArray.contentEquals(actual.intArray).not()) {
+                logger.info("intArray: expected=${expected.intArray.contentToString()}, actual=${actual.intArray.contentToString()}")
+            }
+            if (expected.longArray.contentEquals(actual.longArray).not()) {
+                logger.info("longArray: expected=${expected.longArray.contentToString()}, actual=${actual.longArray.contentToString()}")
+            }
+            if (expected.shortArray.contentEquals(actual.shortArray).not()) {
+                logger.info("shortArray: expected=${expected.shortArray.contentToString()}, actual=${actual.shortArray.contentToString()}")
             }
             if (expected.uByteArray.contentEquals(actual.uByteArray).not()) {
                 logger.info("uByteArray: expected=${expected.uByteArray.contentToString()}, actual=${actual.uByteArray.contentToString()}")

@@ -20,6 +20,10 @@ data class SerializerTestConfig(
     val list: List<String>,
     val set: Set<String>,
     val arrayDeque: ArrayDeque<String>,
+    val byteArray: ByteArray,
+    val intArray: IntArray,
+    val longArray: LongArray,
+    val shortArray: ShortArray,
     val uByteArray: UByteArray,
     val uIntArray: UIntArray,
     val uLongArray: ULongArray,
@@ -47,10 +51,14 @@ data class SerializerTestConfig(
         if (list != other.list) return false
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
-        if (!uByteArray.contentEquals(other.uByteArray)) return false
-        if (!uIntArray.contentEquals(other.uIntArray)) return false
-        if (!uLongArray.contentEquals(other.uLongArray)) return false
-        if (!uShortArray.contentEquals(other.uShortArray)) return false
+        if (byteArray.contentEquals(other.byteArray).not()) return false
+        if (intArray.contentEquals(other.intArray).not()) return false
+        if (longArray.contentEquals(other.longArray).not()) return false
+        if (shortArray.contentEquals(other.shortArray).not()) return false
+        if (uByteArray.contentEquals(other.uByteArray).not()) return false
+        if (uIntArray.contentEquals(other.uIntArray).not()) return false
+        if (uLongArray.contentEquals(other.uLongArray).not()) return false
+        if (uShortArray.contentEquals(other.uShortArray).not()) return false
         if (nullable != other.nullable) return false
 
         return true
@@ -72,6 +80,10 @@ data class SerializerTestConfig(
         result = 31 * result + list.hashCode()
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
+        result = 31 * result + byteArray.contentHashCode()
+        result = 31 * result + intArray.contentHashCode()
+        result = 31 * result + longArray.contentHashCode()
+        result = 31 * result + shortArray.contentHashCode()
         result = 31 * result + uByteArray.contentHashCode()
         result = 31 * result + uIntArray.contentHashCode()
         result = 31 * result + uLongArray.contentHashCode()
