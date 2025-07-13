@@ -112,7 +112,7 @@ class KtConfigSymbolProcessor(
                                             addStatement(
                                                 "%L.%N(configuration, %S),",
                                                 parameter.serializer.ref,
-                                                "getOrThrow",
+                                                parameter.serializer.getFn,
                                                 parameter.pathName,
                                             )
                                         }
@@ -204,6 +204,7 @@ class KtConfigSymbolProcessor(
             }
 
             val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
+            val isNullable = type.isMarkedNullable
 
             val arguments = type.arguments
             if (arguments.isNotEmpty()) {
@@ -223,10 +224,10 @@ class KtConfigSymbolProcessor(
                         getSerializer(declaration, argumentType, argumentQualifiedName) ?: return null
                     }
 
-                return Parameter.Serializer.Class(className, serializer, argumentSerializers)
+                return Parameter.Serializer.Class(className, isNullable, serializer, argumentSerializers)
             }
 
-            return Parameter.Serializer.Object(className, serializer)
+            return Parameter.Serializer.Object(className, isNullable, serializer)
         }
     }
 
@@ -237,16 +238,21 @@ class KtConfigSymbolProcessor(
     ) {
         sealed class Serializer(
             val type: TypeName,
+            isNullable: Boolean,
             name: String,
         ) {
             protected val classRef = "dev.s7a.ktconfig.serializer.${name}Serializer"
+
             abstract val uniqueName: String
             abstract val ref: String
 
+            val getFn = if (isNullable) "get" else "getOrThrow"
+
             class Object(
                 type: ClassName,
+                isNullable: Boolean,
                 name: String,
-            ) : Serializer(type, name) {
+            ) : Serializer(type, isNullable, name) {
                 override val uniqueName = name
                 override val ref = classRef
             }
@@ -255,9 +261,10 @@ class KtConfigSymbolProcessor(
             // to avoid recalculating them each time they are accessed
             class Class(
                 parentType: ClassName,
+                isNullable: Boolean,
                 name: String,
                 private val arguments: List<Serializer>,
-            ) : Serializer(parentType.parameterizedBy(arguments.map { it.type }), name) {
+            ) : Serializer(parentType.parameterizedBy(arguments.map { it.type }), isNullable, name) {
                 override val uniqueName =
                     buildString {
                         append(name)

@@ -8,6 +8,10 @@ import kotlin.random.Random
 
 class ExamplePlugin : JavaPlugin() {
     override fun onEnable() {
+        testSerializer()
+    }
+
+    private fun testSerializer() {
         val expected =
             SerializerTestConfig(
                 byte = Random.nextBytes(1)[0],
@@ -23,6 +27,7 @@ class ExamplePlugin : JavaPlugin() {
                 uLong = Random.nextLong().toULong(),
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 list = List(5) { UUID.randomUUID().toString() },
+                nullable = null,
             )
 
         logger.info("Save SerializerTestConfig:")
@@ -52,6 +57,7 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uLong != actual.uLong) logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
+            if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
         }
