@@ -143,26 +143,6 @@ class KtConfigSymbolProcessor(
                 .writeTo(codeGenerator, false)
         }
 
-        private val builtInSerializers =
-            mapOf(
-                // Primitive
-                "kotlin.Byte" to "Byte",
-                "kotlin.Char" to "Char",
-                "kotlin.Double" to "Double",
-                "kotlin.Float" to "Float",
-                "kotlin.Int" to "Int",
-                "kotlin.Long" to "Long",
-                "kotlin.Number" to "Number",
-                "kotlin.Short" to "Short",
-                "kotlin.String" to "String",
-                "kotlin.UByte" to "UByte",
-                "kotlin.UInt" to "UInt",
-                "kotlin.ULong" to "ULong",
-                "kotlin.UShort" to "UShort",
-                // Collection
-                "kotlin.collections.List" to "List",
-            )
-
         /**
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
          * Returns null if the parameter is invalid or unsupported.
@@ -185,6 +165,26 @@ class KtConfigSymbolProcessor(
 
             return Parameter(name, name, serializer)
         }
+
+        private val builtInSerializers =
+            mapOf(
+                // Primitive
+                "kotlin.Byte" to "Byte",
+                "kotlin.Char" to "Char",
+                "kotlin.Double" to "Double",
+                "kotlin.Float" to "Float",
+                "kotlin.Int" to "Int",
+                "kotlin.Long" to "Long",
+                "kotlin.Number" to "Number",
+                "kotlin.Short" to "Short",
+                "kotlin.String" to "String",
+                "kotlin.UByte" to "UByte",
+                "kotlin.UInt" to "UInt",
+                "kotlin.ULong" to "ULong",
+                "kotlin.UShort" to "UShort",
+                // Collection
+                "kotlin.collections.List" to "List",
+            )
 
         /**
          * Resolves the appropriate serializer for a given parameter type.
