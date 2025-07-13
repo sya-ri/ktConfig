@@ -39,9 +39,9 @@ class KtConfigSymbolProcessor(
      * @return Empty list as all symbols are processed in a single round
      */
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(FOR_KT_CONFIG)
-        symbols
-            .filter { it is KSClassDeclaration }
+        resolver
+            .getSymbolsWithAnnotation(FOR_KT_CONFIG)
+            .filterIsInstance<KSClassDeclaration>()
             .forEach { it.accept(Visitor(), Unit) }
         return emptyList()
     }
