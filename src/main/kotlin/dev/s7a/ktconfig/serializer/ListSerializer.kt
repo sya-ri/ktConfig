@@ -10,7 +10,7 @@ class ListSerializer<E>(
         path: String,
     ): List<E>? =
         configuration.getList(path)?.map {
-            valueSerializer.from(it!!)
+            valueSerializer.deserialize(it!!)
         }
 
     override fun save(
@@ -18,6 +18,6 @@ class ListSerializer<E>(
         path: String,
         value: List<E>?,
     ) {
-        configuration.set(path, value?.map(valueSerializer::to))
+        configuration.set(path, value?.map(valueSerializer::serialize))
     }
 }

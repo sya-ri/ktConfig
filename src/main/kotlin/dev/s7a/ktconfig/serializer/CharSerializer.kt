@@ -6,8 +6,8 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object CharSerializer : ExtendSerializer<Char, String>(StringSerializer) {
-    override fun convertFrom(value: String) = value.single()
+object CharSerializer : TransformSerializer<Char, String>(StringSerializer) {
+    override fun transform(value: String) = value.single()
 
-    override fun convertTo(value: Char) = value.toString()
+    override fun transformBack(value: Char) = value.toString()
 }

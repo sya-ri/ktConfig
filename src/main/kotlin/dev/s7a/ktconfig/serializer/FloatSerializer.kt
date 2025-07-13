@@ -6,8 +6,8 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object FloatSerializer : ExtendSerializer<Float, Number>(NumberSerializer) {
-    override fun convertFrom(value: Number) = value.toFloat()
+object FloatSerializer : TransformSerializer<Float, Number>(NumberSerializer) {
+    override fun transform(value: Number) = value.toFloat()
 
-    override fun convertTo(value: Float) = value
+    override fun transformBack(value: Float) = value
 }
