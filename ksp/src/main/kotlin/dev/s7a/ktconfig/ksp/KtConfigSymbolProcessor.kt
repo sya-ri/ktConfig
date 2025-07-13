@@ -89,7 +89,7 @@ class KtConfigSymbolProcessor(
                                 PropertySpec
                                     .builder(it.uniqueName, serializerClassName.parameterizedBy(it.type))
                                     .addModifiers(KModifier.PRIVATE)
-                                    .initializer("%L", it.init)
+                                    .initializer("%L", it.initialize)
                                     .build(),
                             )
                         }
@@ -177,7 +177,7 @@ class KtConfigSymbolProcessor(
                 "kotlin.Long" to "Long",
                 // Number type is not supported because it lacks type safety and could lead to precision loss
                 // when converting between different numeric types
-                // "kotlin.Number" to "Number", 
+                // "kotlin.Number" to "Number",
                 "kotlin.Short" to "Short",
                 "kotlin.String" to "String",
                 "kotlin.UByte" to "UByte",
@@ -235,28 +235,29 @@ class KtConfigSymbolProcessor(
         val name: String,
         val serializer: Serializer,
     ) {
-        sealed interface Serializer {
-            val type: TypeName
-            val uniqueName: String
-            val ref: String
+        sealed class Serializer(
+            val type: TypeName,
+            name: String,
+        ) {
+            protected val classRef = "dev.s7a.ktconfig.serializer.${name}Serializer"
+            abstract val uniqueName: String
+            abstract val ref: String
 
-            data class Object(
-                override val type: ClassName,
-                val name: String,
-            ) : Serializer {
+            class Object(
+                type: ClassName,
+                name: String,
+            ) : Serializer(type, name) {
                 override val uniqueName = name
-                override val ref = "dev.s7a.ktconfig.serializer.${name}Serializer"
+                override val ref = classRef
             }
 
             // Properties like type, uniqueName, ref are stored as class properties
             // to avoid recalculating them each time they are accessed
-            data class Class(
-                val parentType: ClassName,
-                val name: String,
-                val arguments: List<Serializer>,
-            ) : Serializer {
-                override val type = parentType.parameterizedBy(arguments.map { it.type })
-
+            class Class(
+                parentType: ClassName,
+                name: String,
+                private val arguments: List<Serializer>,
+            ) : Serializer(parentType.parameterizedBy(arguments.map { it.type }), name) {
                 override val uniqueName =
                     buildString {
                         append(name)
@@ -268,7 +269,7 @@ class KtConfigSymbolProcessor(
 
                 override val ref = uniqueName
 
-                val init = "dev.s7a.ktconfig.serializer.${name}Serializer(${arguments.joinToString(", ") { it.ref }})"
+                val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
             }
         }
     }
