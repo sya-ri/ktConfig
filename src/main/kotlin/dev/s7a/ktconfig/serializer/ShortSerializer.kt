@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object ShortSerializer : ExtendSerializer<Short, Number>(NumberSerializer) {
-    override fun from(base: Number) = base.toShort()
+    override fun convertFrom(value: Number) = value.toShort()
 
-    override fun to(value: Short) = value
+    override fun convertTo(value: Short) = value
 }

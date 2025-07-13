@@ -1,18 +1,14 @@
 package dev.s7a.ktconfig.serializer
 
-import org.bukkit.configuration.file.YamlConfiguration
+import java.math.BigDecimal
 
-object NumberSerializer : Serializer<Number> {
-    override fun get(
-        configuration: YamlConfiguration,
-        path: String,
-    ) = configuration.get(path) as? Number?
+object NumberSerializer : ValueSerializer<Number> {
+    override fun from(value: Any) =
+        when (value) {
+            is Number -> value
+            is String -> BigDecimal(value)
+            else -> throw IllegalArgumentException("Cannot convert to Number: ${value::class.simpleName}")
+        }
 
-    override fun save(
-        configuration: YamlConfiguration,
-        path: String,
-        value: Number?,
-    ) {
-        configuration.set(path, value)
-    }
+    override fun to(value: Number) = value.toString()
 }

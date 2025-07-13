@@ -1,24 +1,13 @@
 package dev.s7a.ktconfig.serializer
 
-import org.bukkit.configuration.file.YamlConfiguration
-
 abstract class ExtendSerializer<T, B>(
-    val base: Serializer<B>,
-) : Serializer<T> {
-    override fun get(
-        configuration: YamlConfiguration,
-        path: String,
-    ): T? = base.get(configuration, path)?.let(::from)
+    val base: ValueSerializer<B>,
+) : ValueSerializer<T> {
+    override fun from(value: Any) = convertFrom(base.from(value))
 
-    override fun save(
-        configuration: YamlConfiguration,
-        path: String,
-        value: T?,
-    ) {
-        base.save(configuration, path, value?.let(::to))
-    }
+    override fun to(value: T) = base.to(convertTo(value))
 
-    abstract fun from(base: B): T
+    abstract fun convertFrom(value: B): T
 
-    abstract fun to(value: T): B
+    abstract fun convertTo(value: T): B
 }

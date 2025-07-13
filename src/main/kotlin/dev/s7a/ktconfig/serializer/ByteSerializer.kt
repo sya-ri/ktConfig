@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object ByteSerializer : ExtendSerializer<Byte, Number>(NumberSerializer) {
-    override fun from(base: Number) = base.toByte()
+    override fun convertFrom(value: Number) = value.toByte()
 
-    override fun to(value: Byte) = value
+    override fun convertTo(value: Byte) = value
 }

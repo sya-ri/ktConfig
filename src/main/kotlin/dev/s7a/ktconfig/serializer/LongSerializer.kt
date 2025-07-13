@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object LongSerializer : ExtendSerializer<Long, Number>(NumberSerializer) {
-    override fun from(base: Number) = base.toLong()
+    override fun convertFrom(value: Number) = value.toLong()
 
-    override fun to(value: Long) = value
+    override fun convertTo(value: Long) = value
 }
