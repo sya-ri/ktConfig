@@ -1,5 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
+import org.gradle.kotlin.dsl.register
 
 plugins {
     alias(libs.plugins.ksp)
@@ -23,4 +25,18 @@ configure<BukkitPluginDescription> {
 
 tasks.getting(ShadowJar::class) {
     configurations = listOf(project.configurations.getByName("implementation"))
+}
+
+tasks.register<LaunchMinecraftServerTask>("testPlugin") {
+    dependsOn("build")
+
+    doFirst {
+        copy {
+            from(layout.buildDirectory.file("libs/${project.name}.jar"))
+            into(layout.buildDirectory.file("MinecraftServer/plugins"))
+        }
+    }
+
+    jarUrl.set(LaunchMinecraftServerTask.JarUrl.Paper("1.21.7"))
+    agreeEula.set(true)
 }
