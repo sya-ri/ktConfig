@@ -10,7 +10,6 @@ data class SerializerTestConfig(
     val float: Float,
     val int: Int,
     val long: Long,
-    val number: Number,
     val short: Short,
     val string: String,
     val uByte: UByte,

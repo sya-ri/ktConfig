@@ -3,7 +3,6 @@ package dev.s7a.example
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
 import org.bukkit.plugin.java.JavaPlugin
-import java.math.BigDecimal
 import java.util.UUID
 import kotlin.random.Random
 
@@ -17,7 +16,6 @@ class ExamplePlugin : JavaPlugin() {
                 float = Random.nextFloat(),
                 int = Random.nextInt(),
                 long = Random.nextLong(),
-                number = BigDecimal.valueOf(Random.nextInt().toLong()),
                 short = Random.nextInt(-32768, 32767).toShort(),
                 string = UUID.randomUUID().toString(),
                 uByte = Random.nextInt(0, 255).toUByte(),
@@ -47,7 +45,6 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.float != actual.float) logger.info("float: expected=${expected.float}, actual=${actual.float}")
             if (expected.int != actual.int) logger.info("int: expected=${expected.int}, actual=${actual.int}")
             if (expected.long != actual.long) logger.info("long: expected=${expected.long}, actual=${actual.long}")
-            if (expected.number != actual.number) logger.info("number: expected=${expected.number}, actual=${actual.number}")
             if (expected.short != actual.short) logger.info("short: expected=${expected.short}, actual=${actual.short}")
             if (expected.string != actual.string) logger.info("string: expected=${expected.string}, actual=${actual.string}")
             if (expected.uByte != actual.uByte) logger.info("uByte: expected=${expected.uByte}, actual=${actual.uByte}")

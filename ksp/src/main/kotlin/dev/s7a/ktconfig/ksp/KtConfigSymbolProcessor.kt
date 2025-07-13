@@ -175,7 +175,9 @@ class KtConfigSymbolProcessor(
                 "kotlin.Float" to "Float",
                 "kotlin.Int" to "Int",
                 "kotlin.Long" to "Long",
-                "kotlin.Number" to "Number",
+                // Number type is not supported because it lacks type safety and could lead to precision loss
+                // when converting between different numeric types
+                // "kotlin.Number" to "Number", 
                 "kotlin.Short" to "Short",
                 "kotlin.String" to "String",
                 "kotlin.UByte" to "UByte",
