@@ -16,6 +16,8 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 
@@ -36,7 +38,8 @@ class KtConfigSymbolProcessor(
     }
 
     private inner class Visitor : KSVisitorVoid() {
-        private val ktConfigLoaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
+        private val loaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
+        private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
 
         override fun visitClassDeclaration(
@@ -63,10 +66,25 @@ class KtConfigSymbolProcessor(
                 .apply {
                     addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
 
+                    // Add properties for nested type serializer classes like ListOfString
+                    parameters
+                        .map(Parameter::serializer)
+                        .distinct()
+                        .filterIsInstance<Parameter.Serializer.Class>()
+                        .forEach {
+                            addProperty(
+                                PropertySpec
+                                    .builder(it.uniqueName, serializerClassName.parameterizedBy(it.type))
+                                    .addModifiers(KModifier.PRIVATE)
+                                    .initializer("%L", it.init)
+                                    .build(),
+                            )
+                        }
+
                     addType(
                         TypeSpec
                             .objectBuilder(loaderSimpleName)
-                            .superclass(ktConfigLoaderClassName.parameterizedBy(className))
+                            .superclass(loaderClassName.parameterizedBy(className))
                             .addFunction(
                                 // Add `load` function to KtConfig loader class
                                 FunSpec
@@ -80,7 +98,7 @@ class KtConfigSymbolProcessor(
                                         parameters.forEach { parameter ->
                                             addStatement(
                                                 "%L.%N(configuration, %S),",
-                                                parameter.serializer.init,
+                                                parameter.serializer.ref,
                                                 "getOrThrow",
                                                 parameter.pathName,
                                             )
@@ -99,7 +117,7 @@ class KtConfigSymbolProcessor(
                                         parameters.forEach {
                                             addStatement(
                                                 "%L.%N(configuration, %S, value.%N)",
-                                                it.serializer.init,
+                                                it.serializer.ref,
                                                 "save",
                                                 it.pathName,
                                                 it.name,
@@ -112,24 +130,24 @@ class KtConfigSymbolProcessor(
                 .writeTo(codeGenerator, false)
         }
 
-        private val serializers =
+        private val builtInSerializers =
             mapOf(
                 // Primitive
-                "kotlin.Byte" to "ByteSerializer",
-                "kotlin.Char" to "CharSerializer",
-                "kotlin.Double" to "DoubleSerializer",
-                "kotlin.Float" to "FloatSerializer",
-                "kotlin.Int" to "IntSerializer",
-                "kotlin.Long" to "LongSerializer",
-                "kotlin.Number" to "NumberSerializer",
-                "kotlin.Short" to "ShortSerializer",
-                "kotlin.String" to "StringSerializer",
-                "kotlin.UByte" to "UByteSerializer",
-                "kotlin.UInt" to "UIntSerializer",
-                "kotlin.ULong" to "ULongSerializer",
-                "kotlin.UShort" to "UShortSerializer",
+                "kotlin.Byte" to "Byte",
+                "kotlin.Char" to "Char",
+                "kotlin.Double" to "Double",
+                "kotlin.Float" to "Float",
+                "kotlin.Int" to "Int",
+                "kotlin.Long" to "Long",
+                "kotlin.Number" to "Number",
+                "kotlin.Short" to "Short",
+                "kotlin.String" to "String",
+                "kotlin.UByte" to "UByte",
+                "kotlin.UInt" to "UInt",
+                "kotlin.ULong" to "ULong",
+                "kotlin.UShort" to "UShort",
                 // Collection
-                "kotlin.collections.List" to "ListSerializer",
+                "kotlin.collections.List" to "List",
             )
 
         private fun createParameter(declaration: KSValueParameter): Parameter? {
@@ -140,13 +158,13 @@ class KtConfigSymbolProcessor(
             }
 
             val type = declaration.type.resolve()
-            val className = type.declaration.qualifiedName?.asString()
-            if (className == null) {
+            val qualifiedName = type.declaration.qualifiedName?.asString()
+            if (qualifiedName == null) {
                 logger.error("Primary constructor parameters must be a class", declaration)
                 return null
             }
 
-            val serializer = getSerializer(declaration, type, className) ?: return null
+            val serializer = getSerializer(declaration, type, qualifiedName) ?: return null
 
             return Parameter(name, name, serializer)
         }
@@ -154,36 +172,38 @@ class KtConfigSymbolProcessor(
         private fun getSerializer(
             declaration: KSValueParameter,
             type: KSType,
-            className: String,
+            qualifiedName: String,
         ): Parameter.Serializer? {
-            val serializer = serializers[className]
+            val serializer = builtInSerializers[qualifiedName]
             if (serializer == null) {
-                logger.error("Unsupported type: $className", declaration)
+                logger.error("Unsupported type: $qualifiedName", declaration)
                 return null
             }
+
+            val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
 
             val arguments = type.arguments
             if (arguments.isNotEmpty()) {
                 val argumentSerializers =
                     arguments.map { argument ->
                         val argumentType = argument.type?.resolve()
-                        val argumentClassName =
+                        val argumentQualifiedName =
                             argumentType
                                 ?.declaration
                                 ?.qualifiedName
                                 ?.asString()
-                        if (argumentClassName == null) {
+                        if (argumentQualifiedName == null) {
                             logger.error("Type arguments must be a class", argument)
                             return null
                         }
 
-                        getSerializer(declaration, argumentType, argumentClassName) ?: return null
+                        getSerializer(declaration, argumentType, argumentQualifiedName) ?: return null
                     }
 
-                return Parameter.Serializer.Class(serializer, argumentSerializers)
+                return Parameter.Serializer.Class(className, serializer, argumentSerializers)
             }
 
-            return Parameter.Serializer.Object(serializer)
+            return Parameter.Serializer.Object(className, serializer)
         }
     }
 
@@ -193,19 +213,39 @@ class KtConfigSymbolProcessor(
         val serializer: Serializer,
     ) {
         sealed interface Serializer {
-            val init: String
+            val type: TypeName
+            val uniqueName: String
+            val ref: String
 
             data class Object(
+                override val type: ClassName,
                 val name: String,
             ) : Serializer {
-                override val init = "dev.s7a.ktconfig.serializer.$name"
+                override val uniqueName = name
+                override val ref = "dev.s7a.ktconfig.serializer.${name}Serializer"
             }
 
+            // Properties like type, uniqueName, ref are stored as class properties
+            // to avoid recalculating them each time they are accessed
             data class Class(
+                val parentType: ClassName,
                 val name: String,
                 val arguments: List<Serializer>,
             ) : Serializer {
-                override val init = "dev.s7a.ktconfig.serializer.$name(${arguments.joinToString(", ") { it.init }})"
+                override val type = parentType.parameterizedBy(arguments.map { it.type })
+
+                override val uniqueName =
+                    buildString {
+                        append(name)
+                        append("Of")
+                        arguments.forEach {
+                            append(it.uniqueName)
+                        }
+                    }
+
+                override val ref = uniqueName
+
+                val init = "dev.s7a.ktconfig.serializer.${name}Serializer(${arguments.joinToString(", ") { it.ref }})"
             }
         }
     }
