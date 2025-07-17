@@ -10,4 +10,4 @@ object ShortArraySerializer : CollectionSerializer<Short, ShortArray>(ShortSeria
     override fun toCollection(value: List<Short>) = value.toShortArray()
 
     override fun toList(value: ShortArray) = value.toList()
-} 
+}

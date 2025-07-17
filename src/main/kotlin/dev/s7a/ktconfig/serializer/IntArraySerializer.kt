@@ -10,4 +10,4 @@ object IntArraySerializer : CollectionSerializer<Int, IntArray>(IntSerializer) {
     override fun toCollection(value: List<Int>) = value.toIntArray()
 
     override fun toList(value: IntArray) = value.toList()
-} 
+}

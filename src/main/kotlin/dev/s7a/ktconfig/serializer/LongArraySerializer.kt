@@ -10,4 +10,4 @@ object LongArraySerializer : CollectionSerializer<Long, LongArray>(LongSerialize
     override fun toCollection(value: List<Long>) = value.toLongArray()
 
     override fun toList(value: LongArray) = value.toList()
-} 
+}
