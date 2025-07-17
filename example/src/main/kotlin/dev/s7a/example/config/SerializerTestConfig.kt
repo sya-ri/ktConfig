@@ -18,10 +18,6 @@ data class SerializerTestConfig(
     val uLong: ULong,
     val uShort: UShort,
     val boolean: Boolean,
-    val list: List<String>,
-    val list2: List<List<String>>,
-    val set: Set<String>,
-    val arrayDeque: ArrayDeque<String>,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,
@@ -34,6 +30,11 @@ data class SerializerTestConfig(
     val uLongArray: ULongArray,
     val uShortArray: UShortArray,
     val booleanArray: BooleanArray,
+    val list: List<UInt>,
+    val list2: List<List<UInt>>,
+    val arrayDeque: ArrayDeque<UInt>,
+    val set: Set<UInt>,
+    val map: Map<UInt, UInt>,
     val nullable: String?,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -55,10 +56,6 @@ data class SerializerTestConfig(
         if (uLong != other.uLong) return false
         if (uShort != other.uShort) return false
         if (boolean != other.boolean) return false
-        if (list != other.list) return false
-        if (list2 != other.list2) return false
-        if (set != other.set) return false
-        if (arrayDeque != other.arrayDeque) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -71,6 +68,11 @@ data class SerializerTestConfig(
         if (uLongArray.contentEquals(other.uLongArray).not()) return false
         if (uShortArray.contentEquals(other.uShortArray).not()) return false
         if (booleanArray.contentEquals(other.booleanArray).not()) return false
+        if (list != other.list) return false
+        if (list2 != other.list2) return false
+        if (set != other.set) return false
+        if (arrayDeque != other.arrayDeque) return false
+        if (map != other.map) return false
         if (nullable != other.nullable) return false
 
         return true
@@ -90,10 +92,6 @@ data class SerializerTestConfig(
         result = 31 * result + uLong.hashCode()
         result = 31 * result + uShort.hashCode()
         result = 31 * result + boolean.hashCode()
-        result = 31 * result + list.hashCode()
-        result = 31 * result + list2.hashCode()
-        result = 31 * result + set.hashCode()
-        result = 31 * result + arrayDeque.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()
@@ -106,6 +104,11 @@ data class SerializerTestConfig(
         result = 31 * result + uLongArray.contentHashCode()
         result = 31 * result + uShortArray.contentHashCode()
         result = 31 * result + booleanArray.contentHashCode()
+        result = 31 * result + list.hashCode()
+        result = 31 * result + list2.hashCode()
+        result = 31 * result + set.hashCode()
+        result = 31 * result + arrayDeque.hashCode()
+        result = 31 * result + map.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         return result
     }

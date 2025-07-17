@@ -28,10 +28,6 @@ class ExamplePlugin : JavaPlugin() {
                 uLong = Random.nextLong().toULong(),
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 boolean = Random.nextBoolean(),
-                list = List(5) { UUID.randomUUID().toString() },
-                list2 = List(5) { List(3) { UUID.randomUUID().toString() } },
-                set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
-                arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
                 intArray = IntArray(3) { Random.nextInt() },
@@ -44,6 +40,11 @@ class ExamplePlugin : JavaPlugin() {
                 uLongArray = ULongArray(3) { Random.nextLong().toULong() },
                 uShortArray = UShortArray(3) { Random.nextInt(0, 65535).toUShort() },
                 booleanArray = BooleanArray(3) { Random.nextBoolean() },
+                list = List(5) { Random.nextInt().toUInt() },
+                list2 = List(5) { List(3) { Random.nextInt().toUInt() } },
+                set = List(5) { Random.nextInt().toUInt() }.toSet(),
+                arrayDeque = ArrayDeque(List(3) { Random.nextInt().toUInt() }),
+                map = (0..4).associate { Random.nextInt().toUInt() to Random.nextInt().toUInt() },
                 nullable = null,
             )
 
@@ -74,12 +75,6 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uLong != actual.uLong) logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.boolean != actual.boolean) logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
-            if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
-            if (expected.list2 != actual.list2) logger.info("list2: expected=${expected.list2}, actual=${actual.list2}")
-            if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
-            if (expected.arrayDeque != actual.arrayDeque) {
-                logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
-            }
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
                 logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
             }
@@ -122,6 +117,13 @@ class ExamplePlugin : JavaPlugin() {
                     "booleanArray: expected=${expected.booleanArray.contentToString()}, actual=${actual.booleanArray.contentToString()}",
                 )
             }
+            if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
+            if (expected.list2 != actual.list2) logger.info("list2: expected=${expected.list2}, actual=${actual.list2}")
+            if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
+            if (expected.arrayDeque != actual.arrayDeque) {
+                logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
+            }
+            if (expected.map != actual.map) logger.info("map: expected=${expected.map}, actual=${actual.map}")
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
