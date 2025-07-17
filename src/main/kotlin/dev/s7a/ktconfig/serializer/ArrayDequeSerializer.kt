@@ -9,7 +9,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 class ArrayDequeSerializer<E>(
-    valueSerializer: ValueSerializer<E>,
+    valueSerializer: Serializer<E>,
 ) : CollectionSerializer<E, ArrayDeque<E>>(valueSerializer) {
     override fun toCollection(value: List<E>) = ArrayDeque(value)
 

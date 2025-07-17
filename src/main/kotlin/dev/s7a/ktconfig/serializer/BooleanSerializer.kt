@@ -6,7 +6,7 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object BooleanSerializer : ValueSerializer<Boolean> {
+object BooleanSerializer : Serializer<Boolean> {
     override fun deserialize(value: Any) =
         when (value) {
             is Boolean -> value

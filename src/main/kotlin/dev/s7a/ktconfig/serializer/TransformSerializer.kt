@@ -10,8 +10,8 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 abstract class TransformSerializer<T, B>(
-    val base: ValueSerializer<B>,
-) : ValueSerializer<T> {
+    val base: Serializer<B>,
+) : Serializer<T> {
     override fun deserialize(value: Any) = transform(base.deserialize(value))
 
     override fun serialize(value: T) = base.serialize(transformBack(value))

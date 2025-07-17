@@ -6,7 +6,7 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object StringSerializer : ValueSerializer<String> {
+object StringSerializer : Serializer<String> {
     override fun deserialize(value: Any) = value.toString()
 
     override fun serialize(value: String) = value

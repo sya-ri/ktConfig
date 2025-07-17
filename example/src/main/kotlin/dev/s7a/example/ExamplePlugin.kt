@@ -29,6 +29,7 @@ class ExamplePlugin : JavaPlugin() {
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 boolean = Random.nextBoolean(),
                 list = List(5) { UUID.randomUUID().toString() },
+                list2 = List(5) { List(3) { UUID.randomUUID().toString() } },
                 set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
                 arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
@@ -74,6 +75,7 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.boolean != actual.boolean) logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
             if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
+            if (expected.list2 != actual.list2) logger.info("list2: expected=${expected.list2}, actual=${actual.list2}")
             if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
             if (expected.arrayDeque != actual.arrayDeque) {
                 logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")

@@ -10,7 +10,7 @@ import java.math.BigDecimal
  * and could lead to precision loss when converting between different numeric types (e.g., Long to Int,
  * Double to Float). Instead, use specific numeric types like Int, Long, Double, etc.
  */
-object NumberSerializer : ValueSerializer<Number> {
+object NumberSerializer : Serializer<Number> {
     override fun deserialize(value: Any) =
         when (value) {
             is Number -> value

@@ -19,6 +19,7 @@ data class SerializerTestConfig(
     val uShort: UShort,
     val boolean: Boolean,
     val list: List<String>,
+    val list2: List<List<String>>,
     val set: Set<String>,
     val arrayDeque: ArrayDeque<String>,
     val byteArray: ByteArray,
@@ -55,6 +56,7 @@ data class SerializerTestConfig(
         if (uShort != other.uShort) return false
         if (boolean != other.boolean) return false
         if (list != other.list) return false
+        if (list2 != other.list2) return false
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
@@ -89,6 +91,7 @@ data class SerializerTestConfig(
         result = 31 * result + uShort.hashCode()
         result = 31 * result + boolean.hashCode()
         result = 31 * result + list.hashCode()
+        result = 31 * result + list2.hashCode()
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
         result = 31 * result + byteArray.contentHashCode()

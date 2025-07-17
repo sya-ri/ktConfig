@@ -9,8 +9,8 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 abstract class CollectionSerializer<E, C>(
-    val valueSerializer: ValueSerializer<E>,
-) : ValueSerializer<C> {
+    val valueSerializer: Serializer<E>,
+) : Serializer<C> {
     override fun deserialize(value: Any): C {
         val list = value as? List<*> ?: listOf(value)
         return list

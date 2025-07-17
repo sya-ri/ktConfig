@@ -8,7 +8,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 class SetSerializer<E>(
-    valueSerializer: ValueSerializer<E>,
+    valueSerializer: Serializer<E>,
 ) : CollectionSerializer<E, Set<E>>(valueSerializer) {
     override fun toCollection(value: List<E>) = value.toSet()
 
