@@ -35,6 +35,9 @@ data class SerializerTestConfig(
     val arrayDeque: ArrayDeque<UInt>,
     val set: Set<UInt>,
     val map: Map<UInt, UInt>,
+    val map2: Map<UInt, Map<UInt, UInt>>,
+    val listMap: List<Map<UInt, UInt>>,
+    val mapList: Map<UInt, List<UInt>>,
     val nullable: String?,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -73,6 +76,9 @@ data class SerializerTestConfig(
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
         if (map != other.map) return false
+        if (map2 != other.map2) return false
+        if (listMap != other.listMap) return false
+        if (mapList != other.mapList) return false
         if (nullable != other.nullable) return false
 
         return true
@@ -109,6 +115,9 @@ data class SerializerTestConfig(
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
         result = 31 * result + map.hashCode()
+        result = 31 * result + map2.hashCode()
+        result = 31 * result + listMap.hashCode()
+        result = 31 * result + mapList.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         return result
     }

@@ -45,6 +45,15 @@ class ExamplePlugin : JavaPlugin() {
                 set = List(5) { Random.nextInt().toUInt() }.toSet(),
                 arrayDeque = ArrayDeque(List(3) { Random.nextInt().toUInt() }),
                 map = (0..4).associate { Random.nextInt().toUInt() to Random.nextInt().toUInt() },
+                map2 =
+                    (0..4).associate {
+                        Random.nextInt().toUInt() to
+                            (0..2).associate {
+                                Random.nextInt().toUInt() to Random.nextInt().toUInt()
+                            }
+                    },
+                listMap = List(5) { (0..2).associate { Random.nextInt().toUInt() to Random.nextInt().toUInt() } },
+                mapList = (0..4).associate { Random.nextInt().toUInt() to List(3) { Random.nextInt().toUInt() } },
                 nullable = null,
             )
 
@@ -124,6 +133,9 @@ class ExamplePlugin : JavaPlugin() {
                 logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
             }
             if (expected.map != actual.map) logger.info("map: expected=${expected.map}, actual=${actual.map}")
+            if (expected.map2 != actual.map2) logger.info("map2: expected=${expected.map2}, actual=${actual.map2}")
+            if (expected.listMap != actual.listMap) logger.info("listMap: expected=${expected.listMap}, actual=${actual.listMap}")
+            if (expected.mapList != actual.mapList) logger.info("mapList: expected=${expected.mapList}, actual=${actual.mapList}")
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
