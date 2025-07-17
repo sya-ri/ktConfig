@@ -171,8 +171,6 @@ class KtConfigSymbolProcessor(
                 // Primitive
                 "kotlin.Byte" to "Byte",
                 "kotlin.Char" to "Char",
-                "kotlin.Double" to "Double",
-                "kotlin.Float" to "Float",
                 "kotlin.Int" to "Int",
                 "kotlin.Long" to "Long",
                 "kotlin.Short" to "Short",
@@ -181,12 +179,15 @@ class KtConfigSymbolProcessor(
                 "kotlin.UInt" to "UInt",
                 "kotlin.ULong" to "ULong",
                 "kotlin.UShort" to "UShort",
+                "kotlin.Double" to "Double",
+                "kotlin.Float" to "Float",
                 "kotlin.Boolean" to "Boolean",
                 // Collection
                 "kotlin.collections.ArrayDeque" to "ArrayDeque",
                 "kotlin.collections.List" to "List",
                 "kotlin.collections.Set" to "Set",
                 "kotlin.ByteArray" to "ByteArray",
+                "kotlin.CharArray" to "CharArray",
                 "kotlin.IntArray" to "IntArray",
                 "kotlin.LongArray" to "LongArray",
                 "kotlin.ShortArray" to "ShortArray",
@@ -194,6 +195,8 @@ class KtConfigSymbolProcessor(
                 "kotlin.UIntArray" to "UIntArray",
                 "kotlin.ULongArray" to "ULongArray",
                 "kotlin.UShortArray" to "UShortArray",
+                "kotlin.DoubleArray" to "DoubleArray",
+                "kotlin.FloatArray" to "FloatArray",
                 "kotlin.BooleanArray" to "BooleanArray",
             )
 

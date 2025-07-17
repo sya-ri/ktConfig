@@ -15,14 +15,14 @@ class ExamplePlugin : JavaPlugin() {
     private fun testSerializer() {
         val expected =
             SerializerTestConfig(
+                string = UUID.randomUUID().toString(),
                 byte = Random.nextBytes(1)[0],
                 char = Random.nextInt(32, 127).toChar(),
-                double = Random.nextDouble(),
-                float = Random.nextFloat(),
                 int = Random.nextInt(),
                 long = Random.nextLong(),
                 short = Random.nextInt(-32768, 32767).toShort(),
-                string = UUID.randomUUID().toString(),
+                double = Random.nextDouble(),
+                float = Random.nextFloat(),
                 uByte = Random.nextInt(0, 255).toUByte(),
                 uInt = Random.nextInt().toUInt(),
                 uLong = Random.nextLong().toULong(),
@@ -32,9 +32,12 @@ class ExamplePlugin : JavaPlugin() {
                 set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
                 arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
+                charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
                 intArray = IntArray(3) { Random.nextInt() },
                 longArray = LongArray(3) { Random.nextLong() },
                 shortArray = ShortArray(3) { Random.nextInt(-32768, 32767).toShort() },
+                doubleArray = DoubleArray(3) { Random.nextDouble() },
+                floatArray = FloatArray(3) { Random.nextFloat() },
                 uByteArray = UByteArray(3) { Random.nextInt(0, 255).toUByte() },
                 uIntArray = UIntArray(3) { Random.nextInt().toUInt() },
                 uLongArray = ULongArray(3) { Random.nextLong().toULong() },
@@ -57,18 +60,19 @@ class ExamplePlugin : JavaPlugin() {
 
         if (expected != actual) {
             logger.info("Differences found:")
+            if (expected.string != actual.string) logger.info("string: expected=${expected.string}, actual=${actual.string}")
             if (expected.byte != actual.byte) logger.info("byte: expected=${expected.byte}, actual=${actual.byte}")
             if (expected.char != actual.char) logger.info("char: expected=${expected.char}, actual=${actual.char}")
-            if (expected.double != actual.double) logger.info("double: expected=${expected.double}, actual=${actual.double}")
-            if (expected.float != actual.float) logger.info("float: expected=${expected.float}, actual=${actual.float}")
             if (expected.int != actual.int) logger.info("int: expected=${expected.int}, actual=${actual.int}")
             if (expected.long != actual.long) logger.info("long: expected=${expected.long}, actual=${actual.long}")
             if (expected.short != actual.short) logger.info("short: expected=${expected.short}, actual=${actual.short}")
-            if (expected.string != actual.string) logger.info("string: expected=${expected.string}, actual=${actual.string}")
+            if (expected.double != actual.double) logger.info("double: expected=${expected.double}, actual=${actual.double}")
+            if (expected.float != actual.float) logger.info("float: expected=${expected.float}, actual=${actual.float}")
             if (expected.uByte != actual.uByte) logger.info("uByte: expected=${expected.uByte}, actual=${actual.uByte}")
             if (expected.uInt != actual.uInt) logger.info("uInt: expected=${expected.uInt}, actual=${actual.uInt}")
             if (expected.uLong != actual.uLong) logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
+            if (expected.boolean != actual.boolean) logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
             if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
             if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
             if (expected.arrayDeque != actual.arrayDeque) {
@@ -76,6 +80,9 @@ class ExamplePlugin : JavaPlugin() {
             }
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
                 logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
+            }
+            if (expected.charArray.contentEquals(actual.charArray).not()) {
+                logger.info("charArray: expected=${expected.charArray.contentToString()}, actual=${actual.charArray.contentToString()}")
             }
             if (expected.intArray.contentEquals(actual.intArray).not()) {
                 logger.info("intArray: expected=${expected.intArray.contentToString()}, actual=${actual.intArray.contentToString()}")
@@ -85,6 +92,14 @@ class ExamplePlugin : JavaPlugin() {
             }
             if (expected.shortArray.contentEquals(actual.shortArray).not()) {
                 logger.info("shortArray: expected=${expected.shortArray.contentToString()}, actual=${actual.shortArray.contentToString()}")
+            }
+            if (expected.doubleArray.contentEquals(actual.doubleArray).not()) {
+                logger.info(
+                    "doubleArray: expected=${expected.doubleArray.contentToString()}, actual=${actual.doubleArray.contentToString()}",
+                )
+            }
+            if (expected.floatArray.contentEquals(actual.floatArray).not()) {
+                logger.info("floatArray: expected=${expected.floatArray.contentToString()}, actual=${actual.floatArray.contentToString()}")
             }
             if (expected.uByteArray.contentEquals(actual.uByteArray).not()) {
                 logger.info("uByteArray: expected=${expected.uByteArray.contentToString()}, actual=${actual.uByteArray.contentToString()}")
@@ -98,6 +113,11 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uShortArray.contentEquals(actual.uShortArray).not()) {
                 logger.info(
                     "uShortArray: expected=${expected.uShortArray.contentToString()}, actual=${actual.uShortArray.contentToString()}",
+                )
+            }
+            if (expected.booleanArray.contentEquals(actual.booleanArray).not()) {
+                logger.info(
+                    "booleanArray: expected=${expected.booleanArray.contentToString()}, actual=${actual.booleanArray.contentToString()}",
                 )
             }
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")

@@ -5,14 +5,14 @@ import dev.s7a.ktconfig.ForKtConfig
 @ForKtConfig
 @OptIn(ExperimentalUnsignedTypes::class)
 data class SerializerTestConfig(
+    val string: String,
     val byte: Byte,
     val char: Char,
-    val double: Double,
-    val float: Float,
     val int: Int,
     val long: Long,
     val short: Short,
-    val string: String,
+    val double: Double,
+    val float: Float,
     val uByte: UByte,
     val uInt: UInt,
     val uLong: ULong,
@@ -22,9 +22,12 @@ data class SerializerTestConfig(
     val set: Set<String>,
     val arrayDeque: ArrayDeque<String>,
     val byteArray: ByteArray,
+    val charArray: CharArray,
     val intArray: IntArray,
     val longArray: LongArray,
     val shortArray: ShortArray,
+    val doubleArray: DoubleArray,
+    val floatArray: FloatArray,
     val uByteArray: UByteArray,
     val uIntArray: UIntArray,
     val uLongArray: ULongArray,
@@ -38,14 +41,14 @@ data class SerializerTestConfig(
 
         other as SerializerTestConfig
 
+        if (string != other.string) return false
         if (byte != other.byte) return false
         if (char != other.char) return false
-        if (double != other.double) return false
-        if (float != other.float) return false
         if (int != other.int) return false
         if (long != other.long) return false
         if (short != other.short) return false
-        if (string != other.string) return false
+        if (double != other.double) return false
+        if (float != other.float) return false
         if (uByte != other.uByte) return false
         if (uInt != other.uInt) return false
         if (uLong != other.uLong) return false
@@ -55,9 +58,12 @@ data class SerializerTestConfig(
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
+        if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
         if (longArray.contentEquals(other.longArray).not()) return false
         if (shortArray.contentEquals(other.shortArray).not()) return false
+        if (doubleArray.contentEquals(other.doubleArray).not()) return false
+        if (floatArray.contentEquals(other.floatArray).not()) return false
         if (uByteArray.contentEquals(other.uByteArray).not()) return false
         if (uIntArray.contentEquals(other.uIntArray).not()) return false
         if (uLongArray.contentEquals(other.uLongArray).not()) return false
@@ -69,14 +75,14 @@ data class SerializerTestConfig(
     }
 
     override fun hashCode(): Int {
-        var result = byte.toInt()
+        var result = string.hashCode()
+        result = 31 * result + byte.toInt()
         result = 31 * result + char.hashCode()
-        result = 31 * result + double.hashCode()
-        result = 31 * result + float.hashCode()
         result = 31 * result + int
         result = 31 * result + long.hashCode()
         result = 31 * result + short
-        result = 31 * result + string.hashCode()
+        result = 31 * result + double.hashCode()
+        result = 31 * result + float.hashCode()
         result = 31 * result + uByte.hashCode()
         result = 31 * result + uInt.hashCode()
         result = 31 * result + uLong.hashCode()
@@ -86,9 +92,12 @@ data class SerializerTestConfig(
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
         result = 31 * result + byteArray.contentHashCode()
+        result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()
         result = 31 * result + longArray.contentHashCode()
         result = 31 * result + shortArray.contentHashCode()
+        result = 31 * result + doubleArray.contentHashCode()
+        result = 31 * result + floatArray.contentHashCode()
         result = 31 * result + uByteArray.contentHashCode()
         result = 31 * result + uIntArray.contentHashCode()
         result = 31 * result + uLongArray.contentHashCode()
