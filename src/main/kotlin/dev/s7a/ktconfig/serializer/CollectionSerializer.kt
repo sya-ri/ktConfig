@@ -1,7 +1,5 @@
 package dev.s7a.ktconfig.serializer
 
-import org.bukkit.configuration.file.YamlConfiguration
-
 /**
  * Abstract serializer class that provides serialization functionality for collection types.
  *
@@ -12,23 +10,16 @@ import org.bukkit.configuration.file.YamlConfiguration
  */
 abstract class CollectionSerializer<E, C>(
     val valueSerializer: ValueSerializer<E>,
-) : Serializer<C> {
-    override fun get(
-        configuration: YamlConfiguration,
-        path: String,
-    ): C? =
-        configuration
-            .getList(path)
-            ?.map { valueSerializer.deserialize(it!!) }
-            ?.let(::toCollection)
-
-    override fun save(
-        configuration: YamlConfiguration,
-        path: String,
-        value: C?,
-    ) {
-        configuration.set(path, value?.let(::toList)?.map(valueSerializer::serialize))
+) : ValueSerializer<C> {
+    override fun deserialize(value: Any): C {
+        val list = value as? List<*> ?: listOf(value)
+        return list
+            .map {
+                valueSerializer.deserialize(it ?: throw IllegalArgumentException("Element of collection is null"))
+            }.let(::toCollection)
     }
+
+    override fun serialize(value: C) = value?.let(::toList)?.map(valueSerializer::serialize)
 
     /**
      * Converts a List of elements into the specific collection type.
