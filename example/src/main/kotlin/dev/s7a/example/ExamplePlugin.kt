@@ -27,6 +27,7 @@ class ExamplePlugin : JavaPlugin() {
                 uInt = Random.nextInt().toUInt(),
                 uLong = Random.nextLong().toULong(),
                 uShort = Random.nextInt(0, 65535).toUShort(),
+                boolean = Random.nextBoolean(),
                 list = List(5) { UUID.randomUUID().toString() },
                 set = setOf(UUID.randomUUID().toString(), UUID.randomUUID().toString()),
                 arrayDeque = ArrayDeque(List(3) { UUID.randomUUID().toString() }),
@@ -38,6 +39,7 @@ class ExamplePlugin : JavaPlugin() {
                 uIntArray = UIntArray(3) { Random.nextInt().toUInt() },
                 uLongArray = ULongArray(3) { Random.nextLong().toULong() },
                 uShortArray = UShortArray(3) { Random.nextInt(0, 65535).toUShort() },
+                booleanArray = BooleanArray(3) { Random.nextBoolean() },
                 nullable = null,
             )
 

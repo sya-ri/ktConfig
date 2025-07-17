@@ -17,6 +17,7 @@ data class SerializerTestConfig(
     val uInt: UInt,
     val uLong: ULong,
     val uShort: UShort,
+    val boolean: Boolean,
     val list: List<String>,
     val set: Set<String>,
     val arrayDeque: ArrayDeque<String>,
@@ -28,6 +29,7 @@ data class SerializerTestConfig(
     val uIntArray: UIntArray,
     val uLongArray: ULongArray,
     val uShortArray: UShortArray,
+    val booleanArray: BooleanArray,
     val nullable: String?,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -48,6 +50,7 @@ data class SerializerTestConfig(
         if (uInt != other.uInt) return false
         if (uLong != other.uLong) return false
         if (uShort != other.uShort) return false
+        if (boolean != other.boolean) return false
         if (list != other.list) return false
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
@@ -59,6 +62,7 @@ data class SerializerTestConfig(
         if (uIntArray.contentEquals(other.uIntArray).not()) return false
         if (uLongArray.contentEquals(other.uLongArray).not()) return false
         if (uShortArray.contentEquals(other.uShortArray).not()) return false
+        if (booleanArray.contentEquals(other.booleanArray).not()) return false
         if (nullable != other.nullable) return false
 
         return true
@@ -77,6 +81,7 @@ data class SerializerTestConfig(
         result = 31 * result + uInt.hashCode()
         result = 31 * result + uLong.hashCode()
         result = 31 * result + uShort.hashCode()
+        result = 31 * result + boolean.hashCode()
         result = 31 * result + list.hashCode()
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
@@ -88,6 +93,7 @@ data class SerializerTestConfig(
         result = 31 * result + uIntArray.contentHashCode()
         result = 31 * result + uLongArray.contentHashCode()
         result = 31 * result + uShortArray.contentHashCode()
+        result = 31 * result + booleanArray.contentHashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         return result
     }

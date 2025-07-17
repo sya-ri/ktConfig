@@ -181,6 +181,7 @@ class KtConfigSymbolProcessor(
                 "kotlin.UInt" to "UInt",
                 "kotlin.ULong" to "ULong",
                 "kotlin.UShort" to "UShort",
+                "kotlin.Boolean" to "Boolean",
                 // Collection
                 "kotlin.collections.ArrayDeque" to "ArrayDeque",
                 "kotlin.collections.List" to "List",
@@ -193,6 +194,7 @@ class KtConfigSymbolProcessor(
                 "kotlin.UIntArray" to "UIntArray",
                 "kotlin.ULongArray" to "ULongArray",
                 "kotlin.UShortArray" to "UShortArray",
+                "kotlin.BooleanArray" to "BooleanArray",
             )
 
         /**
