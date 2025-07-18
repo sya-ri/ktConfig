@@ -38,8 +38,16 @@ data class SerializerTestConfig(
     val map2: Map<UInt, Map<UInt, UInt>>,
     val listMap: List<Map<UInt, UInt>>,
     val mapList: Map<UInt, List<UInt>>,
+    val enum: TestEnum,
     val nullable: String?,
 ) {
+    enum class TestEnum {
+        A,
+        B,
+        C,
+        D,
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -80,6 +88,7 @@ data class SerializerTestConfig(
         if (listMap != other.listMap) return false
         if (mapList != other.mapList) return false
         if (nullable != other.nullable) return false
+        if (enum != other.enum) return false
 
         return true
     }
@@ -119,6 +128,7 @@ data class SerializerTestConfig(
         result = 31 * result + listMap.hashCode()
         result = 31 * result + mapList.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
+        result = 31 * result + enum.hashCode()
         return result
     }
 }

@@ -54,6 +54,7 @@ class ExamplePlugin : JavaPlugin() {
                     },
                 listMap = List(5) { (0..2).associate { Random.nextInt().toUInt() to Random.nextInt().toUInt() } },
                 mapList = (0..4).associate { Random.nextInt().toUInt() to List(3) { Random.nextInt().toUInt() } },
+                enum = SerializerTestConfig.TestEnum.entries.random(),
                 nullable = null,
             )
 
@@ -137,6 +138,7 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.listMap != actual.listMap) logger.info("listMap: expected=${expected.listMap}, actual=${actual.listMap}")
             if (expected.mapList != actual.mapList) logger.info("mapList: expected=${expected.mapList}, actual=${actual.mapList}")
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
+            if (expected.enum != actual.enum) logger.info("enum: expected=${expected.enum}, actual=${actual.enum}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
         }
