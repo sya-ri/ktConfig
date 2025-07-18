@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinter)
