@@ -131,10 +131,10 @@ data class SerializerTestConfig(
         result = 31 * result + map2.hashCode()
         result = 31 * result + listMap.hashCode()
         result = 31 * result + mapList.hashCode()
-        result = 31 * result + (nullable?.hashCode() ?: 0)
         result = 31 * result + enum.hashCode()
         result = 31 * result + enumList.hashCode()
         result = 31 * result + enumMap.hashCode()
+        result = 31 * result + (nullable?.hashCode() ?: 0)
         return result
     }
 }
