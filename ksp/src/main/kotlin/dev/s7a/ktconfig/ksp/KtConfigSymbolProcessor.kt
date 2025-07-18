@@ -50,6 +50,7 @@ class KtConfigSymbolProcessor(
     private inner class Visitor : KSVisitorVoid() {
         private val loaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
+        private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer.Keyable")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
 
         /**
@@ -87,8 +88,10 @@ class KtConfigSymbolProcessor(
                         .forEach {
                             addProperty(
                                 PropertySpec
-                                    .builder(it.uniqueName, serializerClassName.parameterizedBy(it.type))
-                                    .addModifiers(KModifier.PRIVATE)
+                                    .builder(
+                                        it.uniqueName,
+                                        (if (it.keyable) keyableSerializerClassName else serializerClassName).parameterizedBy(it.type),
+                                    ).addModifiers(KModifier.PRIVATE)
                                     .initializer("%L", it.initialize)
                                     .build(),
                             )
@@ -310,6 +313,7 @@ class KtConfigSymbolProcessor(
                 name: String,
             ) : Serializer(type, isNullable, name) {
                 abstract val initialize: String
+                abstract val keyable: Boolean
             }
 
             // Properties like type, uniqueName, ref are stored as class properties
@@ -330,6 +334,7 @@ class KtConfigSymbolProcessor(
                     }
                 override val ref = uniqueName
                 override val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
+                override val keyable = false
             }
 
             class EnumClass(
@@ -340,6 +345,7 @@ class KtConfigSymbolProcessor(
                 override val uniqueName = type.canonicalName.replace(".", "_")
                 override val ref = uniqueName
                 override val initialize = "$classRef($qualifiedName::class.java)"
+                override val keyable = true
             }
         }
     }

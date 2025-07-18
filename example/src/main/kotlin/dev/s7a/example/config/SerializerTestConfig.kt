@@ -39,6 +39,8 @@ data class SerializerTestConfig(
     val listMap: List<Map<UInt, UInt>>,
     val mapList: Map<UInt, List<UInt>>,
     val enum: TestEnum,
+    val enumList: List<TestEnum>,
+    val enumMap: Map<TestEnum, TestEnum>,
     val nullable: String?,
 ) {
     enum class TestEnum {
@@ -89,6 +91,8 @@ data class SerializerTestConfig(
         if (mapList != other.mapList) return false
         if (nullable != other.nullable) return false
         if (enum != other.enum) return false
+        if (enumList != other.enumList) return false
+        if (enumMap != other.enumMap) return false
 
         return true
     }
@@ -129,6 +133,8 @@ data class SerializerTestConfig(
         result = 31 * result + mapList.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         result = 31 * result + enum.hashCode()
+        result = 31 * result + enumList.hashCode()
+        result = 31 * result + enumMap.hashCode()
         return result
     }
 }
