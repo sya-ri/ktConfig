@@ -44,7 +44,7 @@ class ExamplePlugin : JavaPlugin() {
                 list2 = List(5) { List(3) { Random.nextInt().toUInt() } },
                 set = List(5) { Random.nextInt().toUInt() }.toSet(),
                 arrayDeque = ArrayDeque(List(3) { Random.nextInt().toUInt() }),
-                map = (0..4).associate { Random.nextInt().toUInt() to Random.nextInt().toUInt() },
+                map = (0..4).associate { Random.nextLong().toULong() to Random.nextLong().toULong() },
                 map2 =
                     (0..4).associate {
                         Random.nextInt().toUInt() to

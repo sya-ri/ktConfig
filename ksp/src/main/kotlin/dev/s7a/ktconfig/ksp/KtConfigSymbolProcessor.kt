@@ -82,8 +82,7 @@ class KtConfigSymbolProcessor(
                     // Add properties for nested type serializer classes like ListOfString
                     parameters
                         .map(Parameter::serializer)
-                        .distinct()
-                        .filterIsInstance<Parameter.Serializer.Class>()
+                        .flattenUniqueSerializers()
                         .forEach {
                             addProperty(
                                 PropertySpec
@@ -242,6 +241,26 @@ class KtConfigSymbolProcessor(
 
             return Parameter.Serializer.Object(className, isNullable, serializer)
         }
+
+        /**
+         * Resolves a list of serializers by flattening nested serializers and removing duplicates.
+         * For Object serializers, keeps them as-is.
+         * For Class serializers, recursively resolves their arguments and includes the class serializer itself.
+         *
+         * @return A flattened list of unique serializers identified by their unique names
+         */
+        private fun List<Parameter.Serializer>.flattenUniqueSerializers(): List<Parameter.Serializer.Class> =
+            flatMap {
+                when (it) {
+                    is Parameter.Serializer.Object -> {
+                        // Ignore Object Serializer
+                        listOf()
+                    }
+                    is Parameter.Serializer.Class -> {
+                        it.arguments.flattenUniqueSerializers() + it
+                    }
+                }
+            }.distinctBy(Parameter.Serializer::uniqueName)
     }
 
     private data class Parameter(
@@ -276,7 +295,7 @@ class KtConfigSymbolProcessor(
                 parentType: ClassName,
                 isNullable: Boolean,
                 name: String,
-                private val arguments: List<Serializer>,
+                val arguments: List<Serializer>,
             ) : Serializer(parentType.parameterizedBy(arguments.map { it.type }), isNullable, name) {
                 override val uniqueName =
                     buildString {

@@ -34,7 +34,7 @@ data class SerializerTestConfig(
     val list2: List<List<UInt>>,
     val arrayDeque: ArrayDeque<UInt>,
     val set: Set<UInt>,
-    val map: Map<UInt, UInt>,
+    val map: Map<ULong, ULong>,
     val map2: Map<UInt, Map<UInt, UInt>>,
     val listMap: List<Map<UInt, UInt>>,
     val mapList: Map<UInt, List<UInt>>,
