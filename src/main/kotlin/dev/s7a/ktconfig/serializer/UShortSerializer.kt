@@ -6,7 +6,7 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object UShortSerializer : TransformSerializer<UShort, Number>(NumberSerializer) {
+object UShortSerializer : TransformSerializer.Keyable<UShort, Number>(NumberSerializer) {
     override fun transform(value: Number) = value.toInt().toUShort()
 
     override fun transformBack(value: UShort) = value.toInt()

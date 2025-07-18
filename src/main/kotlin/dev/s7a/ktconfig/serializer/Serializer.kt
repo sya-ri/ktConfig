@@ -11,6 +11,15 @@ import org.bukkit.configuration.file.YamlConfiguration
  */
 interface Serializer<T> {
     /**
+     * A serializer interface for types that can be used as Map keys.
+     * This interface extends [Serializer] and indicates that the type [T] can be safely used as keys in Map structures.
+     *
+     * @param T The type that can be used as Map keys
+     * @since 2.0.0
+     */
+    interface Keyable<T> : Serializer<T>
+
+    /**
      * Gets a value from the configuration at the specified path or throws an exception if not found.
      *
      * @param configuration The YAML configuration to read from

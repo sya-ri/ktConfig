@@ -12,7 +12,7 @@ import org.bukkit.configuration.MemorySection
  * @since 2.0.0
  */
 class MapSerializer<K, V>(
-    val keySerializer: Serializer<K>,
+    val keySerializer: Serializer.Keyable<K>,
     val valueSerializer: Serializer<V>,
 ) : Serializer<Map<K, V>> {
     override fun deserialize(value: Any) =

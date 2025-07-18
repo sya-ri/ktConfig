@@ -12,6 +12,21 @@ package dev.s7a.ktconfig.serializer
 abstract class TransformSerializer<T, B>(
     val base: Serializer<B>,
 ) : Serializer<T> {
+    /**
+     * A keyable serializer that transforms values between two types using a base keyable serializer.
+     * This class allows converting between type T and type B during serialization/deserialization,
+     * where both types can be used as Map keys.
+     *
+     * @param T The type to transform to/from
+     * @param B The base type used by the underlying serializer
+     * @property base The base keyable serializer used for the underlying type B
+     * @since 2.0.0
+     */
+    abstract class Keyable<T, B>(
+        base: Serializer.Keyable<B>,
+    ) : TransformSerializer<T, B>(base),
+        Serializer.Keyable<T>
+
     override fun deserialize(value: Any) = transform(base.deserialize(value))
 
     override fun serialize(value: T) = base.serialize(transformBack(value))

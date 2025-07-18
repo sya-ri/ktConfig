@@ -6,7 +6,7 @@ package dev.s7a.ktconfig.serializer
  *
  * @since 2.0.0
  */
-object UByteSerializer : TransformSerializer<UByte, Number>(NumberSerializer) {
+object UByteSerializer : TransformSerializer.Keyable<UByte, Number>(NumberSerializer) {
     override fun transform(value: Number) = value.toInt().toUByte()
 
     override fun transformBack(value: UByte) = value.toInt()
