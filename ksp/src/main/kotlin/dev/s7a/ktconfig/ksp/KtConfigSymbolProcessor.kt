@@ -7,6 +7,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeArgument
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.symbol.Modifier
@@ -157,14 +158,7 @@ class KtConfigSymbolProcessor(
                 return null
             }
 
-            val type = declaration.type.resolve()
-            val qualifiedName = type.declaration.qualifiedName?.asString()
-            if (qualifiedName == null) {
-                logger.error("Primary constructor parameters must be a class", declaration)
-                return null
-            }
-
-            val serializer = getSerializer(declaration, type, qualifiedName) ?: return null
+            val serializer = getSerializer(declaration) ?: return null
 
             return Parameter(name, name, serializer)
         }
@@ -204,22 +198,68 @@ class KtConfigSymbolProcessor(
                 "kotlin.collections.Map" to "Map",
             )
 
+        private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
+            val type = declaration.type.resolve()
+            val qualifiedName = type.declaration.qualifiedName?.asString()
+            if (qualifiedName == null) {
+                logger.error("Type must have a qualified name", declaration)
+                return null
+            }
+
+            return getSerializer(declaration, type, qualifiedName)
+        }
+
+        private fun getSerializer(declaration: KSTypeArgument): Parameter.Serializer? {
+            val type = declaration.type?.resolve()
+            val qualifiedName = type?.declaration?.qualifiedName?.asString()
+            if (qualifiedName == null) {
+                logger.error("Type must have a qualified name", declaration)
+                return null
+            }
+
+            return getSerializer(declaration, type, qualifiedName)
+        }
+
         /**
          * Resolves the appropriate serializer for a given parameter type.
          * Handles both simple types and generic collections, returning null for unsupported types.
          */
         private fun getSerializer(
-            declaration: KSValueParameter,
+            declaration: KSAnnotated,
             type: KSType,
             qualifiedName: String,
         ): Parameter.Serializer? {
             val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
 
-            // Handle enum class types by creating an EnumClass serializer
-            // This allows serialization/deserialization of enum values using their names
+            val modifiers = type.declaration.modifiers
             when {
-                type.declaration.modifiers.contains(Modifier.ENUM) -> {
+                modifiers.contains(Modifier.ENUM) -> {
                     return Parameter.Serializer.EnumClass(className, type.isMarkedNullable, qualifiedName)
+                }
+                modifiers.contains(Modifier.VALUE) -> {
+                    val classDeclaration = type.declaration as KSClassDeclaration
+
+                    val primaryConstructor = classDeclaration.primaryConstructor
+                    if (primaryConstructor == null) {
+                        logger.error("Value classes must have a primary constructor", declaration)
+                        return null
+                    }
+
+                    val parameter = primaryConstructor.parameters.singleOrNull()
+                    if (parameter == null) {
+                        logger.error("Value classes must have a single parameter", declaration)
+                        return null
+                    }
+
+                    val parameterName = parameter.name?.asString()
+                    if (parameterName == null) {
+                        logger.error("Value class parameter must have a name", declaration)
+                        return null
+                    }
+
+                    val serializer = getSerializer(parameter) ?: return null
+
+                    return Parameter.Serializer.ValueClass(className, type.isMarkedNullable, parameterName, serializer)
                 }
             }
 
@@ -236,18 +276,7 @@ class KtConfigSymbolProcessor(
             if (arguments.isNotEmpty()) {
                 val argumentSerializers =
                     arguments.map { argument ->
-                        val argumentType = argument.type?.resolve()
-                        val argumentQualifiedName =
-                            argumentType
-                                ?.declaration
-                                ?.qualifiedName
-                                ?.asString()
-                        if (argumentQualifiedName == null) {
-                            logger.error("Type arguments must be a class", argument)
-                            return null
-                        }
-
-                        getSerializer(declaration, argumentType, argumentQualifiedName) ?: return null
+                        getSerializer(argument) ?: return null
                     }
 
                 return Parameter.Serializer.Class(className, isNullable, serializer, argumentSerializers)
@@ -258,27 +287,24 @@ class KtConfigSymbolProcessor(
 
         /**
          * Resolves a list of serializers by flattening nested serializers and removing duplicates.
-         * For Object serializers, keeps them as-is.
-         * For Class serializers, recursively resolves their arguments and includes the class serializer itself.
-         * For EnumClass serializers, keeps them as-is.
          *
-         * @return A flattened list of unique serializers identified by their unique names that need initialization
+         * @return A flattened list of unique initializable serializers identified by their unique names that need initialization
          */
         private fun List<Parameter.Serializer>.extractInitializableSerializers(): List<Parameter.Serializer.InitializableSerializer> =
-            flatMap {
-                when (it) {
-                    is Parameter.Serializer.Object -> {
-                        // Ignore Object Serializer
-                        listOf()
+            filterIsInstance<Parameter.Serializer.InitializableSerializer>()
+                .flatMap {
+                    when (it) {
+                        is Parameter.Serializer.Class -> {
+                            it.arguments.extractInitializableSerializers() + it
+                        }
+                        is Parameter.Serializer.EnumClass -> {
+                            listOf(it)
+                        }
+                        is Parameter.Serializer.ValueClass -> {
+                            listOf(it.argument).extractInitializableSerializers() + it
+                        }
                     }
-                    is Parameter.Serializer.Class -> {
-                        it.arguments.extractInitializableSerializers() + it
-                    }
-                    is Parameter.Serializer.EnumClass -> {
-                        listOf(it)
-                    }
-                }
-            }.distinctBy(Parameter.Serializer::uniqueName)
+                }.distinctBy(Parameter.Serializer::uniqueName)
     }
 
     private data class Parameter(
@@ -295,6 +321,7 @@ class KtConfigSymbolProcessor(
 
             abstract val uniqueName: String
             abstract val ref: String
+            abstract val keyable: Boolean
 
             val getFn = if (isNullable) "get" else "getOrThrow"
 
@@ -305,6 +332,7 @@ class KtConfigSymbolProcessor(
             ) : Serializer(type, isNullable, name) {
                 override val uniqueName = name
                 override val ref = classRef
+                override val keyable = true
             }
 
             sealed class InitializableSerializer(
@@ -313,7 +341,6 @@ class KtConfigSymbolProcessor(
                 name: String,
             ) : Serializer(type, isNullable, name) {
                 abstract val initialize: String
-                abstract val keyable: Boolean
             }
 
             // Properties like type, uniqueName, ref are stored as class properties
@@ -333,8 +360,8 @@ class KtConfigSymbolProcessor(
                         }
                     }
                 override val ref = uniqueName
-                override val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
                 override val keyable = false
+                override val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
             }
 
             class EnumClass(
@@ -344,8 +371,20 @@ class KtConfigSymbolProcessor(
             ) : InitializableSerializer(type, isNullable, "Enum") {
                 override val uniqueName = type.canonicalName.replace(".", "_")
                 override val ref = uniqueName
-                override val initialize = "$classRef($qualifiedName::class.java)"
                 override val keyable = true
+                override val initialize = "$classRef($qualifiedName::class.java)"
+            }
+
+            class ValueClass(
+                type: ClassName,
+                isNullable: Boolean,
+                parameterName: String,
+                val argument: Serializer,
+            ) : InitializableSerializer(type, isNullable, "Value") {
+                override val uniqueName = type.canonicalName.replace(".", "_")
+                override val ref = uniqueName
+                override val keyable = argument.keyable
+                override val initialize = "$classRef${if (keyable) ".Keyable" else ""}(${argument.ref}, { $type(it) }, { it.$parameterName })"
             }
         }
     }

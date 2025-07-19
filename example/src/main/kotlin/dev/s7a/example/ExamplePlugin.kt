@@ -58,6 +58,22 @@ class ExamplePlugin : JavaPlugin() {
                 enumList = List(3) { SerializerTestConfig.TestEnum.entries.random() },
                 enumMap = SerializerTestConfig.TestEnum.entries.associateWith { SerializerTestConfig.TestEnum.entries.random() },
                 nullable = null,
+                value = SerializerTestConfig.Value(UUID.randomUUID().toString()),
+                valueList =
+                    SerializerTestConfig.ValueList(
+                        List(3) {
+                            SerializerTestConfig.Value(
+                                UUID.randomUUID().toString(),
+                            )
+                        },
+                    ),
+                valueMap =
+                    SerializerTestConfig.ValueMap(
+                        (0..2).associate {
+                            SerializerTestConfig.Value(UUID.randomUUID().toString()) to
+                                SerializerTestConfig.UIntValue(Random.nextInt().toUInt())
+                        },
+                    ),
             )
 
         logger.info("Save SerializerTestConfig:")
@@ -139,10 +155,13 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.map2 != actual.map2) logger.info("map2: expected=${expected.map2}, actual=${actual.map2}")
             if (expected.listMap != actual.listMap) logger.info("listMap: expected=${expected.listMap}, actual=${actual.listMap}")
             if (expected.mapList != actual.mapList) logger.info("mapList: expected=${expected.mapList}, actual=${actual.mapList}")
-            if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
             if (expected.enum != actual.enum) logger.info("enum: expected=${expected.enum}, actual=${actual.enum}")
             if (expected.enumList != actual.enumList) logger.info("enumList: expected=${expected.enumList}, actual=${actual.enumList}")
             if (expected.enumMap != actual.enumMap) logger.info("enumMap: expected=${expected.enumMap}, actual=${actual.enumMap}")
+            if (expected.value != actual.value) logger.info("value: expected=${expected.value}, actual=${actual.value}")
+            if (expected.valueList != actual.valueList) logger.info("valueList: expected=${expected.valueList}, actual=${actual.valueList}")
+            if (expected.valueMap != actual.valueMap) logger.info("valueMap: expected=${expected.valueMap}, actual=${actual.valueMap}")
+            if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
         }

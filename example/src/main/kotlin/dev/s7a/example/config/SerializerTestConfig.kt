@@ -41,6 +41,9 @@ data class SerializerTestConfig(
     val enum: TestEnum,
     val enumList: List<TestEnum>,
     val enumMap: Map<TestEnum, TestEnum>,
+    val value: Value,
+    val valueList: ValueList,
+    val valueMap: ValueMap,
     val nullable: String?,
 ) {
     enum class TestEnum {
@@ -49,6 +52,26 @@ data class SerializerTestConfig(
         C,
         D,
     }
+
+    @JvmInline
+    value class Value(
+        val value: String,
+    )
+
+    @JvmInline
+    value class ValueList(
+        val value: List<Value>,
+    )
+
+    @JvmInline
+    value class UIntValue(
+        val value: UInt,
+    )
+
+    @JvmInline
+    value class ValueMap(
+        val value: Map<Value, UIntValue>,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -89,10 +112,13 @@ data class SerializerTestConfig(
         if (map2 != other.map2) return false
         if (listMap != other.listMap) return false
         if (mapList != other.mapList) return false
-        if (nullable != other.nullable) return false
         if (enum != other.enum) return false
         if (enumList != other.enumList) return false
         if (enumMap != other.enumMap) return false
+        if (value != other.value) return false
+        if (valueList != other.valueList) return false
+        if (valueMap != other.valueMap) return false
+        if (nullable != other.nullable) return false
 
         return true
     }
@@ -134,6 +160,9 @@ data class SerializerTestConfig(
         result = 31 * result + enum.hashCode()
         result = 31 * result + enumList.hashCode()
         result = 31 * result + enumMap.hashCode()
+        result = 31 * result + value.hashCode()
+        result = 31 * result + valueList.hashCode()
+        result = 31 * result + valueMap.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         return result
     }
