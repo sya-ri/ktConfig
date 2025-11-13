@@ -17,4 +17,3 @@ class ShortSerializerTest {
     @Test
     fun testNormal() = testSerializer(42.toShort(), ShortSerializer)
 }
-

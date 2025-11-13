@@ -17,4 +17,3 @@ class LongSerializerTest {
     @Test
     fun testNormal() = testSerializer(42L, LongSerializer)
 }
-

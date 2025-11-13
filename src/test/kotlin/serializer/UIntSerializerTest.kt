@@ -1,8 +1,8 @@
 package serializer
 
 import dev.s7a.ktconfig.serializer.UIntSerializer
-import kotlin.test.Test
 import testSerializer
+import kotlin.test.Test
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class UIntSerializerTest {
@@ -15,4 +15,3 @@ class UIntSerializerTest {
     @Test
     fun testNormal() = testSerializer(42u, UIntSerializer)
 }
-

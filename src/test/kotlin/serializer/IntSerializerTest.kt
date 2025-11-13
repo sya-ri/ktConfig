@@ -17,4 +17,3 @@ class IntSerializerTest {
     @Test
     fun testNormal() = testSerializer(42, IntSerializer)
 }
-

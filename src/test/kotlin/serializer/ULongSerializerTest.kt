@@ -1,8 +1,8 @@
 package serializer
 
 import dev.s7a.ktconfig.serializer.ULongSerializer
-import kotlin.test.Test
 import testSerializer
+import kotlin.test.Test
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ULongSerializerTest {
@@ -15,4 +15,3 @@ class ULongSerializerTest {
     @Test
     fun testNormal() = testSerializer(42uL, ULongSerializer)
 }
-

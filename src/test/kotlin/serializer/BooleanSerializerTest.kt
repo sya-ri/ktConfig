@@ -11,4 +11,3 @@ class BooleanSerializerTest {
     @Test
     fun testFalse() = testSerializer(false, BooleanSerializer)
 }
-

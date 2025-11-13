@@ -1,8 +1,8 @@
 package serializer
 
 import dev.s7a.ktconfig.serializer.EnumSerializer
-import kotlin.test.Test
 import testSerializer
+import kotlin.test.Test
 
 enum class TestEnum {
     VALUE1,
@@ -12,21 +12,23 @@ enum class TestEnum {
 
 class EnumSerializerTest {
     @Test
-    fun testValue1() = testSerializer(
-        TestEnum.VALUE1,
-        EnumSerializer(TestEnum::class.java),
-    )
+    fun testValue1() =
+        testSerializer(
+            TestEnum.VALUE1,
+            EnumSerializer(TestEnum::class.java),
+        )
 
     @Test
-    fun testValue2() = testSerializer(
-        TestEnum.VALUE2,
-        EnumSerializer(TestEnum::class.java),
-    )
+    fun testValue2() =
+        testSerializer(
+            TestEnum.VALUE2,
+            EnumSerializer(TestEnum::class.java),
+        )
 
     @Test
-    fun testValue3() = testSerializer(
-        TestEnum.VALUE3,
-        EnumSerializer(TestEnum::class.java),
-    )
+    fun testValue3() =
+        testSerializer(
+            TestEnum.VALUE3,
+            EnumSerializer(TestEnum::class.java),
+        )
 }
-

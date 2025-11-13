@@ -20,4 +20,3 @@ class CharSerializerTest {
     @Test
     fun testSpace() = testSerializer(' ', CharSerializer)
 }
-
