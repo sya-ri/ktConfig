@@ -7,7 +7,7 @@ dokka = "2.0.0"
 kotlinter = "5.2.0"
 pluginYml = "0.7.1"
 minecraftServer = "4.0.0"
-shadow = "8.3.0"
+shadow = "8.3.9"
 kotlinpoet = "2.2.0"
 
 # Libraries
