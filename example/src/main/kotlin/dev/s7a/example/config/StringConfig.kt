@@ -19,7 +19,7 @@ data class StringConfig(
             configuration: YamlConfiguration,
             value: StringConfig,
         ) {
-            StringSerializer.save(configuration, "value", value.value)
+            StringSerializer.set(configuration, "value", value.value)
         }
     }
 }

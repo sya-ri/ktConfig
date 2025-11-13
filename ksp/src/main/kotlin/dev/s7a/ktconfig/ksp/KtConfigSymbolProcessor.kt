@@ -135,7 +135,7 @@ class KtConfigSymbolProcessor(
                                             addStatement(
                                                 "%L.%N(configuration, %S, value.%N)",
                                                 it.serializer.ref,
-                                                "save",
+                                                "set",
                                                 it.pathName,
                                                 it.name,
                                             )

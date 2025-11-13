@@ -54,7 +54,7 @@ interface Serializer<T> {
      * @param value The value to serialize and save, or null to remove the value
      * @since 2.0.0
      */
-    fun save(
+    fun set(
         configuration: YamlConfiguration,
         path: String,
         value: T?,

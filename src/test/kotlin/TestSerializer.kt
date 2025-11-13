@@ -19,7 +19,7 @@ private fun <T> testSerializerKey(
     val value = "test"
     val mapSerializer = MapSerializer(serializer, StringSerializer)
     val mapExpected = mapOf(expected to value)
-    mapSerializer.save(configuration, path, mapExpected)
+    mapSerializer.set(configuration, path, mapExpected)
     val actual = mapSerializer.getOrThrow(configuration, path)
     assertEquals(mapExpected, actual)
 }
@@ -32,7 +32,7 @@ private fun <T> testSerializerValue(
 ) {
     val configuration = configuration()
     val path = "test"
-    serializer.save(configuration, path, expected)
+    serializer.set(configuration, path, expected)
     if (expectedValues != null) {
         assertEquals(expectedValues, configuration.getValues(false))
     }
