@@ -43,4 +43,15 @@ class ValueSerializerTest {
                 { it.value },
             ),
         )
+
+    @Test
+    fun testNonKeyable() =
+        testSerializer(
+            TestValue("test"),
+            ValueSerializer(
+                StringSerializer,
+                { TestValue(it) },
+                { it.value },
+            ),
+        )
 }
