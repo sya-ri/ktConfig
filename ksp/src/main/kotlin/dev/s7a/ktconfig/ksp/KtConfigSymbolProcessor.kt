@@ -384,7 +384,12 @@ class KtConfigSymbolProcessor(
                 override val uniqueName = type.canonicalName.replace(".", "_")
                 override val ref = uniqueName
                 override val keyable = argument.keyable
-                override val initialize = "$classRef${if (keyable) ".Keyable" else ""}(${argument.ref}, { $type(it) }, { it.$parameterName })"
+                override val initialize =
+                    buildString {
+                        append(classRef)
+                        if (keyable) append(".Keyable")
+                        append("(${argument.ref}, { $type(it) }, { it.$parameterName })")
+                    }
             }
         }
     }
