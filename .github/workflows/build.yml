@@ -31,7 +31,7 @@ jobs:
       - name: Build
         run: ./gradlew dokkaHtml
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dokka
           path: |
@@ -50,7 +50,7 @@ jobs:
           artifact: webHelpHI2-all.zip
           docker-version: 2.1.1479-p3869
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: writerside
           path: |
@@ -65,13 +65,13 @@ jobs:
       pages: write
     steps:
       - name: Download artifact (writerside)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: writerside
       - name: Create api-docs directory
         run: mkdir dir/api-docs -p
       - name: Download artifact (dokka)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: dokka
           path: dir/api-docs
