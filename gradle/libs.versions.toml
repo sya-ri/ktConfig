@@ -2,7 +2,7 @@
 # Plugins
 kotlin = "2.2.0"
 ksp = "2.2.0-2.0.2"
-kover = "0.9.1"
+kover = "0.9.3"
 dokka = "2.0.0"
 kotlinter = "5.1.1"
 pluginYml = "0.7.1"
