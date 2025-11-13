@@ -11,10 +11,21 @@ import java.math.BigDecimal
  * Double to Float). Instead, use specific numeric types like Int, Long, Double, etc.
  */
 object NumberSerializer : Serializer.Keyable<Number> {
+    private const val INFINITY = Double.POSITIVE_INFINITY.toString()
+    private const val NEGATIVE_INFINITY = Double.NEGATIVE_INFINITY.toString()
+    private const val NOT_A_NUMBER = Double.NaN.toString()
+
     override fun deserialize(value: Any) =
         when (value) {
             is Number -> value
-            is String -> BigDecimal(value)
+            is String -> {
+                when (value) {
+                    INFINITY -> Double.POSITIVE_INFINITY
+                    NEGATIVE_INFINITY -> Double.NEGATIVE_INFINITY
+                    NOT_A_NUMBER -> Double.NaN
+                    else -> BigDecimal(value).toDouble()
+                }
+            }
             else -> throw IllegalArgumentException("Cannot convert to Number: ${value::class.simpleName}")
         }
 
