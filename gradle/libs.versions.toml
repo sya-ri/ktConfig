@@ -7,7 +7,7 @@ dokka = "2.0.0"
 kotlinter = "5.2.0"
 pluginYml = "0.7.1"
 minecraftServer = "4.0.0"
-shadow = "8.1.1"
+shadow = "8.3.0"
 kotlinpoet = "2.2.0"
 
 # Libraries
@@ -22,7 +22,7 @@ dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 pluginYml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 
 [libraries]
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
