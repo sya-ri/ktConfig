@@ -1,75 +1,110 @@
+import dev.s7a.ktconfig.serializer.MapSerializer
 import dev.s7a.ktconfig.serializer.Serializer
+import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.assertFailsWith
 
-fun <T> testSerializer(
+private fun configuration() =
+    YamlConfiguration().apply {
+        options().pathSeparator(0x00.toChar())
+    }
+
+private fun <T> testSerializerKey(
+    expected: T,
+    serializer: Serializer.Keyable<T>,
+) {
+    val configuration = configuration()
+    val path = "test"
+    val value = "test"
+    val mapSerializer = MapSerializer(serializer, StringSerializer)
+    val mapExpected = mapOf(expected to value)
+    mapSerializer.save(configuration, path, mapExpected)
+    val actual = mapSerializer.getOrThrow(configuration, path)
+    assertEquals(mapExpected, actual)
+}
+
+private fun <T> testSerializerValue(
     expected: T,
     serializer: Serializer<T>,
     assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) {
-    val configuration = YamlConfiguration()
+    val configuration = configuration()
     val path = "test"
-    configuration.set(path, serializer.serialize(expected))
-    val actual = serializer.get(configuration, path)
-    assertNotNull(actual)
+    serializer.save(configuration, path, expected)
+    val actual = serializer.getOrThrow(configuration, path)
     assert(expected, actual)
+}
+
+fun <T> testSerializer(
+    expected: T,
+    serializer: Serializer<T>,
+) {
+    testSerializerValue(expected, serializer)
+}
+
+fun <T> testSerializer(
+    expected: T,
+    serializer: Serializer.Keyable<T>,
+) {
+    testSerializerKey(expected, serializer)
+    testSerializerValue(expected, serializer)
 }
 
 fun testSerializer(
     expected: BooleanArray,
     serializer: Serializer<BooleanArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: CharArray,
     serializer: Serializer<CharArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: FloatArray,
     serializer: Serializer<FloatArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: DoubleArray,
     serializer: Serializer<DoubleArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: ByteArray,
     serializer: Serializer<ByteArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: IntArray,
     serializer: Serializer<IntArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: LongArray,
     serializer: Serializer<LongArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
 fun testSerializer(
     expected: ShortArray,
     serializer: Serializer<ShortArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
@@ -77,7 +112,7 @@ fun testSerializer(
 fun testSerializer(
     expected: UByteArray,
     serializer: Serializer<UByteArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
@@ -85,7 +120,7 @@ fun testSerializer(
 fun testSerializer(
     expected: UIntArray,
     serializer: Serializer<UIntArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
@@ -93,7 +128,7 @@ fun testSerializer(
 fun testSerializer(
     expected: ULongArray,
     serializer: Serializer<ULongArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
 
@@ -101,6 +136,6 @@ fun testSerializer(
 fun testSerializer(
     expected: UShortArray,
     serializer: Serializer<UShortArray>,
-) = testSerializer(expected, serializer) { expected, actual ->
+) = testSerializerValue(expected, serializer) { expected, actual ->
     assertContentEquals(expected, actual)
 }
