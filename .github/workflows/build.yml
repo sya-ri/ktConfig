@@ -17,8 +17,6 @@ jobs:
           java-version: 21
       - name: Build
         run: ./gradlew build
-      - name: Build (1.8.8)
-        run: ./gradlew build -PUSE_SPIGOT_8=true
   dokka:
     needs: build
     runs-on: ubuntu-latest

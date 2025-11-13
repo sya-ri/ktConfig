@@ -35,11 +35,7 @@ allprojects {
 }
 
 dependencies {
-    if (project.hasProperty("USE_SPIGOT_8")) {
-        compileOnly(libs.spigot8)
-    } else {
-        compileOnly(libs.spigotLatest)
-    }
+    compileOnly(libs.spigot)
 }
 
 val sourceJar by tasks.registering(Jar::class) {

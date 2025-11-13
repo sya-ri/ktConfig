@@ -12,7 +12,7 @@ plugins {
 
 dependencies {
     library(kotlin("stdlib"))
-    compileOnly(libs.spigotLatest)
+    compileOnly(libs.spigot8)
     implementation(project(":"))
     shadow(project(":"))
     ksp(project(":ksp"))
