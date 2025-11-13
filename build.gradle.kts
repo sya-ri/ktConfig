@@ -36,6 +36,8 @@ allprojects {
 
 dependencies {
     compileOnly(libs.spigot)
+    testImplementation(kotlin("test"))
+    testImplementation(libs.spigot)
 }
 
 val sourceJar by tasks.registering(Jar::class) {
