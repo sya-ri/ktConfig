@@ -1,3 +1,0 @@
-# Custom serializer
-
-Start typing here...

@@ -3,7 +3,6 @@
 kotlin = "2.2.21"
 ksp = "2.3.2"
 kover = "0.9.3"
-dokka = "2.0.0"
 kotlinter = "5.2.0"
 pluginYml = "0.8.0"
 minecraftServer = "4.0.0"
@@ -18,7 +17,6 @@ spigot = "1.21.7-R0.1-SNAPSHOT"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 pluginYml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }
