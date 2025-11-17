@@ -1,7 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
 /**
- * Serializer implementation for List collections.
+ * Serializer implementation for [List] collections.
  * Handles serialization and deserialization of List<E> types using the provided value serializer.
  *
  * @param E The type of elements in the list
@@ -11,6 +11,21 @@ package dev.s7a.ktconfig.serializer
 class ListSerializer<E>(
     valueSerializer: Serializer<E>,
 ) : CollectionSerializer<E, List<E>>(valueSerializer) {
+    /**
+     * Nullable variant of [ListSerializer] that allows null elements.
+     *
+     * @param E The type of elements in the list
+     * @param valueSerializer The serializer used to handle individual list elements
+     * @since 2.0.0
+     */
+    class Nullable<E>(
+        valueSerializer: Serializer<E>,
+    ) : CollectionSerializer.Nullable<E, List<E?>>(valueSerializer) {
+        override fun toCollection(value: List<E?>) = value
+
+        override fun toList(value: List<E?>) = value
+    }
+
     override fun toCollection(value: List<E>) = value
 
     override fun toList(value: List<E>) = value

@@ -1,7 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
 /**
- * Serializer implementation for UIntArray collections.
+ * Serializer implementation for [UIntArray] collections.
  * Handles serialization and deserialization of UIntArray types using the provided value serializer.
  *
  * @since 2.0.0

@@ -87,14 +87,13 @@ class KtConfigSymbolProcessor(
                     parameters
                         .map(Parameter::serializer)
                         .extractInitializableSerializers()
-                        .forEach {
+                        .forEach { serializer ->
+                            val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
                             addProperty(
                                 PropertySpec
-                                    .builder(
-                                        it.uniqueName,
-                                        (if (it.keyable) keyableSerializerClassName else serializerClassName).parameterizedBy(it.type),
-                                    ).addModifiers(KModifier.PRIVATE)
-                                    .initializer("%L", it.initialize)
+                                    .builder(serializer.uniqueName, className.parameterizedBy(serializer.type))
+                                    .addModifiers(KModifier.PRIVATE)
+                                    .initializer("%L", serializer.initialize)
                                     .build(),
                             )
                         }
@@ -243,6 +242,9 @@ class KtConfigSymbolProcessor(
                     return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable, qualifiedName)
                 }
                 is Serializer.BuiltIn -> {
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name)
+                }
+                is Serializer.Collection -> {
                     val arguments = type.arguments
                     if (arguments.isNotEmpty()) {
                         val argumentSerializers =
@@ -250,7 +252,19 @@ class KtConfigSymbolProcessor(
                                 getSerializer(argument) ?: return null
                             }
 
-                        return Parameter.Serializer.Class(className, isNullable, serializer.name, argumentSerializers)
+                        val nullableValue =
+                            arguments
+                                .last()
+                                .type
+                                ?.resolve()
+                                ?.isMarkedNullable == true
+                        return Parameter.Serializer.Class(
+                            className,
+                            isNullable,
+                            serializer.name,
+                            argumentSerializers,
+                            serializer.supportNullableValue && nullableValue,
+                        )
                     }
 
                     return Parameter.Serializer.Object(className, isNullable, serializer.name)
@@ -276,23 +290,26 @@ class KtConfigSymbolProcessor(
                 "kotlin.Boolean" to "Boolean",
                 // Common
                 "java.util.UUID" to "UUID",
-                // Collection
-                "kotlin.ByteArray" to "ByteArray",
-                "kotlin.CharArray" to "CharArray",
-                "kotlin.IntArray" to "IntArray",
-                "kotlin.LongArray" to "LongArray",
-                "kotlin.ShortArray" to "ShortArray",
-                "kotlin.UByteArray" to "UByteArray",
-                "kotlin.UIntArray" to "UIntArray",
-                "kotlin.ULongArray" to "ULongArray",
-                "kotlin.UShortArray" to "UShortArray",
-                "kotlin.DoubleArray" to "DoubleArray",
-                "kotlin.FloatArray" to "FloatArray",
-                "kotlin.BooleanArray" to "BooleanArray",
-                "kotlin.collections.List" to "List",
-                "kotlin.collections.Set" to "Set",
-                "kotlin.collections.ArrayDeque" to "ArrayDeque",
-                "kotlin.collections.Map" to "Map",
+            )
+
+        private val collectionSerializers =
+            mapOf(
+                "kotlin.ByteArray" to ("ByteArray" to false),
+                "kotlin.CharArray" to ("CharArray" to false),
+                "kotlin.IntArray" to ("IntArray" to false),
+                "kotlin.LongArray" to ("LongArray" to false),
+                "kotlin.ShortArray" to ("ShortArray" to false),
+                "kotlin.UByteArray" to ("UByteArray" to false),
+                "kotlin.UIntArray" to ("UIntArray" to false),
+                "kotlin.ULongArray" to ("ULongArray" to false),
+                "kotlin.UShortArray" to ("UShortArray" to false),
+                "kotlin.DoubleArray" to ("DoubleArray" to false),
+                "kotlin.FloatArray" to ("FloatArray" to false),
+                "kotlin.BooleanArray" to ("BooleanArray" to false),
+                "kotlin.collections.List" to ("List" to true),
+                "kotlin.collections.Set" to ("Set" to true),
+                "kotlin.collections.ArrayDeque" to ("ArrayDeque" to true),
+                "kotlin.collections.Map" to ("Map" to true),
             )
 
         /**
@@ -320,8 +337,17 @@ class KtConfigSymbolProcessor(
             }
 
             // Lookup serializer name from the predefined map of built-in serializers
-            val found = builtInSerializers[qualifiedName] ?: return null
-            return Serializer.BuiltIn(found)
+            val builtIn = builtInSerializers[qualifiedName]
+            if (builtIn != null) {
+                return Serializer.BuiltIn(builtIn)
+            }
+
+            val collection = collectionSerializers[qualifiedName]
+            if (collection != null) {
+                return Serializer.Collection(collection.first, collection.second)
+            }
+
+            return null
         }
 
         /**
@@ -392,9 +418,23 @@ class KtConfigSymbolProcessor(
                 isNullable: Boolean,
                 name: String,
                 val arguments: List<Serializer>,
-            ) : InitializableSerializer(parentType.parameterizedBy(arguments.map { it.type }), isNullable, name) {
+                val nullableValue: Boolean,
+            ) : InitializableSerializer(
+                    parentType.parameterizedBy(
+                        arguments.mapIndexed { index, it ->
+                            if (arguments.lastIndex == index) {
+                                it.type.copy(nullable = nullableValue)
+                            } else {
+                                it.type
+                            }
+                        },
+                    ),
+                    isNullable,
+                    name,
+                ) {
                 override val uniqueName =
                     buildString {
+                        if (nullableValue) append("Nullable")
                         append(name)
                         append("Of")
                         arguments.forEach {
@@ -403,7 +443,14 @@ class KtConfigSymbolProcessor(
                     }
                 override val ref = uniqueName
                 override val keyable = false
-                override val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
+                override val initialize =
+                    buildString {
+                        append(classRef)
+                        if (nullableValue) {
+                            append(".Nullable")
+                        }
+                        append("(${arguments.joinToString(", ") { it.ref }})")
+                    }
             }
 
             class ConfigurationSerializableClass(
@@ -452,6 +499,11 @@ class KtConfigSymbolProcessor(
 
         data class BuiltIn(
             val name: String,
+        ) : Serializer
+
+        data class Collection(
+            val name: String,
+            val supportNullableValue: Boolean,
         ) : Serializer
     }
 }

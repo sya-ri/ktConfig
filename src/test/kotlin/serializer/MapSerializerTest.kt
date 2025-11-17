@@ -41,4 +41,18 @@ class MapSerializerTest {
             mapOf("a" to mapOf(1 to "one", 2 to "two")),
             MapSerializer(StringSerializer, MapSerializer(IntSerializer, StringSerializer)),
         )
+
+    @Test
+    fun testNullableValues() =
+        testSerializer(
+            mapOf("a" to "1", "b" to null, "c" to "3"),
+            MapSerializer.Nullable(StringSerializer, StringSerializer),
+        )
+
+    @Test
+    fun testNestedNullable() =
+        testSerializer(
+            mapOf("a" to mapOf(1 to "one", 2 to null)),
+            MapSerializer(StringSerializer, MapSerializer.Nullable(IntSerializer, StringSerializer)),
+        )
 }

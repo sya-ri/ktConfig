@@ -15,6 +15,30 @@ class MapSerializer<K, V>(
     val keySerializer: Serializer.Keyable<K>,
     val valueSerializer: Serializer<V>,
 ) : Serializer<Map<K, V>> {
+    class Nullable<K, V>(
+        val keySerializer: Serializer.Keyable<K>,
+        val valueSerializer: Serializer<V>,
+    ) : Serializer<Map<K, V?>> {
+        override fun deserialize(value: Any) =
+            when (value) {
+                is MemorySection -> value.getValues(false)
+                is Map<*, *> -> value
+                else -> throw IllegalArgumentException("Cannot convert to Map: ${value::class.simpleName}")
+            }.mapKeys {
+                keySerializer.deserialize(it.key ?: throw IllegalArgumentException("Map key cannot be null"))
+            }.mapValues {
+                it.value?.let(valueSerializer::deserialize)
+            }
+
+        override fun serialize(value: Map<K, V?>) =
+            value
+                .mapKeys {
+                    keySerializer.serialize(it.key)
+                }.mapValues {
+                    it.value?.let(valueSerializer::serialize)
+                }
+    }
+
     override fun deserialize(value: Any) =
         when (value) {
             is MemorySection -> value.getValues(false)

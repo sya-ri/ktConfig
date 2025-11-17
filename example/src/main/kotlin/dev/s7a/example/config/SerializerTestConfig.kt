@@ -51,6 +51,14 @@ data class SerializerTestConfig(
     val valueList: ValueList,
     val valueMap: ValueMap,
     val nullable: String?,
+    val nullableList: List<String?>,
+    val nullableArrayDeque: ArrayDeque<String?>,
+    val nullableSet: Set<String?>,
+    val nullableMap: Map<String, String?>,
+    val nullableMap2: Map<String, Map<String, String?>>,
+    val nullableListMap: List<Map<String, String?>>,
+    val nullableMapList: Map<String, List<String?>>,
+    val nullableListNullableMap: List<Map<String, String?>?>,
 ) {
     enum class TestEnum {
         A,

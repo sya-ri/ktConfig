@@ -72,7 +72,6 @@ class ExamplePlugin : JavaPlugin() {
                 enum = SerializerTestConfig.TestEnum.entries.random(),
                 enumList = List(3) { SerializerTestConfig.TestEnum.entries.random() },
                 enumMap = SerializerTestConfig.TestEnum.entries.associateWith { SerializerTestConfig.TestEnum.entries.random() },
-                nullable = null,
                 value = SerializerTestConfig.Value(UUID.randomUUID().toString()),
                 valueList =
                     SerializerTestConfig.ValueList(
@@ -88,6 +87,30 @@ class ExamplePlugin : JavaPlugin() {
                             SerializerTestConfig.Value(UUID.randomUUID().toString()) to
                                 SerializerTestConfig.UIntValue(Random.nextInt().toUInt())
                         },
+                    ),
+                nullable = null,
+                nullableList = listOf(null, UUID.randomUUID().toString(), null),
+                nullableArrayDeque = ArrayDeque(listOf(null, UUID.randomUUID().toString(), null)),
+                nullableSet = setOf(null, UUID.randomUUID().toString(), null),
+                nullableMap = mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                nullableMap2 =
+                    mapOf(
+                        "null" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                        "not null" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                    ),
+                nullableListMap =
+                    listOf(
+                        mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                        mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                    ),
+                nullableMapList =
+                    mapOf(
+                        "null" to listOf(null, UUID.randomUUID().toString(), null),
+                        "not null" to listOf(null, UUID.randomUUID().toString(), null),
+                    ),
+                nullableListNullableMap =
+                    listOf(
+                        mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
                     ),
             )
 
@@ -180,6 +203,47 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.valueList != actual.valueList) logger.info("valueList: expected=${expected.valueList}, actual=${actual.valueList}")
             if (expected.valueMap != actual.valueMap) logger.info("valueMap: expected=${expected.valueMap}, actual=${actual.valueMap}")
             if (expected.nullable != actual.nullable) logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
+            if (expected.nullableList !=
+                actual.nullableList
+            ) {
+                logger.info("nullableList: expected=${expected.nullableList}, actual=${actual.nullableList}")
+            }
+            if (expected.nullableArrayDeque !=
+                actual.nullableArrayDeque
+            ) {
+                logger.info("nullableArrayDeque: expected=${expected.nullableArrayDeque}, actual=${actual.nullableArrayDeque}")
+            }
+            if (expected.nullableSet !=
+                actual.nullableSet
+            ) {
+                logger.info("nullableSet: expected=${expected.nullableSet}, actual=${actual.nullableSet}")
+            }
+            if (expected.nullableMap !=
+                actual.nullableMap
+            ) {
+                logger.info("nullableMap: expected=${expected.nullableMap}, actual=${actual.nullableMap}")
+            }
+            if (expected.nullableMap2 != actual.nullableMap2) {
+                logger.info(
+                    "nullableMap2: expected=${expected.nullableMap2}, actual=${actual.nullableMap2}",
+                )
+            }
+            if (expected.nullableListMap != actual.nullableListMap) {
+                logger.info("nullableListMap: expected=${expected.nullableListMap}, actual=${actual.nullableListMap}")
+            }
+            if (expected.nullableMapList != actual.nullableMapList) {
+                logger.info("nullableMapList: expected=${expected.nullableMapList}, actual=${actual.nullableMapList}")
+            }
+            if (expected.nullableListNullableMap != actual.nullableListNullableMap) {
+                logger.info(
+                    "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
+                )
+            }
+            if (expected.nullableListNullableMap != actual.nullableListNullableMap) {
+                logger.info(
+                    "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
+                )
+            }
 
             throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
         }

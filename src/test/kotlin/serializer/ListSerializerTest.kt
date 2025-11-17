@@ -12,6 +12,24 @@ class ListSerializerTest {
         testSerializer(
             emptyList<String>(),
             ListSerializer(StringSerializer),
+            expectedYaml =
+                """
+                test: []
+                
+                """.trimIndent(),
+        )
+
+    @Test
+    fun testNull() =
+        testSerializer(
+            listOf("null"),
+            ListSerializer(StringSerializer),
+            expectedYaml =
+                """
+                test:
+                - 'null'
+
+                """.trimIndent(),
         )
 
     @Test
@@ -33,6 +51,14 @@ class ListSerializerTest {
         testSerializer(
             listOf(1, 2, 3),
             ListSerializer(IntSerializer),
+            expectedYaml =
+                """
+                test:
+                - '1'
+                - '2'
+                - '3'
+                
+                """.trimIndent(),
         )
 
     @Test
@@ -40,5 +66,53 @@ class ListSerializerTest {
         testSerializer(
             listOf(listOf(1, 2), listOf(3, 4)),
             ListSerializer(ListSerializer(IntSerializer)),
+        )
+
+    @Test
+    fun testNullableElements() =
+        testSerializer(
+            listOf("hello", null, "world", "null"),
+            ListSerializer.Nullable(StringSerializer),
+            expectedYaml =
+                """
+                test:
+                - hello
+                - null
+                - world
+                - 'null'
+                
+                """.trimIndent(),
+        )
+
+    @Test
+    fun testNestedNullable() =
+        testSerializer(
+            listOf(listOf("a", null), listOf(null, "b")),
+            ListSerializer(ListSerializer.Nullable(StringSerializer)),
+            expectedYaml =
+                """
+                test:
+                - - a
+                  - null
+                - - null
+                  - b
+                
+                """.trimIndent(),
+        )
+
+    @Test
+    fun testNullableNested() =
+        testSerializer(
+            listOf(listOf("hello", "world"), null, listOf("test")),
+            ListSerializer.Nullable(ListSerializer(StringSerializer)),
+            expectedYaml =
+                """
+                test:
+                - - hello
+                  - world
+                - null
+                - - test
+                
+                """.trimIndent(),
         )
 }

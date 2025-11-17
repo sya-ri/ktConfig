@@ -1,7 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
 /**
- * Serializer implementation for UShortArray collections.
+ * Serializer implementation for [UShortArray] collections.
  * Handles serialization and deserialization of UShortArray types using the provided value serializer.
  *
  * @since 2.0.0
