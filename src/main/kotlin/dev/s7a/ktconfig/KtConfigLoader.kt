@@ -99,4 +99,19 @@ abstract class KtConfigLoader<T> {
         configuration: YamlConfiguration,
         value: T,
     )
+
+    protected fun setHeaderComment(
+        configuration: YamlConfiguration,
+        comment: List<String>,
+    ) {
+        Reflection.setHeaderComment(configuration.options(), comment)
+    }
+
+    protected fun setComment(
+        configuration: YamlConfiguration,
+        path: String,
+        comment: List<String>,
+    ) {
+        Reflection.setComment(configuration, path, comment)
+    }
 }

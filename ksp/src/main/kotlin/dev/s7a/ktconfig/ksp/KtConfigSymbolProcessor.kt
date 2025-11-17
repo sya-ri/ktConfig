@@ -131,6 +131,8 @@ class KtConfigSymbolProcessor(
                                     .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
                                     .addParameter(ParameterSpec("value", className))
                                     .apply {
+                                        // TODO comments
+
                                         parameters.forEach {
                                             addStatement(
                                                 "%L.%N(configuration, %S, value.%N)",
