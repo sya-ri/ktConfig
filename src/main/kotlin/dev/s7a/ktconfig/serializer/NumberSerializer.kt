@@ -23,7 +23,7 @@ object NumberSerializer : Serializer.Keyable<Number> {
                     INFINITY -> Double.POSITIVE_INFINITY
                     NEGATIVE_INFINITY -> Double.NEGATIVE_INFINITY
                     NOT_A_NUMBER -> Double.NaN
-                    else -> BigDecimal(value).toDouble()
+                    else -> BigDecimal(value)
                 }
             }
             else -> throw IllegalArgumentException("Cannot convert to Number: ${value::class.simpleName}")
