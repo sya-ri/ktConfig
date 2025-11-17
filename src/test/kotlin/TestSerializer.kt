@@ -4,6 +4,8 @@ import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 private fun configuration() =
     YamlConfiguration().apply {
@@ -61,6 +63,33 @@ fun <T> testSerializer(
 ) {
     testSerializerKey(expected, serializer)
     testSerializerValue(expected, serializer, expectedValues, expectedYaml)
+}
+
+fun <T> testSerializer(
+    expected: Array<T>,
+    serializer: Serializer<Array<T>>,
+    expectedValues: Map<String, Any>? = null,
+    expectedYaml: String? = null,
+) = testSerializerValue(expected, serializer, expectedValues, expectedYaml) { expected, actual ->
+    fun <T> assertContentEqualsDeeply(
+        expected: Array<T>,
+        actual: Array<T>,
+    ) {
+        if (expected.firstOrNull() is Array<*>) {
+            return expected.zip(actual).forEach { (a, b) ->
+                if (a == null) {
+                    assertNull(b)
+                } else {
+                    @Suppress("UNCHECKED_CAST")
+                    assertContentEqualsDeeply(a as Array<T>, b as Array<T>)
+                }
+            }
+        } else {
+            assertContentEquals(expected, actual)
+        }
+    }
+
+    assertContentEqualsDeeply(expected, actual)
 }
 
 fun testSerializer(

@@ -43,6 +43,7 @@ class ExamplePlugin : JavaPlugin() {
                         Random.nextFloat(),
                         Random.nextFloat(),
                     ),
+                array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
                 intArray = IntArray(3) { Random.nextInt() },
@@ -90,6 +91,7 @@ class ExamplePlugin : JavaPlugin() {
                     ),
                 nullable = null,
                 nullableList = listOf(null, UUID.randomUUID().toString(), null),
+                nullableArray = arrayOf(null, UUID.randomUUID().toString(), null),
                 nullableArrayDeque = ArrayDeque(listOf(null, UUID.randomUUID().toString(), null)),
                 nullableSet = setOf(null, UUID.randomUUID().toString(), null),
                 nullableMap = mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
@@ -144,6 +146,9 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uuid != actual.uuid) logger.info("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
             if (expected.itemStack != actual.itemStack) logger.info("itemStack: expected=${expected.itemStack}, actual=${actual.itemStack}")
             if (expected.location != actual.location) logger.info("location: expected=${expected.location}, actual=${actual.location}")
+            if (expected.array.contentEquals(actual.array).not()) {
+                logger.info("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")
+            }
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
                 logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
             }
@@ -189,6 +194,7 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.list != actual.list) logger.info("list: expected=${expected.list}, actual=${actual.list}")
             if (expected.list2 != actual.list2) logger.info("list2: expected=${expected.list2}, actual=${actual.list2}")
             if (expected.set != actual.set) logger.info("set: expected=${expected.set}, actual=${actual.set}")
+            if (expected.array != actual.array) logger.info("array: expected=${expected.array}, actual=${actual.array}")
             if (expected.arrayDeque != actual.arrayDeque) {
                 logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
             }
@@ -207,6 +213,11 @@ class ExamplePlugin : JavaPlugin() {
                 actual.nullableList
             ) {
                 logger.info("nullableList: expected=${expected.nullableList}, actual=${actual.nullableList}")
+            }
+            if (
+                expected.nullableArray != actual.nullableArray
+            ) {
+                logger.info("nullableArray: expected=${expected.nullableArray}, actual=${actual.nullableArray}")
             }
             if (expected.nullableArrayDeque !=
                 actual.nullableArrayDeque

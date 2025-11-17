@@ -294,6 +294,7 @@ class KtConfigSymbolProcessor(
 
         private val collectionSerializers =
             mapOf(
+                "kotlin.Array" to ("Array" to true),
                 "kotlin.ByteArray" to ("ByteArray" to false),
                 "kotlin.CharArray" to ("CharArray" to false),
                 "kotlin.IntArray" to ("IntArray" to false),
