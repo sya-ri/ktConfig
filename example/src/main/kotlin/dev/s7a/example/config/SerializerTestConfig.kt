@@ -108,6 +108,9 @@ data class SerializerTestConfig(
         if (uLong != other.uLong) return false
         if (uShort != other.uShort) return false
         if (boolean != other.boolean) return false
+        if (uuid != other.uuid) return false
+        if (itemStack != other.itemStack) return false
+        if (location != other.location) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -122,6 +125,7 @@ data class SerializerTestConfig(
         if (booleanArray.contentEquals(other.booleanArray).not()) return false
         if (list != other.list) return false
         if (list2 != other.list2) return false
+        if (array.contentEquals(other.array).not()) return false
         if (set != other.set) return false
         if (arrayDeque != other.arrayDeque) return false
         if (map != other.map) return false
@@ -135,6 +139,15 @@ data class SerializerTestConfig(
         if (valueList != other.valueList) return false
         if (valueMap != other.valueMap) return false
         if (nullable != other.nullable) return false
+        if (nullableList != other.nullableList) return false
+        if (nullableArray.contentEquals(other.nullableArray).not()) return false
+        if (nullableArrayDeque != other.nullableArrayDeque) return false
+        if (nullableSet != other.nullableSet) return false
+        if (nullableMap != other.nullableMap) return false
+        if (nullableMap2 != other.nullableMap2) return false
+        if (nullableListMap != other.nullableListMap) return false
+        if (nullableMapList != other.nullableMapList) return false
+        if (nullableListNullableMap != other.nullableListNullableMap) return false
 
         return true
     }
@@ -153,6 +166,9 @@ data class SerializerTestConfig(
         result = 31 * result + uLong.hashCode()
         result = 31 * result + uShort.hashCode()
         result = 31 * result + boolean.hashCode()
+        result = 31 * result + uuid.hashCode()
+        result = 31 * result + itemStack.hashCode()
+        result = 31 * result + location.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()
@@ -167,6 +183,7 @@ data class SerializerTestConfig(
         result = 31 * result + booleanArray.contentHashCode()
         result = 31 * result + list.hashCode()
         result = 31 * result + list2.hashCode()
+        result = 31 * result + array.contentHashCode()
         result = 31 * result + set.hashCode()
         result = 31 * result + arrayDeque.hashCode()
         result = 31 * result + map.hashCode()
@@ -180,6 +197,15 @@ data class SerializerTestConfig(
         result = 31 * result + valueList.hashCode()
         result = 31 * result + valueMap.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
+        result = 31 * result + nullableList.hashCode()
+        result = 31 * result + nullableArray.contentHashCode()
+        result = 31 * result + nullableArrayDeque.hashCode()
+        result = 31 * result + nullableSet.hashCode()
+        result = 31 * result + nullableMap.hashCode()
+        result = 31 * result + nullableMap2.hashCode()
+        result = 31 * result + nullableListMap.hashCode()
+        result = 31 * result + nullableMapList.hashCode()
+        result = 31 * result + nullableListNullableMap.hashCode()
         return result
     }
 }
