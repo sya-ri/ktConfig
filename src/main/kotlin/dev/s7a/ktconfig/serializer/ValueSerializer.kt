@@ -34,40 +34,12 @@ class ValueSerializer<T, B>(
         private val toClass: (B) -> T,
         private val toValue: (T) -> B,
     ) : TransformSerializer.Keyable<T, B>(base) {
-        /**
-         * Transforms a value from the base type to the target type using the toClass function.
-         *
-         * @param value The value of base type to transform
-         * @return The transformed value of target type
-         * @since 2.0.0
-         */
         override fun transform(value: B) = toClass(value)
 
-        /**
-         * Transforms a value from the target type back to the base type using the toValue function.
-         *
-         * @param value The value of target type to transform back
-         * @return The transformed value of base type
-         * @since 2.0.0
-         */
         override fun transformBack(value: T) = toValue(value)
     }
 
-    /**
-     * Transforms a value from the base type to the target type using the toClass function.
-     *
-     * @param value The value of base type to transform
-     * @return The transformed value of target type
-     * @since 2.0.0
-     */
     override fun transform(value: B) = toClass(value)
 
-    /**
-     * Transforms a value from the target type back to the base type using the toValue function.
-     *
-     * @param value The value of target type to transform back
-     * @return The transformed value of base type
-     * @since 2.0.0
-     */
     override fun transformBack(value: T) = toValue(value)
 }

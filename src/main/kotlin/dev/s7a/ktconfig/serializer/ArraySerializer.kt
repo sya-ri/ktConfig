@@ -4,7 +4,7 @@ import java.lang.reflect.Array as ReflectArray
 
 /**
  * Serializer implementation for [Array] collections.
- * Handles serialization and deserialization of Array<T> types using the provided value serializer.
+ * Handles serialization and deserialization of [Array]<[T]> types using the provided value serializer.
  *
  * @param T The type of elements in the array
  * @param clazz The Class object representing type T
@@ -15,14 +15,6 @@ class ArraySerializer<T>(
     private val clazz: Class<T>,
     valueSerializer: Serializer<T>,
 ) : CollectionSerializer<T, Array<T>>(valueSerializer) {
-    /**
-     * Provides a convenient way to create an [ArraySerializer] instance using type inference.
-     *
-     * @param T The type of elements in the array
-     * @param valueSerializer The serializer used to handle individual array elements
-     * @return A new instance of [ArraySerializer]
-     * @since 2.0.0
-     */
     companion object {
         inline operator fun <reified T> invoke(valueSerializer: Serializer<T>) = ArraySerializer(T::class.java, valueSerializer)
     }

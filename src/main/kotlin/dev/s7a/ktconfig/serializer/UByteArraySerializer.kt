@@ -2,7 +2,7 @@ package dev.s7a.ktconfig.serializer
 
 /**
  * Serializer implementation for [UByteArray] collections.
- * Handles serialization and deserialization of UByteArray types using the provided value serializer.
+ * Handles serialization and deserialization of [UByteArray] types using the provided value serializer.
  *
  * @since 2.0.0
  */

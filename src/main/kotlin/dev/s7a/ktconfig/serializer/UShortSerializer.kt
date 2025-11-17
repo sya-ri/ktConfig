@@ -1,7 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
 /**
- * Serializer for UShort type.
+ * Serializer for [UShort] type.
  * Handles conversion between UShort values and YAML configuration using Number as base type.
  *
  * @since 2.0.0

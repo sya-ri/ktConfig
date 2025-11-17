@@ -1,8 +1,8 @@
 package dev.s7a.ktconfig.serializer
 
 /**
- * Serializer for Boolean type.
- * Handles conversion between Boolean values and YAML configuration.
+ * Serializer for [Boolean] type.
+ * Handles conversion between [Boolean] values and YAML configuration.
  *
  * @since 2.0.0
  */

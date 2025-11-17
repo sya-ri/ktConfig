@@ -3,8 +3,8 @@ package dev.s7a.ktconfig.serializer
 import java.util.UUID
 
 /**
- * Serializer implementation for UUID values.
- * Handles serialization and deserialization of UUID types by converting them to and from String representation.
+ * Serializer implementation for [UUID] values.
+ * Handles serialization and deserialization of [UUID] types by converting them to and from String representation.
  *
  * @since 2.0.0
  */

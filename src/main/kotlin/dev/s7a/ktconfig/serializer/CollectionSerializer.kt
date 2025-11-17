@@ -3,25 +3,25 @@ package dev.s7a.ktconfig.serializer
 /**
  * Abstract serializer class that provides serialization functionality for collection types.
  *
- * @param E The type of elements in the collection
+ * @param T The type of elements in the collection
  * @param C The collection type
  * @property valueSerializer The serializer used for collection elements
  * @since 2.0.0
  */
-abstract class CollectionSerializer<E, C>(
-    val valueSerializer: Serializer<E>,
+abstract class CollectionSerializer<T, C>(
+    val valueSerializer: Serializer<T>,
 ) : Serializer<C> {
     /**
      * Abstract serializer class that provides serialization functionality for nullable collection types.
      * Allows null values within the collection during serialization and deserialization.
      *
-     * @param E The type of elements in the collection
+     * @param T The type of elements in the collection
      * @param C The collection type that may contain null elements
      * @property valueSerializer The serializer used for non-null collection elements
      * @since 2.0.0
      */
-    abstract class Nullable<E, C>(
-        val valueSerializer: Serializer<E>,
+    abstract class Nullable<T, C>(
+        val valueSerializer: Serializer<T>,
     ) : Serializer<C> {
         override fun deserialize(value: Any): C {
             val list = value as? List<*> ?: listOf(value)
@@ -43,7 +43,7 @@ abstract class CollectionSerializer<E, C>(
          * @return The converted collection of type C
          * @since 2.0.0
          */
-        abstract fun toCollection(value: List<E?>): C
+        abstract fun toCollection(value: List<T?>): C
 
         /**
          * Converts the specific collection type into a List of elements.
@@ -52,7 +52,7 @@ abstract class CollectionSerializer<E, C>(
          * @return The converted list of elements
          * @since 2.0.0
          */
-        abstract fun toList(value: C): List<E?>
+        abstract fun toList(value: C): List<T?>
     }
 
     override fun deserialize(value: Any): C {
@@ -72,7 +72,7 @@ abstract class CollectionSerializer<E, C>(
      * @return The converted collection of type C
      * @since 2.0.0
      */
-    abstract fun toCollection(value: List<E>): C
+    abstract fun toCollection(value: List<T>): C
 
     /**
      * Converts the specific collection type into a List of elements.
@@ -81,5 +81,5 @@ abstract class CollectionSerializer<E, C>(
      * @return The converted list of elements
      * @since 2.0.0
      */
-    abstract fun toList(value: C): List<E>
+    abstract fun toList(value: C): List<T>
 }

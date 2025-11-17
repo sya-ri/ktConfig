@@ -3,8 +3,8 @@ package dev.s7a.ktconfig.serializer
 import java.lang.Enum.valueOf
 
 /**
- * Serializer for Enum types.
- * Handles conversion between Enum values and YAML configuration strings.
+ * Serializer for [Enum] types.
+ * Handles conversion between [Enum] values and YAML configuration strings.
  *
  * @param E The enum type to be serialized
  * @property clazz The Class object representing the enum type

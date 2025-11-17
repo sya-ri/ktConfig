@@ -15,6 +15,15 @@ class MapSerializer<K, V>(
     val keySerializer: Serializer.Keyable<K>,
     val valueSerializer: Serializer<V>,
 ) : Serializer<Map<K, V>> {
+    /**
+     * Nullable variant of [MapSerializer] that allows null values in the map.
+     *
+     * @param K The type of map keys
+     * @param V The type of map values
+     * @property keySerializer The serializer used for map keys
+     * @property valueSerializer The serializer used for map values
+     * @since 2.0.0
+     */
     class Nullable<K, V>(
         val keySerializer: Serializer.Keyable<K>,
         val valueSerializer: Serializer<V>,

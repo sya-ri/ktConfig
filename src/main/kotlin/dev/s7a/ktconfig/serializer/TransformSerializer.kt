@@ -2,7 +2,7 @@ package dev.s7a.ktconfig.serializer
 
 /**
  * Abstract serializer that transforms values between two types using a base serializer.
- * This class allows converting between type T and type B during serialization/deserialization.
+ * This class allows converting between type [T] and type [B] during serialization/deserialization.
  *
  * @param T The type to transform to/from
  * @param B The base type used by the underlying serializer
@@ -14,7 +14,7 @@ abstract class TransformSerializer<T, B>(
 ) : Serializer<T> {
     /**
      * A keyable serializer that transforms values between two types using a base keyable serializer.
-     * This class allows converting between type T and type B during serialization/deserialization,
+     * This class allows converting between type [T] and type [B] during serialization/deserialization,
      * where both types can be used as Map keys.
      *
      * @param T The type to transform to/from
