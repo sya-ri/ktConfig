@@ -1,6 +1,8 @@
 package dev.s7a.example.config
 
 import dev.s7a.ktconfig.ForKtConfig
+import org.bukkit.Location
+import org.bukkit.inventory.ItemStack
 import java.util.UUID
 
 @ForKtConfig
@@ -20,6 +22,8 @@ data class SerializerTestConfig(
     val uShort: UShort,
     val boolean: Boolean,
     val uuid: UUID,
+    val itemStack: ItemStack,
+    val location: Location,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,

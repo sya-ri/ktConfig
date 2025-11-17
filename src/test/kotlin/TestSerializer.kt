@@ -28,6 +28,7 @@ private fun <T> testSerializerValue(
     expected: T,
     serializer: Serializer<T>,
     expectedValues: Map<String, Any>? = null,
+    expectedYaml: String? = null,
     assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) {
     val configuration = configuration()
@@ -35,6 +36,9 @@ private fun <T> testSerializerValue(
     serializer.set(configuration, path, expected)
     if (expectedValues != null) {
         assertEquals(expectedValues, configuration.getValues(false))
+    }
+    if (expectedYaml != null) {
+        assertEquals(expectedYaml, configuration.saveToString())
     }
     val actual = serializer.getOrThrow(configuration, path)
     assert(expected, actual)
@@ -44,17 +48,19 @@ fun <T> testSerializer(
     expected: T,
     serializer: Serializer<T>,
     expectedValues: Map<String, Any>? = null,
+    expectedYaml: String? = null,
 ) {
-    testSerializerValue(expected, serializer, expectedValues)
+    testSerializerValue(expected, serializer, expectedValues, expectedYaml)
 }
 
 fun <T> testSerializer(
     expected: T,
     serializer: Serializer.Keyable<T>,
     expectedValues: Map<String, Any>? = null,
+    expectedYaml: String? = null,
 ) {
     testSerializerKey(expected, serializer)
-    testSerializerValue(expected, serializer, expectedValues)
+    testSerializerValue(expected, serializer, expectedValues, expectedYaml)
 }
 
 fun testSerializer(

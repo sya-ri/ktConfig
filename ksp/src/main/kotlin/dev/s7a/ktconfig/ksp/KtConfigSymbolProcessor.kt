@@ -1,5 +1,6 @@
 package dev.s7a.ktconfig.ksp
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
@@ -163,43 +164,6 @@ class KtConfigSymbolProcessor(
             return Parameter(name, name, serializer)
         }
 
-        private val builtInSerializers =
-            mapOf(
-                // Primitive
-                "kotlin.Byte" to "Byte",
-                "kotlin.Char" to "Char",
-                "kotlin.Int" to "Int",
-                "kotlin.Long" to "Long",
-                "kotlin.Short" to "Short",
-                "kotlin.String" to "String",
-                "kotlin.UByte" to "UByte",
-                "kotlin.UInt" to "UInt",
-                "kotlin.ULong" to "ULong",
-                "kotlin.UShort" to "UShort",
-                "kotlin.Double" to "Double",
-                "kotlin.Float" to "Float",
-                "kotlin.Boolean" to "Boolean",
-                // Common
-                "java.util.UUID" to "UUID",
-                // Collection
-                "kotlin.ByteArray" to "ByteArray",
-                "kotlin.CharArray" to "CharArray",
-                "kotlin.IntArray" to "IntArray",
-                "kotlin.LongArray" to "LongArray",
-                "kotlin.ShortArray" to "ShortArray",
-                "kotlin.UByteArray" to "UByteArray",
-                "kotlin.UIntArray" to "UIntArray",
-                "kotlin.ULongArray" to "ULongArray",
-                "kotlin.UShortArray" to "UShortArray",
-                "kotlin.DoubleArray" to "DoubleArray",
-                "kotlin.FloatArray" to "FloatArray",
-                "kotlin.BooleanArray" to "BooleanArray",
-                "kotlin.collections.List" to "List",
-                "kotlin.collections.Set" to "Set",
-                "kotlin.collections.ArrayDeque" to "ArrayDeque",
-                "kotlin.collections.Map" to "Map",
-            )
-
         private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
             val type = declaration.type.resolve()
             val qualifiedName = type.declaration.qualifiedName?.asString()
@@ -265,8 +229,7 @@ class KtConfigSymbolProcessor(
                 }
             }
 
-            // Lookup serializer name from the predefined map of built-in serializers
-            val serializer = builtInSerializers[qualifiedName]
+            val serializer = findSerializer(qualifiedName, type)
             if (serializer == null) {
                 logger.error("Unsupported type: $qualifiedName", declaration)
                 return null
@@ -274,17 +237,91 @@ class KtConfigSymbolProcessor(
 
             // Check for generic type arguments and create Class serializer if present
             val isNullable = type.isMarkedNullable
-            val arguments = type.arguments
-            if (arguments.isNotEmpty()) {
-                val argumentSerializers =
-                    arguments.map { argument ->
-                        getSerializer(argument) ?: return null
+
+            when (serializer) {
+                Serializer.ConfigurationSerializable -> {
+                    return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable, qualifiedName)
+                }
+                is Serializer.BuiltIn -> {
+                    val arguments = type.arguments
+                    if (arguments.isNotEmpty()) {
+                        val argumentSerializers =
+                            arguments.map { argument ->
+                                getSerializer(argument) ?: return null
+                            }
+
+                        return Parameter.Serializer.Class(className, isNullable, serializer.name, argumentSerializers)
                     }
 
-                return Parameter.Serializer.Class(className, isNullable, serializer, argumentSerializers)
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name)
+                }
+            }
+        }
+
+        private val builtInSerializers =
+            mapOf(
+                // Primitive
+                "kotlin.Byte" to "Byte",
+                "kotlin.Char" to "Char",
+                "kotlin.Int" to "Int",
+                "kotlin.Long" to "Long",
+                "kotlin.Short" to "Short",
+                "kotlin.String" to "String",
+                "kotlin.UByte" to "UByte",
+                "kotlin.UInt" to "UInt",
+                "kotlin.ULong" to "ULong",
+                "kotlin.UShort" to "UShort",
+                "kotlin.Double" to "Double",
+                "kotlin.Float" to "Float",
+                "kotlin.Boolean" to "Boolean",
+                // Common
+                "java.util.UUID" to "UUID",
+                // Collection
+                "kotlin.ByteArray" to "ByteArray",
+                "kotlin.CharArray" to "CharArray",
+                "kotlin.IntArray" to "IntArray",
+                "kotlin.LongArray" to "LongArray",
+                "kotlin.ShortArray" to "ShortArray",
+                "kotlin.UByteArray" to "UByteArray",
+                "kotlin.UIntArray" to "UIntArray",
+                "kotlin.ULongArray" to "ULongArray",
+                "kotlin.UShortArray" to "UShortArray",
+                "kotlin.DoubleArray" to "DoubleArray",
+                "kotlin.FloatArray" to "FloatArray",
+                "kotlin.BooleanArray" to "BooleanArray",
+                "kotlin.collections.List" to "List",
+                "kotlin.collections.Set" to "Set",
+                "kotlin.collections.ArrayDeque" to "ArrayDeque",
+                "kotlin.collections.Map" to "Map",
+            )
+
+        /**
+         * Finds the appropriate serializer name for a given type.
+         * First checks if the type implements ConfigurationSerializable,
+         * then looks up built-in serializers.
+         *
+         * @param qualifiedName The fully qualified name of the type
+         * @param type The KSType representing the type to find a serializer for
+         * @return The name of the serializer to use, or null if no suitable serializer is found
+         */
+        private fun findSerializer(
+            qualifiedName: String,
+            type: KSType,
+        ): Serializer? {
+            // Check if type implements ConfigurationSerializable
+            val declaration = type.declaration
+            if (declaration is KSClassDeclaration) {
+                declaration.getAllSuperTypes().forEach { superType ->
+                    val qualifiedName = superType.declaration.qualifiedName?.asString()
+                    if (qualifiedName == "org.bukkit.configuration.serialization.ConfigurationSerializable") {
+                        return Serializer.ConfigurationSerializable
+                    }
+                }
             }
 
-            return Parameter.Serializer.Object(className, isNullable, serializer)
+            // Lookup serializer name from the predefined map of built-in serializers
+            val found = builtInSerializers[qualifiedName] ?: return null
+            return Serializer.BuiltIn(found)
         }
 
         /**
@@ -298,6 +335,9 @@ class KtConfigSymbolProcessor(
                     when (it) {
                         is Parameter.Serializer.Class -> {
                             it.arguments.extractInitializableSerializers() + it
+                        }
+                        is Parameter.Serializer.ConfigurationSerializableClass -> {
+                            listOf(it)
                         }
                         is Parameter.Serializer.EnumClass -> {
                             listOf(it)
@@ -366,6 +406,17 @@ class KtConfigSymbolProcessor(
                 override val initialize = "$classRef(${arguments.joinToString(", ") { it.ref }})"
             }
 
+            class ConfigurationSerializableClass(
+                type: ClassName,
+                isNullable: Boolean,
+                qualifiedName: String,
+            ) : InitializableSerializer(type, isNullable, "ConfigurationSerializable") {
+                override val uniqueName = type.canonicalName.replace(".", "_")
+                override val ref = uniqueName
+                override val keyable = false
+                override val initialize = "$classRef<$qualifiedName>()"
+            }
+
             class EnumClass(
                 type: ClassName,
                 isNullable: Boolean,
@@ -394,5 +445,13 @@ class KtConfigSymbolProcessor(
                     }
             }
         }
+    }
+
+    private sealed interface Serializer {
+        data object ConfigurationSerializable : Serializer
+
+        data class BuiltIn(
+            val name: String,
+        ) : Serializer
     }
 }

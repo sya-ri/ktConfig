@@ -2,6 +2,10 @@ package dev.s7a.example
 
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
 import kotlin.random.Random
@@ -29,6 +33,16 @@ class ExamplePlugin : JavaPlugin() {
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 boolean = Random.nextBoolean(),
                 uuid = UUID.randomUUID(),
+                itemStack = ItemStack(Material.STONE, Random.nextInt(1, 64)),
+                location =
+                    Location(
+                        Bukkit.getWorlds().random(),
+                        Random.nextDouble(),
+                        Random.nextDouble(),
+                        Random.nextDouble(),
+                        Random.nextFloat(),
+                        Random.nextFloat(),
+                    ),
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
                 intArray = IntArray(3) { Random.nextInt() },
@@ -105,6 +119,8 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.boolean != actual.boolean) logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
             if (expected.uuid != actual.uuid) logger.info("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
+            if (expected.itemStack != actual.itemStack) logger.info("itemStack: expected=${expected.itemStack}, actual=${actual.itemStack}")
+            if (expected.location != actual.location) logger.info("location: expected=${expected.location}, actual=${actual.location}")
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
                 logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
             }
