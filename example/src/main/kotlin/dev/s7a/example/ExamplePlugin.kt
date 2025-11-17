@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
 import kotlin.random.Random
 
+@Suppress("unused")
 class ExamplePlugin : JavaPlugin() {
     override fun onEnable() {
         testSerializer()
