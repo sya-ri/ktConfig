@@ -1,6 +1,7 @@
 package dev.s7a.example.config
 
 import dev.s7a.ktconfig.ForKtConfig
+import java.util.UUID
 
 @ForKtConfig
 @OptIn(ExperimentalUnsignedTypes::class)
@@ -18,6 +19,7 @@ data class SerializerTestConfig(
     val uLong: ULong,
     val uShort: UShort,
     val boolean: Boolean,
+    val uuid: UUID,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,

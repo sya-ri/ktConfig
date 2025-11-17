@@ -179,6 +179,8 @@ class KtConfigSymbolProcessor(
                 "kotlin.Double" to "Double",
                 "kotlin.Float" to "Float",
                 "kotlin.Boolean" to "Boolean",
+                // Common
+                "java.util.UUID" to "UUID",
                 // Collection
                 "kotlin.ByteArray" to "ByteArray",
                 "kotlin.CharArray" to "CharArray",

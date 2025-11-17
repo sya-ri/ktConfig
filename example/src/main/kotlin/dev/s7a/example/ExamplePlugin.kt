@@ -28,6 +28,7 @@ class ExamplePlugin : JavaPlugin() {
                 uLong = Random.nextLong().toULong(),
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 boolean = Random.nextBoolean(),
+                uuid = UUID.randomUUID(),
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
                 intArray = IntArray(3) { Random.nextInt() },
@@ -103,6 +104,7 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.uLong != actual.uLong) logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             if (expected.uShort != actual.uShort) logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             if (expected.boolean != actual.boolean) logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
+            if (expected.uuid != actual.uuid) logger.info("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
                 logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
             }
