@@ -36,16 +36,27 @@ tasks.named("build") {
     dependsOn("shadowJar")
 }
 
-tasks.register<LaunchMinecraftServerTask>("testPlugin") {
-    dependsOn("build")
+listOf(
+    "8" to "1.8.8",
+    "21" to "1.21.10",
+).forEach { (minor, version) ->
+    tasks.register<LaunchMinecraftServerTask>("testPlugin$minor") {
+        dependsOn("build")
 
-    doFirst {
-        copy {
-            from(layout.buildDirectory.file("libs/${project.name}-all.jar"))
-            into(layout.buildDirectory.file("MinecraftServer/plugins"))
+        doFirst {
+            copy {
+                from(layout.buildDirectory.file("libs/${project.name}-all.jar"))
+                into(layout.buildDirectory.file("MinecraftServer$minor/plugins"))
+            }
         }
-    }
 
-    jarUrl.set(LaunchMinecraftServerTask.JarUrl.Paper("1.21.7"))
-    agreeEula.set(true)
+        serverDirectory.set(
+            layout.buildDirectory
+                .dir("MinecraftServer$minor")
+                .get()
+                .asFile.absolutePath,
+        )
+        jarUrl.set(LaunchMinecraftServerTask.JarUrl.Paper(version))
+        agreeEula.set(true)
+    }
 }
