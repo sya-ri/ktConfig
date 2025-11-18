@@ -145,6 +145,13 @@ class KtConfigSymbolProcessor(
                                         }
 
                                         parameters.forEach { parameter ->
+                                            addStatement(
+                                                "%L.set(configuration, %S, value.%N)",
+                                                parameter.serializer.ref,
+                                                parameter.pathName,
+                                                parameter.name,
+                                            )
+
                                             if (parameter.comment != null) {
                                                 // Add property comment
                                                 addStatement(
@@ -153,13 +160,6 @@ class KtConfigSymbolProcessor(
                                                     parameter.comment.joinToString { "\"${it}\"" },
                                                 )
                                             }
-
-                                            addStatement(
-                                                "%L.set(configuration, %S, value.%N)",
-                                                parameter.serializer.ref,
-                                                parameter.pathName,
-                                                parameter.name,
-                                            )
                                         }
                                     }.build(),
                             ).build(),

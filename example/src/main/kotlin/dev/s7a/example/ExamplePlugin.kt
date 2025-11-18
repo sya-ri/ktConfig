@@ -135,6 +135,18 @@ class ExamplePlugin : JavaPlugin() {
 
         logger.info("SerializerTestConfig:\n$yaml")
 
+        val lines = yaml.lines()
+        if (lines[0] == "# Header comment" && lines[1] == "# Second line in header") {
+            logger.info("Header comment found")
+        } else {
+            logger.severe("Header comment not found")
+        }
+        if (lines[3] == "# Property comment" && lines[4] == "# Second line in property") {
+            logger.info("Property comment found")
+        } else {
+            logger.severe("Property comment not found")
+        }
+
         val actual = SerializerTestConfigLoader.loadFromString(yaml)
 
         logger.info("Loaded SerializerTestConfig:")

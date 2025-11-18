@@ -3,6 +3,7 @@ package dev.s7a.example.config
 import dev.s7a.example.serializer.FormattedVector
 import dev.s7a.example.serializer.FormattedVectorSerializer
 import dev.s7a.example.serializer.OverrideIncorrectString
+import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.ForKtConfig
 import dev.s7a.ktconfig.UseSerializer
 import org.bukkit.Location
@@ -11,8 +12,10 @@ import org.bukkit.util.Vector
 import java.util.UUID
 
 @ForKtConfig
+@Comment("Header comment", "Second line in header")
 @OptIn(ExperimentalUnsignedTypes::class)
 data class SerializerTestConfig(
+    @Comment("Property comment", "Second line in property")
     val string: String,
     val byte: Byte,
     val char: Char,
