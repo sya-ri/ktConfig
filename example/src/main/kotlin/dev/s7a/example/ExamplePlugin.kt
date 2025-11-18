@@ -18,7 +18,7 @@ class ExamplePlugin : JavaPlugin() {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun testSerializer() {
-        val expected =
+        val data =
             SerializerTestConfig(
                 string = UUID.randomUUID().toString(),
                 byte = Random.nextBytes(1)[0],
@@ -98,8 +98,8 @@ class ExamplePlugin : JavaPlugin() {
                 nullableMap = mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
                 nullableMap2 =
                     mapOf(
-                        "null" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
-                        "not null" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                        "map1" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
+                        "map2" to mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
                     ),
                 nullableListMap =
                     listOf(
@@ -117,10 +117,17 @@ class ExamplePlugin : JavaPlugin() {
                     ),
             )
 
-        logger.info("Save SerializerTestConfig:")
-        logger.info(expected.toString())
+        val expected =
+            data.copy(
+                // Null values in maps are ignored during serialization
+                nullableMap = data.nullableMap.filterValues { it != null },
+                nullableMap2 = data.nullableMap2.mapValues { map -> map.value.filterValues { it != null } },
+            )
 
-        val yaml = SerializerTestConfigLoader.saveToString(expected)
+        logger.info("Save SerializerTestConfig:")
+        logger.info(data.toString())
+
+        val yaml = SerializerTestConfigLoader.saveToString(data)
 
         logger.info("SerializerTestConfig:\n$yaml")
 
