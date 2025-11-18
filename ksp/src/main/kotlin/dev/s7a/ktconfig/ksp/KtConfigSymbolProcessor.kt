@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.KSTypeArgument
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.KSVisitorVoid
@@ -200,26 +201,74 @@ class KtConfigSymbolProcessor(
             return Parameter(name, name, serializer, comment)
         }
 
+        private fun Sequence<KSAnnotation>.getSerializer(): Serializer.Custom? {
+            forEach { annotation ->
+                if (annotation.shortName.asString() == "UseSerializer") {
+                    val serializer = annotation.arguments.firstOrNull { it.name?.asString() == "serializer" }
+                    if (serializer != null) {
+                        val value = serializer.value
+                        if (value is KSType) {
+                            val qualifiedName = value.declaration.qualifiedName
+                            if (qualifiedName != null) {
+                                return Serializer.Custom(qualifiedName.asString())
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null
+        }
+
+        private fun KSType.solveTypeAlias(): Pair<KSType, Serializer.Custom?> {
+            val serializer = annotations.getSerializer()
+
+            val alias = this.declaration
+            if (alias is KSTypeAlias) {
+                val (resolvedType, resolvedSerializer) = alias.type.resolve().solveTypeAlias()
+
+                // Allow overriding serializer by checking custom serializer first before falling back to resolved serializer
+                //
+                // typealias IncorrectString =
+                //         @UseSerializer(IncorrectSerializer::class)
+                //         String
+                //
+                // typealias OverrideIncorrectString =
+                //         @UseSerializer(StringSerializer::class)
+                //         IncorrectString
+                //
+                // OverrideIncorrectString should be serialized with StringSerializer, not IncorrectSerializer
+                return resolvedType to (serializer ?: resolvedSerializer)
+            }
+
+            return this to serializer
+        }
+
         private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
-            val type = declaration.type.resolve()
+            val (type, customSerializer) = declaration.type.resolve().solveTypeAlias()
             val qualifiedName = type.declaration.qualifiedName?.asString()
             if (qualifiedName == null) {
                 logger.error("Type must have a qualified name", declaration)
                 return null
             }
 
-            return getSerializer(declaration, type, qualifiedName)
+            return getSerializer(declaration, type, qualifiedName, customSerializer)
         }
 
         private fun getSerializer(declaration: KSTypeArgument): Parameter.Serializer? {
-            val type = declaration.type?.resolve()
-            val qualifiedName = type?.declaration?.qualifiedName?.asString()
+            val declarationType = declaration.type
+            if (declarationType == null) {
+                logger.error("Type argument must have a type", declaration)
+                return null
+            }
+            val (type, customSerializer) = declarationType.resolve().solveTypeAlias()
+            val qualifiedName = type.declaration.qualifiedName?.asString()
             if (qualifiedName == null) {
                 logger.error("Type must have a qualified name", declaration)
                 return null
             }
 
-            return getSerializer(declaration, type, qualifiedName)
+            return getSerializer(declaration, type, qualifiedName, customSerializer)
         }
 
         /**
@@ -230,6 +279,7 @@ class KtConfigSymbolProcessor(
             declaration: KSAnnotated,
             type: KSType,
             qualifiedName: String,
+            customSerializer: Serializer.Custom?,
         ): Parameter.Serializer? {
             val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
 
@@ -265,7 +315,7 @@ class KtConfigSymbolProcessor(
                 }
             }
 
-            val serializer = findSerializer(qualifiedName, type)
+            val serializer = customSerializer ?: findSerializer(qualifiedName, type)
             if (serializer == null) {
                 logger.error("Unsupported type: $qualifiedName", declaration)
                 return null
@@ -279,7 +329,7 @@ class KtConfigSymbolProcessor(
                     return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable, qualifiedName)
                 }
                 is Serializer.BuiltIn -> {
-                    return Parameter.Serializer.Object(className, isNullable, serializer.name)
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
                 }
                 is Serializer.Collection -> {
                     val arguments = type.arguments
@@ -299,12 +349,21 @@ class KtConfigSymbolProcessor(
                             className,
                             isNullable,
                             serializer.name,
+                            serializer.qualifiedName,
                             argumentSerializers,
                             serializer.supportNullableValue && nullableValue,
                         )
                     }
 
-                    return Parameter.Serializer.Object(className, isNullable, serializer.name)
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
+                }
+                is Serializer.Custom -> {
+                    return Parameter.Serializer.Object(
+                        className,
+                        isNullable,
+                        serializer.qualifiedName.replace('.', '_'), // unique name
+                        serializer.qualifiedName,
+                    )
                 }
             }
         }
@@ -422,10 +481,7 @@ class KtConfigSymbolProcessor(
         sealed class Serializer(
             val type: TypeName,
             isNullable: Boolean,
-            name: String,
         ) {
-            protected val classRef = "dev.s7a.ktconfig.serializer.${name}Serializer"
-
             abstract val uniqueName: String
             abstract val ref: String
             abstract val keyable: Boolean
@@ -436,9 +492,10 @@ class KtConfigSymbolProcessor(
                 type: ClassName,
                 isNullable: Boolean,
                 name: String,
-            ) : Serializer(type, isNullable, name) {
+                qualifiedName: String,
+            ) : Serializer(type, isNullable) {
                 override val uniqueName = name
-                override val ref = classRef
+                override val ref = qualifiedName
                 override val keyable = true
             }
 
@@ -446,7 +503,8 @@ class KtConfigSymbolProcessor(
                 type: TypeName,
                 isNullable: Boolean,
                 name: String,
-            ) : Serializer(type, isNullable, name) {
+                protected val qualifiedName: String = "dev.s7a.ktconfig.serializer.${name}Serializer",
+            ) : Serializer(type, isNullable) {
                 abstract val initialize: String
             }
 
@@ -456,6 +514,7 @@ class KtConfigSymbolProcessor(
                 parentType: ClassName,
                 isNullable: Boolean,
                 name: String,
+                qualifiedName: String,
                 val arguments: List<Serializer>,
                 val nullableValue: Boolean,
             ) : InitializableSerializer(
@@ -470,6 +529,7 @@ class KtConfigSymbolProcessor(
                     ),
                     isNullable,
                     name,
+                    qualifiedName,
                 ) {
                 override val uniqueName =
                     buildString {
@@ -484,7 +544,7 @@ class KtConfigSymbolProcessor(
                 override val keyable = false
                 override val initialize =
                     buildString {
-                        append(classRef)
+                        append(qualifiedName)
                         if (nullableValue) {
                             append(".Nullable")
                         }
@@ -495,23 +555,23 @@ class KtConfigSymbolProcessor(
             class ConfigurationSerializableClass(
                 type: ClassName,
                 isNullable: Boolean,
-                qualifiedName: String,
+                classQualifiedName: String,
             ) : InitializableSerializer(type, isNullable, "ConfigurationSerializable") {
                 override val uniqueName = type.canonicalName.replace(".", "_")
                 override val ref = uniqueName
                 override val keyable = false
-                override val initialize = "$classRef<$qualifiedName>()"
+                override val initialize = "$qualifiedName<$classQualifiedName>()"
             }
 
             class EnumClass(
                 type: ClassName,
                 isNullable: Boolean,
-                qualifiedName: String,
+                enumQualifiedName: String,
             ) : InitializableSerializer(type, isNullable, "Enum") {
                 override val uniqueName = type.canonicalName.replace(".", "_")
                 override val ref = uniqueName
                 override val keyable = true
-                override val initialize = "$classRef($qualifiedName::class.java)"
+                override val initialize = "$qualifiedName($enumQualifiedName::class.java)"
             }
 
             class ValueClass(
@@ -525,7 +585,7 @@ class KtConfigSymbolProcessor(
                 override val keyable = argument.keyable
                 override val initialize =
                     buildString {
-                        append(classRef)
+                        append(qualifiedName)
                         if (keyable) append(".Keyable")
                         append("(${argument.ref}, { $type(it) }, { it.$parameterName })")
                     }
@@ -538,11 +598,19 @@ class KtConfigSymbolProcessor(
 
         data class BuiltIn(
             val name: String,
-        ) : Serializer
+        ) : Serializer {
+            val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
+        }
 
         data class Collection(
             val name: String,
             val supportNullableValue: Boolean,
+        ) : Serializer {
+            val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
+        }
+
+        data class Custom(
+            val qualifiedName: String,
         ) : Serializer
     }
 }

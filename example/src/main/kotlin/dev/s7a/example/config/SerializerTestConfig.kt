@@ -1,8 +1,13 @@
 package dev.s7a.example.config
 
+import dev.s7a.example.serializer.FormattedVector
+import dev.s7a.example.serializer.FormattedVectorSerializer
+import dev.s7a.example.serializer.OverrideIncorrectString
 import dev.s7a.ktconfig.ForKtConfig
+import dev.s7a.ktconfig.UseSerializer
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import java.util.UUID
 
 @ForKtConfig
@@ -24,6 +29,11 @@ data class SerializerTestConfig(
     val uuid: UUID,
     val itemStack: ItemStack,
     val location: Location,
+    val formattedVector: FormattedVector,
+    val formattedVector2:
+        @UseSerializer(FormattedVectorSerializer::class)
+        Vector,
+    val overrideSerializerString: OverrideIncorrectString,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,
@@ -111,6 +121,9 @@ data class SerializerTestConfig(
         if (uuid != other.uuid) return false
         if (itemStack != other.itemStack) return false
         if (location != other.location) return false
+        if (formattedVector != other.formattedVector) return false
+        if (formattedVector2 != other.formattedVector2) return false
+        if (overrideSerializerString != other.overrideSerializerString) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -169,6 +182,9 @@ data class SerializerTestConfig(
         result = 31 * result + uuid.hashCode()
         result = 31 * result + itemStack.hashCode()
         result = 31 * result + location.hashCode()
+        result = 31 * result + formattedVector.hashCode()
+        result = 31 * result + formattedVector2.hashCode()
+        result = 31 * result + overrideSerializerString.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()

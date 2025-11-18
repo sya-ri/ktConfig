@@ -7,6 +7,7 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.util.Vector
 import java.util.UUID
 import kotlin.random.Random
 
@@ -44,6 +45,9 @@ class ExamplePlugin : JavaPlugin() {
                         Random.nextFloat(),
                         Random.nextFloat(),
                     ),
+                formattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
+                formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
+                overrideSerializerString = UUID.randomUUID().toString(),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
@@ -185,6 +189,21 @@ class ExamplePlugin : JavaPlugin() {
             }
             if (expected.location != actual.location) {
                 logger.info("location: expected=${expected.location}, actual=${actual.location}")
+            }
+            if (expected.formattedVector != actual.formattedVector) {
+                logger.info(
+                    "formattedVector: expected=${expected.formattedVector}, actual=${actual.formattedVector}",
+                )
+            }
+            if (expected.formattedVector2 != actual.formattedVector2) {
+                logger.info(
+                    "formattedVector2: expected=${expected.formattedVector2}, actual=${actual.formattedVector2}",
+                )
+            }
+            if (expected.overrideSerializerString != actual.overrideSerializerString) {
+                logger.info(
+                    "overrideSerializerString: expected=${expected.overrideSerializerString}, actual=${actual.overrideSerializerString}",
+                )
             }
             if (expected.array.contentEquals(actual.array).not()) {
                 logger.info("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")
