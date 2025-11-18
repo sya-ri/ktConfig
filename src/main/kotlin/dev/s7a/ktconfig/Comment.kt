@@ -7,7 +7,7 @@ package dev.s7a.ktconfig
  * @property content Array of strings representing comment lines to be added.
  * @since 2.0.0
  */
-@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER)
 annotation class Comment(
     vararg val content: String,
 )

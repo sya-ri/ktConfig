@@ -6,6 +6,7 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeArgument
@@ -70,6 +71,9 @@ class KtConfigSymbolProcessor(
                 return
             }
 
+            // Get header comment
+            val headerComment = classDeclaration.annotations.getComment()
+
             // Get parameters from data class constructor
             val parameters = primaryConstructor.parameters.map { createParameter(it) ?: return }
 
@@ -131,15 +135,29 @@ class KtConfigSymbolProcessor(
                                     .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
                                     .addParameter(ParameterSpec("value", className))
                                     .apply {
-                                        // TODO comments
-
-                                        parameters.forEach {
+                                        if (headerComment != null) {
+                                            // Add header comment
                                             addStatement(
-                                                "%L.%N(configuration, %S, value.%N)",
-                                                it.serializer.ref,
-                                                "set",
-                                                it.pathName,
-                                                it.name,
+                                                "setHeaderComment(configuration, listOf(%L))",
+                                                headerComment.joinToString { "\"${it}\"" },
+                                            )
+                                        }
+
+                                        parameters.forEach { parameter ->
+                                            if (parameter.comment != null) {
+                                                // Add property comment
+                                                addStatement(
+                                                    "setComment(configuration, %S, listOf(%L))",
+                                                    parameter.pathName,
+                                                    parameter.comment.joinToString { "\"${it}\"" },
+                                                )
+                                            }
+
+                                            addStatement(
+                                                "%L.set(configuration, %S, value.%N)",
+                                                parameter.serializer.ref,
+                                                parameter.pathName,
+                                                parameter.name,
                                             )
                                         }
                                     }.build(),
@@ -147,6 +165,22 @@ class KtConfigSymbolProcessor(
                     )
                 }.build()
                 .writeTo(codeGenerator, false)
+        }
+
+        private fun Sequence<KSAnnotation>.getComment(): List<String>? {
+            forEach { annotation ->
+                if (annotation.shortName.asString() == "Comment") {
+                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "content" }
+                    if (content != null) {
+                        val value = content.value
+                        if (value is List<*> && value.isNotEmpty() && value.first() is String) {
+                            return value.map(Any?::toString)
+                        }
+                    }
+                }
+            }
+
+            return null
         }
 
         /**
@@ -161,8 +195,9 @@ class KtConfigSymbolProcessor(
             }
 
             val serializer = getSerializer(declaration) ?: return null
+            val comment = declaration.annotations.getComment()
 
-            return Parameter(name, name, serializer)
+            return Parameter(name, name, serializer, comment)
         }
 
         private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
@@ -382,6 +417,7 @@ class KtConfigSymbolProcessor(
         val pathName: String,
         val name: String,
         val serializer: Serializer,
+        val comment: List<String>?,
     ) {
         sealed class Serializer(
             val type: TypeName,
