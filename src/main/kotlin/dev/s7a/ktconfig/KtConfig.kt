@@ -8,4 +8,4 @@ package dev.s7a.ktconfig
  * @since 2.0.0
  */
 @Target(AnnotationTarget.CLASS)
-annotation class ForKtConfig
+annotation class KtConfig

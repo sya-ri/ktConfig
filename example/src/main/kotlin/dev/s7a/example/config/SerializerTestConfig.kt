@@ -4,14 +4,14 @@ import dev.s7a.example.serializer.FormattedVector
 import dev.s7a.example.serializer.FormattedVectorSerializer
 import dev.s7a.example.serializer.OverrideIncorrectString
 import dev.s7a.ktconfig.Comment
-import dev.s7a.ktconfig.ForKtConfig
+import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.UseSerializer
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.util.UUID
 
-@ForKtConfig
+@KtConfig
 @Comment("Header comment", "Second line in header")
 @OptIn(ExperimentalUnsignedTypes::class)
 data class SerializerTestConfig(

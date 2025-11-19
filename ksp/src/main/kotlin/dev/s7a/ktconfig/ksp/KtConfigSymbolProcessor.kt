@@ -27,7 +27,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 
 /**
- * Symbol processor that generates loader classes for configurations annotated with @ForKtConfig.
+ * Symbol processor that generates loader classes for configurations annotated with @KtConfig.
  * This processor handles the code generation for configuration classes by creating corresponding loader implementations.
  */
 class KtConfigSymbolProcessor(
@@ -35,11 +35,11 @@ class KtConfigSymbolProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     companion object {
-        private const val FOR_KT_CONFIG = "dev.s7a.ktconfig.ForKtConfig"
+        private const val FOR_KT_CONFIG = "dev.s7a.ktconfig.KtConfig"
     }
 
     /**
-     * Processes all classes annotated with @ForKtConfig and generates their corresponding loader classes.
+     * Processes all classes annotated with @KtConfig and generates their corresponding loader classes.
      * @param resolver The symbol resolver to find annotated classes
      * @return Empty list as all symbols are processed in a single round
      */
@@ -68,7 +68,7 @@ class KtConfigSymbolProcessor(
             // Get primary constructor from data class
             val primaryConstructor = classDeclaration.primaryConstructor
             if (primaryConstructor == null) {
-                logger.error("Classes annotated with @ForKtConfig must have a primary constructor", classDeclaration)
+                logger.error("Classes annotated with @KtConfig must have a primary constructor", classDeclaration)
                 return
             }
 

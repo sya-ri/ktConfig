@@ -13,7 +13,7 @@ build-time, ensuring zero runtime overhead (except for YamlConfiguration operati
 - Simple annotation-based setup
 
 ```kotlin
-@ForKtConfig // Just this alone
+@KtConfig // Just this alone
 data class StringConfig(
     val value: String,
 )
