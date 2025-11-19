@@ -197,7 +197,12 @@ class ExamplePlugin : JavaPlugin() {
         if (lines[3] == "# Property comment" && lines[4] == "# Second line in property") {
             output.info("- Property comment found")
         } else {
-            output.error("Property comment not found")
+            if (Bukkit.getBukkitVersion() == "1.8.8-R0.1-SNAPSHOT") {
+                // Property comment is not supported in 1.8.8
+                output.info("- Property comment not found (unsupported)")
+            } else {
+                output.error("Property comment not found")
+            }
         }
         output.info()
 
