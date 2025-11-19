@@ -1,5 +1,6 @@
 package dev.s7a.ktconfig.serializer
 
+import dev.s7a.ktconfig.exception.NotFoundValueException
 import org.bukkit.configuration.file.YamlConfiguration
 
 /**
@@ -25,13 +26,13 @@ interface Serializer<T> {
      * @param configuration The YAML configuration to read from
      * @param path The configuration path to read the value from
      * @return The deserialized value of type [T]
-     * @throws IllegalArgumentException if no value exists at the specified path
+     * @throws NotFoundValueException if no value exists at the specified path
      * @since 2.0.0
      */
     fun getOrThrow(
         configuration: YamlConfiguration,
         path: String,
-    ): T = get(configuration, path) ?: throw IllegalArgumentException("Not found value: $path")
+    ): T = get(configuration, path) ?: throw NotFoundValueException(path)
 
     /**
      * Gets a value from the configuration at the specified path.

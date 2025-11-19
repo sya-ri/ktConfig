@@ -1,5 +1,6 @@
 package serializer
 
+import dev.s7a.ktconfig.exception.NotFoundValueException
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.test.Test
@@ -21,7 +22,7 @@ class SerializerTest {
 
         // getOrThrow
         assertEquals(value, serializer.getOrThrow(configuration, path))
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<NotFoundValueException> {
             serializer.getOrThrow(configuration, "invalid-path")
         }
 

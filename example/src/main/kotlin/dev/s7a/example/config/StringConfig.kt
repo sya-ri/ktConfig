@@ -3,6 +3,7 @@ package dev.s7a.example.config
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.KtConfigLoader
+import dev.s7a.ktconfig.exception.NotFoundValueException
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 
@@ -34,7 +35,7 @@ data class StringConfig(
 
         override fun transform(value: Map<String, Any?>): StringConfig =
             StringConfig(
-                value["value"]?.let(StringSerializer::deserialize) ?: throw IllegalArgumentException("value is null"),
+                value["value"]?.let(StringSerializer::deserialize) ?: throw NotFoundValueException("value is null"),
                 value["nullable"]?.let(StringSerializer::deserialize),
             )
 

@@ -1,5 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
+import dev.s7a.ktconfig.exception.UnsupportedConvertException
+
 /**
  * Serializer for [Boolean] type.
  * Handles conversion between [Boolean] values and YAML configuration.
@@ -11,7 +13,7 @@ object BooleanSerializer : Serializer.Keyable<Boolean> {
         when (value) {
             is Boolean -> value
             is String -> value.toBoolean()
-            else -> throw IllegalArgumentException("Cannot convert to Boolean: ${value::class.simpleName}")
+            else -> throw UnsupportedConvertException(value::class, Boolean::class)
         }
 
     override fun serialize(value: Boolean) = value

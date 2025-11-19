@@ -1,5 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
+import dev.s7a.ktconfig.exception.InvalidFormatException
+import dev.s7a.ktconfig.exception.UnsupportedConvertException
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -19,7 +21,7 @@ object DateSerializer : Serializer.Keyable<Date> {
             is Calendar -> value.time
             is Date -> value
             is String -> parse(value)
-            else -> throw IllegalArgumentException("Cannot convert to Date: ${value::class.simpleName}")
+            else -> throw UnsupportedConvertException(value::class, Date::class)
         }
 
     private val timestampRegex =
@@ -61,6 +63,6 @@ object DateSerializer : Serializer.Keyable<Date> {
             return calendar.time
         }
 
-        throw IllegalArgumentException("Invalid date format: $text")
+        throw InvalidFormatException(text)
     }
 }

@@ -1,5 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
+import dev.s7a.ktconfig.exception.NullValueException
+import dev.s7a.ktconfig.exception.UnsupportedConvertException
 import org.bukkit.configuration.MemorySection
 
 /**
@@ -32,9 +34,9 @@ class MapSerializer<K, V>(
             when (value) {
                 is MemorySection -> value.getValues(false)
                 is Map<*, *> -> value
-                else -> throw IllegalArgumentException("Cannot convert to Map: ${value::class.simpleName}")
+                else -> throw UnsupportedConvertException(value::class, Map::class)
             }.mapKeys {
-                keySerializer.deserialize(it.key ?: throw IllegalArgumentException("Map key cannot be null"))
+                keySerializer.deserialize(it.key ?: throw NullValueException())
             }.mapValues {
                 it.value?.let(valueSerializer::deserialize)
             }
@@ -52,11 +54,11 @@ class MapSerializer<K, V>(
         when (value) {
             is MemorySection -> value.getValues(false)
             is Map<*, *> -> value
-            else -> throw IllegalArgumentException("Cannot convert to Map: ${value::class.simpleName}")
+            else -> throw UnsupportedConvertException(value::class, Map::class)
         }.mapKeys {
-            keySerializer.deserialize(it.key ?: throw IllegalArgumentException("Map key cannot be null"))
+            keySerializer.deserialize(it.key ?: throw NullValueException())
         }.mapValues {
-            valueSerializer.deserialize(it.value ?: throw IllegalArgumentException("Map value cannot be null"))
+            valueSerializer.deserialize(it.value ?: throw NullValueException())
         }
 
     override fun serialize(value: Map<K, V>) =

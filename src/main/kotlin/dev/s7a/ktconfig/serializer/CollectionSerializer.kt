@@ -1,5 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
+import dev.s7a.ktconfig.exception.NullValueException
+
 /**
  * Abstract serializer class that provides serialization functionality for collection types.
  *
@@ -59,7 +61,7 @@ abstract class CollectionSerializer<T, C>(
         val list = value as? List<*> ?: listOf(value)
         return list
             .map {
-                valueSerializer.deserialize(it ?: throw IllegalArgumentException("Element of collection is null"))
+                valueSerializer.deserialize(it ?: throw NullValueException())
             }.let(::toCollection)
     }
 

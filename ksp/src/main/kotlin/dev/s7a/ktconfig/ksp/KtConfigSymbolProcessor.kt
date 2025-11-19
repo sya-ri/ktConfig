@@ -60,6 +60,7 @@ class KtConfigSymbolProcessor(
         private val stringClassName = ClassName("kotlin", "String")
         private val mapClassName = ClassName("kotlin.collections", "Map")
         private val anyClassName = ClassName("kotlin", "Any")
+        private val notFoundValueExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "NotFoundValueException")
 
         /**
          * Visits each class declaration and generates a corresponding loader class.
@@ -192,10 +193,11 @@ class KtConfigSymbolProcessor(
                                                 )
                                             } else {
                                                 addStatement(
-                                                    "value[%S]?.let(%L::deserialize) ?: throw IllegalArgumentException(%S),",
+                                                    "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
                                                     parameter.pathName,
                                                     parameter.serializer.ref,
-                                                    "${parameter.pathName} is null",
+                                                    notFoundValueExceptionClassName,
+                                                    parameter.pathName,
                                                 )
                                             }
                                         }
