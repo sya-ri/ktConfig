@@ -397,6 +397,7 @@ class KtConfigSymbolProcessor(
                 modifiers.contains(Modifier.ENUM) -> {
                     return Parameter.Serializer.EnumClass(className, type.isMarkedNullable, qualifiedName)
                 }
+
                 modifiers.contains(Modifier.VALUE) -> {
                     if (declaration !is KSClassDeclaration) {
                         logger.error("Value classes must be classes", declaration)
@@ -440,9 +441,11 @@ class KtConfigSymbolProcessor(
                 Serializer.ConfigurationSerializable -> {
                     return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable, qualifiedName)
                 }
+
                 is Serializer.BuiltIn -> {
                     return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
                 }
+
                 is Serializer.Collection -> {
                     val arguments = type.arguments
                     if (arguments.isNotEmpty()) {
@@ -469,6 +472,7 @@ class KtConfigSymbolProcessor(
 
                     return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
                 }
+
                 is Serializer.Nested -> {
                     return Parameter.Serializer.Nested(
                         className,
@@ -477,6 +481,7 @@ class KtConfigSymbolProcessor(
                         serializer.loaderName,
                     )
                 }
+
                 is Serializer.Custom -> {
                     return Parameter.Serializer.Object(
                         className,
@@ -584,15 +589,19 @@ class KtConfigSymbolProcessor(
                         is Parameter.Serializer.Class -> {
                             it.arguments.extractInitializableSerializers() + it
                         }
+
                         is Parameter.Serializer.Nested -> {
                             listOf(it)
                         }
+
                         is Parameter.Serializer.ConfigurationSerializableClass -> {
                             listOf(it)
                         }
+
                         is Parameter.Serializer.EnumClass -> {
                             listOf(it)
                         }
+
                         is Parameter.Serializer.ValueClass -> {
                             listOf(it.argument).extractInitializableSerializers() + it
                         }

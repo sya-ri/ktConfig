@@ -17,7 +17,10 @@ object NumberSerializer : Serializer.Keyable<Number> {
 
     override fun deserialize(value: Any) =
         when (value) {
-            is Number -> value
+            is Number -> {
+                value
+            }
+
             is String -> {
                 when (value) {
                     INFINITY -> Double.POSITIVE_INFINITY
@@ -26,7 +29,10 @@ object NumberSerializer : Serializer.Keyable<Number> {
                     else -> BigDecimal(value)
                 }
             }
-            else -> throw IllegalArgumentException("Cannot convert to Number: ${value::class.simpleName}")
+
+            else -> {
+                throw IllegalArgumentException("Cannot convert to Number: ${value::class.simpleName}")
+            }
         }
 
     override fun serialize(value: Number) = value.toString()
