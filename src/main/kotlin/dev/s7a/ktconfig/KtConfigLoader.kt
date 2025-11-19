@@ -55,10 +55,14 @@ abstract class KtConfigLoader<T> {
      * Abstract method to load configuration data from a YamlConfiguration object.
      *
      * @param configuration The YamlConfiguration object to load from
+     * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @return The loaded configuration object of type T
      * @since 2.0.0
      */
-    protected abstract fun load(configuration: YamlConfiguration): T
+    protected abstract fun load(
+        configuration: YamlConfiguration,
+        parentPath: String = "",
+    ): T
 
     /**
      * Saves configuration data to a file.
@@ -93,11 +97,13 @@ abstract class KtConfigLoader<T> {
      *
      * @param configuration The YamlConfiguration object to save to
      * @param value The configuration object to save
+     * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @since 2.0.0
      */
     protected abstract fun save(
         configuration: YamlConfiguration,
         value: T,
+        parentPath: String = "",
     )
 
     protected fun setHeaderComment(
@@ -105,6 +111,18 @@ abstract class KtConfigLoader<T> {
         comment: List<String>,
     ) {
         Reflection.setHeaderComment(configuration.options(), comment)
+    }
+
+    protected fun setHeaderComment(
+        configuration: YamlConfiguration,
+        parentPath: String,
+        comment: List<String>,
+    ) {
+        if (parentPath.isEmpty()) {
+            setHeaderComment(configuration, comment)
+        } else {
+            setComment(configuration, parentPath, comment)
+        }
     }
 
     protected fun setComment(

@@ -56,6 +56,7 @@ class KtConfigSymbolProcessor(
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
         private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer.Keyable")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
+        private val stringClassName = ClassName("kotlin", "String")
 
         /**
          * Visits each class declaration and generates a corresponding loader class.
@@ -113,13 +114,14 @@ class KtConfigSymbolProcessor(
                                     .builder("load")
                                     .addModifiers(KModifier.OVERRIDE)
                                     .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
+                                    .addParameter(ParameterSpec("parentPath", stringClassName))
                                     .addCode(
                                         "return %T(\n",
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
                                             addStatement(
-                                                "%L.%N(configuration, %S),",
+                                                $$"%L.%N(configuration, \"${parentPath}%L\"),",
                                                 parameter.serializer.ref,
                                                 parameter.serializer.getFn,
                                                 parameter.pathName,
@@ -135,18 +137,19 @@ class KtConfigSymbolProcessor(
                                     .addModifiers(KModifier.OVERRIDE)
                                     .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
                                     .addParameter(ParameterSpec("value", className))
+                                    .addParameter(ParameterSpec("parentPath", stringClassName))
                                     .apply {
                                         if (headerComment != null) {
                                             // Add header comment
                                             addStatement(
-                                                "setHeaderComment(configuration, listOf(%L))",
+                                                "setHeaderComment(configuration, parentPath, listOf(%L))",
                                                 headerComment.joinToString { "\"${it}\"" },
                                             )
                                         }
 
                                         parameters.forEach { parameter ->
                                             addStatement(
-                                                "%L.set(configuration, %S, value.%N)",
+                                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
                                                 parameter.serializer.ref,
                                                 parameter.pathName,
                                                 parameter.name,
@@ -155,7 +158,7 @@ class KtConfigSymbolProcessor(
                                             if (parameter.comment != null) {
                                                 // Add property comment
                                                 addStatement(
-                                                    "setComment(configuration, %S, listOf(%L))",
+                                                    $$"setComment(configuration, \"${parentPath}%L\", listOf(%L))",
                                                     parameter.pathName,
                                                     parameter.comment.joinToString { "\"${it}\"" },
                                                 )

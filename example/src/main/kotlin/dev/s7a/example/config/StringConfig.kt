@@ -13,17 +13,20 @@ data class StringConfig(
     val value: String,
 ) {
     object ExpectedLoader : KtConfigLoader<StringConfig>() {
-        override fun load(configuration: YamlConfiguration) =
-            StringConfig(
-                StringSerializer.getOrThrow(configuration, "value"),
-            )
+        override fun load(
+            configuration: YamlConfiguration,
+            parentPath: String,
+        ) = StringConfig(
+            StringSerializer.getOrThrow(configuration, "value"),
+        )
 
         override fun save(
             configuration: YamlConfiguration,
             value: StringConfig,
+            parentPath: String,
         ) {
             setHeaderComment(configuration, listOf("Header comment"))
-            setComment(configuration, "value", listOf("Property comment", "Second line"))
+            setComment(configuration, "${parentPath}value", listOf("Property comment", "Second line"))
             StringSerializer.set(configuration, "value", value.value)
         }
     }
