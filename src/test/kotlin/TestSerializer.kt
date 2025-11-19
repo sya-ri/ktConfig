@@ -51,8 +51,9 @@ fun <T> testSerializer(
     serializer: Serializer<T>,
     expectedValues: Map<String, Any>? = null,
     expectedYaml: String? = null,
+    assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) {
-    testSerializerValue(expected, serializer, expectedValues, expectedYaml)
+    testSerializerValue(expected, serializer, expectedValues, expectedYaml, assert)
 }
 
 fun <T> testSerializer(
@@ -60,9 +61,10 @@ fun <T> testSerializer(
     serializer: Serializer.Keyable<T>,
     expectedValues: Map<String, Any>? = null,
     expectedYaml: String? = null,
+    assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) {
     testSerializerKey(expected, serializer)
-    testSerializerValue(expected, serializer, expectedValues, expectedYaml)
+    testSerializerValue(expected, serializer, expectedValues, expectedYaml, assert)
 }
 
 fun <T> testSerializer(
