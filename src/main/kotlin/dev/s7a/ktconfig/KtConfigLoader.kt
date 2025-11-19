@@ -59,7 +59,7 @@ abstract class KtConfigLoader<T> {
      * @return The loaded configuration object of type T
      * @since 2.0.0
      */
-    protected abstract fun load(
+    abstract fun load(
         configuration: YamlConfiguration,
         parentPath: String = "",
     ): T
@@ -100,7 +100,7 @@ abstract class KtConfigLoader<T> {
      * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @since 2.0.0
      */
-    protected abstract fun save(
+    abstract fun save(
         configuration: YamlConfiguration,
         value: T,
         parentPath: String = "",

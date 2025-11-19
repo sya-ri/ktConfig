@@ -48,6 +48,7 @@ class ExamplePlugin : JavaPlugin() {
                 formattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 overrideSerializerString = UUID.randomUUID().toString(),
+                nested = SerializerTestConfig.Nested(UUID.randomUUID().toString(), Random.nextInt()),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
@@ -216,6 +217,9 @@ class ExamplePlugin : JavaPlugin() {
                 logger.info(
                     "overrideSerializerString: expected=${expected.overrideSerializerString}, actual=${actual.overrideSerializerString}",
                 )
+            }
+            if (expected.nested != actual.nested) {
+                logger.info("nested: expected=${expected.nested}, actual=${actual.nested}")
             }
             if (expected.array.contentEquals(actual.array).not()) {
                 logger.info("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")

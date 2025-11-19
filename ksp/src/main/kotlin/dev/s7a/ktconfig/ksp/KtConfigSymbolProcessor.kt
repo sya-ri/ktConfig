@@ -8,6 +8,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.KSTypeArgument
@@ -35,7 +36,7 @@ class KtConfigSymbolProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     companion object {
-        private const val FOR_KT_CONFIG = "dev.s7a.ktconfig.KtConfig"
+        private const val KT_CONFIG = "dev.s7a.ktconfig.KtConfig"
     }
 
     /**
@@ -45,7 +46,7 @@ class KtConfigSymbolProcessor(
      */
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver
-            .getSymbolsWithAnnotation(FOR_KT_CONFIG)
+            .getSymbolsWithAnnotation(KT_CONFIG)
             .filterIsInstance<KSClassDeclaration>()
             .forEach { it.accept(Visitor(), Unit) }
         return emptyList()
@@ -80,9 +81,9 @@ class KtConfigSymbolProcessor(
             val parameters = primaryConstructor.parameters.map { createParameter(it) ?: return }
 
             val packageName = classDeclaration.packageName.asString()
-            val simpleName = classDeclaration.simpleName.asString()
-            val className = ClassName(packageName, simpleName)
-            val loaderSimpleName = "${simpleName}Loader"
+            val fullName = getFullName(classDeclaration)
+            val className = ClassName(packageName, fullName)
+            val loaderSimpleName = getLoaderName(classDeclaration)
 
             FileSpec
                 .builder(packageName, loaderSimpleName)
@@ -91,7 +92,8 @@ class KtConfigSymbolProcessor(
 
                     // Add properties for nested type serializer classes like ListOfString
                     parameters
-                        .map(Parameter::serializer)
+                        .filterIsInstance<Parameter.Normal>()
+                        .map(Parameter.Normal::serializer)
                         .extractInitializableSerializers()
                         .forEach { serializer ->
                             val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
@@ -120,12 +122,23 @@ class KtConfigSymbolProcessor(
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
-                                            addStatement(
-                                                $$"%L.%N(configuration, \"${parentPath}%L\"),",
-                                                parameter.serializer.ref,
-                                                parameter.serializer.getFn,
-                                                parameter.pathName,
-                                            )
+                                            when (parameter) {
+                                                is Parameter.Normal -> {
+                                                    addStatement(
+                                                        $$"%L.%N(configuration, \"${parentPath}%L\"),",
+                                                        parameter.serializer.ref,
+                                                        parameter.serializer.getFn,
+                                                        parameter.pathName,
+                                                    )
+                                                }
+                                                is Parameter.Nested -> {
+                                                    addStatement(
+                                                        $$"%L.load(configuration, \"${parentPath}%L\"),",
+                                                        parameter.loaderName,
+                                                        parameter.pathName,
+                                                    )
+                                                }
+                                            }
                                         }
                                     }.addCode(")")
                                     .returns(className)
@@ -148,19 +161,32 @@ class KtConfigSymbolProcessor(
                                         }
 
                                         parameters.forEach { parameter ->
-                                            addStatement(
-                                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
-                                                parameter.serializer.ref,
-                                                parameter.pathName,
-                                                parameter.name,
-                                            )
+                                            when (parameter) {
+                                                is Parameter.Normal -> {
+                                                    addStatement(
+                                                        $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
+                                                        parameter.serializer.ref,
+                                                        parameter.pathName,
+                                                        parameter.name,
+                                                    )
+                                                }
+                                                is Parameter.Nested -> {
+                                                    addStatement(
+                                                        $$"%L.save(configuration, value.%N, \"${parentPath}%L\")",
+                                                        parameter.loaderName,
+                                                        parameter.name,
+                                                        parameter.pathName,
+                                                    )
+                                                }
+                                            }
 
-                                            if (parameter.comment != null) {
+                                            val comment = parameter.comment
+                                            if (comment != null) {
                                                 // Add property comment
                                                 addStatement(
                                                     $$"setComment(configuration, \"${parentPath}%L\", listOf(%L))",
                                                     parameter.pathName,
-                                                    parameter.comment.joinToString { "\"${it}\"" },
+                                                    comment.joinToString { "\"${it}\"" },
                                                 )
                                             }
                                         }
@@ -171,6 +197,39 @@ class KtConfigSymbolProcessor(
                 .writeTo(codeGenerator, false)
         }
 
+        /**
+         * Gets the full name of a class by traversing its parent hierarchy.
+         * For nested classes, returns a list of class names from outermost to innermost.
+         * For top-level classes, returns a single-element list with the class name.
+         *
+         * @param declaration The class declaration to get the full name for
+         * @return List of class names representing the full hierarchy
+         */
+        private fun getFullName(declaration: KSClassDeclaration): List<String> =
+            if (declaration.parent is KSFile) {
+                listOf(declaration.simpleName.asString())
+            } else {
+                getFullName(declaration.parent as KSClassDeclaration) + declaration.simpleName.asString()
+            }
+
+        /**
+         * Generates a loader class name for the given class declaration.
+         * Combines the full class name parts with underscores and appends "Loader".
+         *
+         * @param declaration The class declaration to generate a loader name for
+         * @return The generated loader class name
+         */
+        private fun getLoaderName(declaration: KSClassDeclaration): String {
+            val fullName = getFullName(declaration).joinToString("")
+            return "${fullName}Loader"
+        }
+
+        /**
+         * Extracts comment content from @Comment annotations in the sequence.
+         * Processes the annotation arguments to get the comment strings.
+         *
+         * @return List of comment strings, or null if no valid comment annotation is found
+         */
         private fun Sequence<KSAnnotation>.getComment(): List<String>? {
             forEach { annotation ->
                 if (annotation.shortName.asString() == "Comment") {
@@ -188,6 +247,13 @@ class KtConfigSymbolProcessor(
         }
 
         /**
+         * Checks if the sequence contains a @KtConfig annotation.
+         *
+         * @return True if @KtConfig annotation is present, false otherwise
+         */
+        private fun Sequence<KSAnnotation>.hasKtConfig() = any { it.shortName.asString() == "KtConfig" }
+
+        /**
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
          * Returns null if the parameter is invalid or unsupported.
          */
@@ -198,10 +264,21 @@ class KtConfigSymbolProcessor(
                 return null
             }
 
+            // Resolve nested KtConfig class
+            val nested = declaration.type.resolve().declaration
+            val nestedAnnotations = nested.annotations
+            if (nested is KSClassDeclaration && nestedAnnotations.hasKtConfig()) {
+                return Parameter.Nested(
+                    $$"$$name$PATH_SEPARATOR",
+                    name,
+                    "${nested.packageName.asString()}.${getLoaderName(nested)}",
+                    nestedAnnotations.getComment(),
+                )
+            }
+
             val serializer = getSerializer(declaration) ?: return null
             val comment = declaration.annotations.getComment()
-
-            return Parameter(name, name, serializer, comment)
+            return Parameter.Normal(name, name, serializer, comment)
         }
 
         private fun Sequence<KSAnnotation>.getSerializer(): Serializer.Custom? {
@@ -475,12 +552,25 @@ class KtConfigSymbolProcessor(
                 }.distinctBy(Parameter.Serializer::uniqueName)
     }
 
-    private data class Parameter(
-        val pathName: String,
-        val name: String,
-        val serializer: Serializer,
-        val comment: List<String>?,
-    ) {
+    private sealed interface Parameter {
+        val pathName: String
+        val name: String
+        val comment: List<String>?
+
+        data class Normal(
+            override val pathName: String,
+            override val name: String,
+            val serializer: Serializer,
+            override val comment: List<String>?,
+        ) : Parameter
+
+        data class Nested(
+            override val pathName: String,
+            override val name: String,
+            val loaderName: String,
+            override val comment: List<String>?,
+        ) : Parameter
+
         sealed class Serializer(
             val type: TypeName,
             isNullable: Boolean,

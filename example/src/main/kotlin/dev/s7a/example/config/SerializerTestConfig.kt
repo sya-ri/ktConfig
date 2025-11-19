@@ -37,6 +37,7 @@ data class SerializerTestConfig(
         @UseSerializer(FormattedVectorSerializer::class)
         Vector,
     val overrideSerializerString: OverrideIncorrectString,
+    val nested: Nested,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,
@@ -102,6 +103,12 @@ data class SerializerTestConfig(
         val value: Map<Value, UIntValue>,
     )
 
+    @KtConfig
+    data class Nested(
+        val string: String,
+        val int: Int,
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -127,6 +134,7 @@ data class SerializerTestConfig(
         if (formattedVector != other.formattedVector) return false
         if (formattedVector2 != other.formattedVector2) return false
         if (overrideSerializerString != other.overrideSerializerString) return false
+        if (nested != other.nested) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -188,6 +196,7 @@ data class SerializerTestConfig(
         result = 31 * result + formattedVector.hashCode()
         result = 31 * result + formattedVector2.hashCode()
         result = 31 * result + overrideSerializerString.hashCode()
+        result = 31 * result + nested.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()
