@@ -48,7 +48,16 @@ class ExamplePlugin : JavaPlugin() {
                 formattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 overrideSerializerString = UUID.randomUUID().toString(),
-                nested = SerializerTestConfig.Nested(UUID.randomUUID().toString(), Random.nextInt()),
+                nested =
+                    SerializerTestConfig.Nested(
+                        UUID.randomUUID().toString(),
+                        Random.nextInt(),
+                        SerializerTestConfig.Nested(
+                            UUID.randomUUID().toString(),
+                            Random.nextInt(),
+                            null,
+                        ),
+                    ),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },

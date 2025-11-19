@@ -107,6 +107,7 @@ data class SerializerTestConfig(
     data class Nested(
         val string: String,
         val int: Int,
+        val nested: Nested?,
     )
 
     override fun equals(other: Any?): Boolean {

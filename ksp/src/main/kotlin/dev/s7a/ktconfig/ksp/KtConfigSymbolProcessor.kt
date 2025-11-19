@@ -92,8 +92,7 @@ class KtConfigSymbolProcessor(
 
                     // Add properties for nested type serializer classes like ListOfString
                     parameters
-                        .filterIsInstance<Parameter.Normal>()
-                        .map(Parameter.Normal::serializer)
+                        .map(Parameter::serializer)
                         .extractInitializableSerializers()
                         .forEach { serializer ->
                             val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
@@ -122,23 +121,12 @@ class KtConfigSymbolProcessor(
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
-                                            when (parameter) {
-                                                is Parameter.Normal -> {
-                                                    addStatement(
-                                                        $$"%L.%N(configuration, \"${parentPath}%L\"),",
-                                                        parameter.serializer.ref,
-                                                        parameter.serializer.getFn,
-                                                        parameter.pathName,
-                                                    )
-                                                }
-                                                is Parameter.Nested -> {
-                                                    addStatement(
-                                                        $$"%L.load(configuration, \"${parentPath}%L\"),",
-                                                        parameter.loaderName,
-                                                        parameter.pathName,
-                                                    )
-                                                }
-                                            }
+                                            addStatement(
+                                                $$"%L.%N(configuration, \"${parentPath}%L\"),",
+                                                parameter.serializer.ref,
+                                                parameter.serializer.getFn,
+                                                parameter.pathName,
+                                            )
                                         }
                                     }.addCode(")")
                                     .returns(className)
@@ -161,24 +149,12 @@ class KtConfigSymbolProcessor(
                                         }
 
                                         parameters.forEach { parameter ->
-                                            when (parameter) {
-                                                is Parameter.Normal -> {
-                                                    addStatement(
-                                                        $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
-                                                        parameter.serializer.ref,
-                                                        parameter.pathName,
-                                                        parameter.name,
-                                                    )
-                                                }
-                                                is Parameter.Nested -> {
-                                                    addStatement(
-                                                        $$"%L.save(configuration, value.%N, \"${parentPath}%L\")",
-                                                        parameter.loaderName,
-                                                        parameter.name,
-                                                        parameter.pathName,
-                                                    )
-                                                }
-                                            }
+                                            addStatement(
+                                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
+                                                parameter.serializer.ref,
+                                                parameter.pathName,
+                                                parameter.name,
+                                            )
 
                                             val comment = parameter.comment
                                             if (comment != null) {
@@ -264,21 +240,9 @@ class KtConfigSymbolProcessor(
                 return null
             }
 
-            // Resolve nested KtConfig class
-            val nested = declaration.type.resolve().declaration
-            val nestedAnnotations = nested.annotations
-            if (nested is KSClassDeclaration && nestedAnnotations.hasKtConfig()) {
-                return Parameter.Nested(
-                    $$"$$name$PATH_SEPARATOR",
-                    name,
-                    "${nested.packageName.asString()}.${getLoaderName(nested)}",
-                    nestedAnnotations.getComment(),
-                )
-            }
-
             val serializer = getSerializer(declaration) ?: return null
             val comment = declaration.annotations.getComment()
-            return Parameter.Normal(name, name, serializer, comment)
+            return Parameter(name, name, serializer, comment)
         }
 
         private fun Sequence<KSAnnotation>.getSerializer(): Serializer.Custom? {
@@ -332,7 +296,7 @@ class KtConfigSymbolProcessor(
                 return null
             }
 
-            return getSerializer(declaration, type, qualifiedName, customSerializer)
+            return getSerializer(type, qualifiedName, customSerializer)
         }
 
         private fun getSerializer(declaration: KSTypeArgument): Parameter.Serializer? {
@@ -348,7 +312,7 @@ class KtConfigSymbolProcessor(
                 return null
             }
 
-            return getSerializer(declaration, type, qualifiedName, customSerializer)
+            return getSerializer(type, qualifiedName, customSerializer)
         }
 
         /**
@@ -356,22 +320,25 @@ class KtConfigSymbolProcessor(
          * Handles both simple types and generic collections, returning null for unsupported types.
          */
         private fun getSerializer(
-            declaration: KSAnnotated,
             type: KSType,
             qualifiedName: String,
             customSerializer: Serializer.Custom?,
         ): Parameter.Serializer? {
             val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
 
-            val modifiers = type.declaration.modifiers
+            val declaration = type.declaration
+            val modifiers = declaration.modifiers
             when {
                 modifiers.contains(Modifier.ENUM) -> {
                     return Parameter.Serializer.EnumClass(className, type.isMarkedNullable, qualifiedName)
                 }
                 modifiers.contains(Modifier.VALUE) -> {
-                    val classDeclaration = type.declaration as KSClassDeclaration
+                    if (declaration !is KSClassDeclaration) {
+                        logger.error("Value classes must be classes", declaration)
+                        return null
+                    }
 
-                    val primaryConstructor = classDeclaration.primaryConstructor
+                    val primaryConstructor = declaration.primaryConstructor
                     if (primaryConstructor == null) {
                         logger.error("Value classes must have a primary constructor", declaration)
                         return null
@@ -436,6 +403,14 @@ class KtConfigSymbolProcessor(
                     }
 
                     return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
+                }
+                is Serializer.Nested -> {
+                    return Parameter.Serializer.Nested(
+                        className,
+                        isNullable,
+                        serializer.qualifiedName,
+                        serializer.loaderName,
+                    )
                 }
                 is Serializer.Custom -> {
                     return Parameter.Serializer.Object(
@@ -502,9 +477,14 @@ class KtConfigSymbolProcessor(
             qualifiedName: String,
             type: KSType,
         ): Serializer? {
-            // Check if type implements ConfigurationSerializable
             val declaration = type.declaration
             if (declaration is KSClassDeclaration) {
+                // Check if type marked @KtConfig
+                if (declaration.annotations.hasKtConfig()) {
+                    return Serializer.Nested(qualifiedName, "${declaration.packageName.asString()}.${getLoaderName(declaration)}")
+                }
+
+                // Check if type implements ConfigurationSerializable
                 declaration.getAllSuperTypes().forEach { superType ->
                     val qualifiedName = superType.declaration.qualifiedName?.asString()
                     if (qualifiedName == "org.bukkit.configuration.serialization.ConfigurationSerializable") {
@@ -539,6 +519,9 @@ class KtConfigSymbolProcessor(
                         is Parameter.Serializer.Class -> {
                             it.arguments.extractInitializableSerializers() + it
                         }
+                        is Parameter.Serializer.Nested -> {
+                            listOf(it)
+                        }
                         is Parameter.Serializer.ConfigurationSerializableClass -> {
                             listOf(it)
                         }
@@ -552,25 +535,12 @@ class KtConfigSymbolProcessor(
                 }.distinctBy(Parameter.Serializer::uniqueName)
     }
 
-    private sealed interface Parameter {
-        val pathName: String
-        val name: String
-        val comment: List<String>?
-
-        data class Normal(
-            override val pathName: String,
-            override val name: String,
-            val serializer: Serializer,
-            override val comment: List<String>?,
-        ) : Parameter
-
-        data class Nested(
-            override val pathName: String,
-            override val name: String,
-            val loaderName: String,
-            override val comment: List<String>?,
-        ) : Parameter
-
+    private data class Parameter(
+        val pathName: String,
+        val name: String,
+        val serializer: Serializer,
+        val comment: List<String>?,
+    ) {
         sealed class Serializer(
             val type: TypeName,
             isNullable: Boolean,
@@ -645,6 +615,18 @@ class KtConfigSymbolProcessor(
                     }
             }
 
+            class Nested(
+                type: ClassName,
+                isNullable: Boolean,
+                qualifiedName: String,
+                loaderName: String,
+            ) : InitializableSerializer(type, isNullable, "Nested") {
+                override val uniqueName = qualifiedName.replace('.', '_')
+                override val ref = uniqueName
+                override val keyable = false
+                override val initialize = "${super.qualifiedName}($loaderName)"
+            }
+
             class ConfigurationSerializableClass(
                 type: ClassName,
                 isNullable: Boolean,
@@ -701,6 +683,11 @@ class KtConfigSymbolProcessor(
         ) : Serializer {
             val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
         }
+
+        data class Nested(
+            val qualifiedName: String,
+            val loaderName: String,
+        ) : Serializer
 
         data class Custom(
             val qualifiedName: String,
