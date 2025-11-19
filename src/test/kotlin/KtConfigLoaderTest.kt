@@ -12,16 +12,28 @@ class KtConfigLoaderTest {
     )
 
     class CustomLoader : KtConfigLoader<CustomData>() {
-        override fun load(configuration: YamlConfiguration): CustomData =
+        override fun load(
+            configuration: YamlConfiguration,
+            parentPath: String,
+        ): CustomData =
             CustomData(
-                StringSerializer.getOrThrow(configuration, "value"),
+                StringSerializer.getOrThrow(configuration, "${parentPath}value"),
             )
 
         override fun save(
             configuration: YamlConfiguration,
             value: CustomData,
+            parentPath: String,
         ) {
-            StringSerializer.set(configuration, "value", value.value)
+            StringSerializer.set(configuration, "${parentPath}value", value.value)
+        }
+
+        override fun transform(value: Map<String, Any?>): CustomData {
+            TODO("Not yet implemented")
+        }
+
+        override fun transformBack(value: CustomData): Map<String, Any?> {
+            TODO("Not yet implemented")
         }
     }
 
