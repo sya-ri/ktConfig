@@ -48,16 +48,6 @@ class ExamplePlugin : JavaPlugin() {
                 formattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 overrideSerializerString = UUID.randomUUID().toString(),
-                nested =
-                    SerializerTestConfig.Nested(
-                        UUID.randomUUID().toString(),
-                        Random.nextInt(),
-                        SerializerTestConfig.Nested(
-                            UUID.randomUUID().toString(),
-                            Random.nextInt(),
-                            null,
-                        ),
-                    ),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
@@ -103,6 +93,52 @@ class ExamplePlugin : JavaPlugin() {
                             SerializerTestConfig.Value(UUID.randomUUID().toString()) to
                                 SerializerTestConfig.UIntValue(Random.nextInt().toUInt())
                         },
+                    ),
+                nested =
+                    SerializerTestConfig.Nested(
+                        UUID.randomUUID().toString(),
+                        Random.nextInt().toUInt(),
+                        SerializerTestConfig.Nested(
+                            UUID.randomUUID().toString(),
+                            Random.nextInt().toUInt(),
+                            null,
+                        ),
+                    ),
+                nestedList =
+                    listOf(
+                        SerializerTestConfig.Nested(
+                            UUID.randomUUID().toString(),
+                            Random.nextInt().toUInt(),
+                            null,
+                        ),
+                        SerializerTestConfig.Nested(
+                            UUID.randomUUID().toString(),
+                            Random.nextInt().toUInt(),
+                            SerializerTestConfig.Nested(
+                                UUID.randomUUID().toString(),
+                                Random.nextInt().toUInt(),
+                                null,
+                            ),
+                        ),
+                    ),
+                nestedMap =
+                    mapOf(
+                        "map1" to
+                            SerializerTestConfig.Nested(
+                                UUID.randomUUID().toString(),
+                                Random.nextInt().toUInt(),
+                                null,
+                            ),
+                        "map2" to
+                            SerializerTestConfig.Nested(
+                                UUID.randomUUID().toString(),
+                                Random.nextInt().toUInt(),
+                                SerializerTestConfig.Nested(
+                                    UUID.randomUUID().toString(),
+                                    Random.nextInt().toUInt(),
+                                    null,
+                                ),
+                            ),
                     ),
                 nullable = null,
                 nullableList = listOf(null, UUID.randomUUID().toString(), null),
@@ -227,9 +263,6 @@ class ExamplePlugin : JavaPlugin() {
                     "overrideSerializerString: expected=${expected.overrideSerializerString}, actual=${actual.overrideSerializerString}",
                 )
             }
-            if (expected.nested != actual.nested) {
-                logger.info("nested: expected=${expected.nested}, actual=${actual.nested}")
-            }
             if (expected.array.contentEquals(actual.array).not()) {
                 logger.info("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")
             }
@@ -319,6 +352,15 @@ class ExamplePlugin : JavaPlugin() {
             }
             if (expected.valueMap != actual.valueMap) {
                 logger.info("valueMap: expected=${expected.valueMap}, actual=${actual.valueMap}")
+            }
+            if (expected.nested != actual.nested) {
+                logger.info("nested: expected=${expected.nested}, actual=${actual.nested}")
+            }
+            if (expected.nestedList != actual.nestedList) {
+                logger.info("nestedList: expected=${expected.nestedList}, actual=${actual.nestedList}")
+            }
+            if (expected.nestedMap != actual.nestedMap) {
+                logger.info("nestedMap: expected=${expected.nestedMap}, actual=${actual.nestedMap}")
             }
             if (expected.nullable != actual.nullable) {
                 logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")

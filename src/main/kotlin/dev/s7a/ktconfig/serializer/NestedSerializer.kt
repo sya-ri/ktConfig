@@ -36,11 +36,7 @@ class NestedSerializer<T>(
         }
     }
 
-    override fun deserialize(value: Any): T {
-        TODO("Not yet implemented")
-    }
+    override fun deserialize(value: Any) = loader.deserialize(value)
 
-    override fun serialize(value: T): Any? {
-        TODO("Not yet implemented")
-    }
+    override fun serialize(value: T) = loader.serialize(value)
 }

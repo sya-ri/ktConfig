@@ -1,5 +1,10 @@
 package dev.s7a.ktconfig
 
+import dev.s7a.ktconfig.serializer.AnySerializer
+import dev.s7a.ktconfig.serializer.MapSerializer
+import dev.s7a.ktconfig.serializer.Serializer
+import dev.s7a.ktconfig.serializer.StringSerializer
+import dev.s7a.ktconfig.serializer.TransformSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
@@ -10,7 +15,13 @@ import java.io.File
  * @param T The type of configuration object to load/save
  * @since 2.0.0
  */
-abstract class KtConfigLoader<T> {
+abstract class KtConfigLoader<T> :
+    TransformSerializer<T, Map<String, Any?>>(
+        MapSerializer.Nullable(
+            StringSerializer,
+            AnySerializer,
+        ),
+    ) {
     companion object {
         /**
          * Change the path separator to be able to use Double or Float as a key

@@ -58,6 +58,8 @@ class KtConfigSymbolProcessor(
         private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer.Keyable")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
         private val stringClassName = ClassName("kotlin", "String")
+        private val mapClassName = ClassName("kotlin.collections", "Map")
+        private val anyClassName = ClassName("kotlin", "Any")
 
         /**
          * Visits each class declaration and generates a corresponding loader class.
@@ -167,6 +169,69 @@ class KtConfigSymbolProcessor(
                                             }
                                         }
                                     }.build(),
+                            ).addFunction(
+                                // Add `transform` function to KtConfig loader class
+                                FunSpec
+                                    .builder("transform")
+                                    .addModifiers(KModifier.OVERRIDE)
+                                    .addParameter(
+                                        ParameterSpec(
+                                            "value",
+                                            mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)),
+                                        ),
+                                    ).addCode(
+                                        "return %T(\n",
+                                        className,
+                                    ).apply {
+                                        parameters.forEach { parameter ->
+                                            if (parameter.isNullable) {
+                                                addStatement(
+                                                    "value[%S]?.let(%L::deserialize),",
+                                                    parameter.pathName,
+                                                    parameter.serializer.ref,
+                                                )
+                                            } else {
+                                                addStatement(
+                                                    "value[%S]?.let(%L::deserialize) ?: throw IllegalArgumentException(%S),",
+                                                    parameter.pathName,
+                                                    parameter.serializer.ref,
+                                                    "${parameter.pathName} is null",
+                                                )
+                                            }
+                                        }
+                                    }.addCode(")")
+                                    .returns(className)
+                                    .build(),
+                            ).addFunction(
+                                // Add `transformBack` function to KtConfig loader class
+                                FunSpec
+                                    .builder("transformBack")
+                                    .addModifiers(KModifier.OVERRIDE)
+                                    .addParameter(ParameterSpec("value", className))
+                                    .addCode(
+                                        "return mapOf(\n",
+                                    ).apply {
+                                        parameters.forEach { parameter ->
+                                            if (parameter.isNullable) {
+                                                addStatement(
+                                                    "%S to value.%L?.let(%L::serialize),",
+                                                    parameter.pathName,
+                                                    parameter.name,
+                                                    parameter.serializer.ref,
+                                                )
+                                            } else {
+                                                addStatement(
+                                                    "%S to %L.serialize(value.%L),",
+                                                    parameter.pathName,
+                                                    parameter.serializer.ref,
+                                                    parameter.name,
+                                                )
+                                            }
+                                        }
+                                    }.addCode(
+                                        ")",
+                                    ).returns(mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)))
+                                    .build(),
                             ).build(),
                     )
                 }.build()
@@ -541,9 +606,12 @@ class KtConfigSymbolProcessor(
         val serializer: Serializer,
         val comment: List<String>?,
     ) {
+        val isNullable
+            get() = serializer.isNullable
+
         sealed class Serializer(
             val type: TypeName,
-            isNullable: Boolean,
+            val isNullable: Boolean,
         ) {
             abstract val uniqueName: String
             abstract val ref: String

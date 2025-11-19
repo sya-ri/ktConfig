@@ -37,7 +37,6 @@ data class SerializerTestConfig(
         @UseSerializer(FormattedVectorSerializer::class)
         Vector,
     val overrideSerializerString: OverrideIncorrectString,
-    val nested: Nested,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,
@@ -65,6 +64,9 @@ data class SerializerTestConfig(
     val value: Value,
     val valueList: ValueList,
     val valueMap: ValueMap,
+    val nested: Nested,
+    val nestedList: List<Nested>,
+    val nestedMap: Map<String, Nested>,
     val nullable: String?,
     val nullableList: List<String?>,
     val nullableArray: Array<String?>,
@@ -106,7 +108,7 @@ data class SerializerTestConfig(
     @KtConfig
     data class Nested(
         val string: String,
-        val int: Int,
+        val uint: UInt,
         val nested: Nested?,
     )
 
@@ -135,7 +137,6 @@ data class SerializerTestConfig(
         if (formattedVector != other.formattedVector) return false
         if (formattedVector2 != other.formattedVector2) return false
         if (overrideSerializerString != other.overrideSerializerString) return false
-        if (nested != other.nested) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -163,6 +164,9 @@ data class SerializerTestConfig(
         if (value != other.value) return false
         if (valueList != other.valueList) return false
         if (valueMap != other.valueMap) return false
+        if (nested != other.nested) return false
+        if (nestedList != other.nestedList) return false
+        if (nestedMap != other.nestedMap) return false
         if (nullable != other.nullable) return false
         if (nullableList != other.nullableList) return false
         if (nullableArray.contentEquals(other.nullableArray).not()) return false
@@ -197,7 +201,6 @@ data class SerializerTestConfig(
         result = 31 * result + formattedVector.hashCode()
         result = 31 * result + formattedVector2.hashCode()
         result = 31 * result + overrideSerializerString.hashCode()
-        result = 31 * result + nested.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()
@@ -225,6 +228,9 @@ data class SerializerTestConfig(
         result = 31 * result + value.hashCode()
         result = 31 * result + valueList.hashCode()
         result = 31 * result + valueMap.hashCode()
+        result = 31 * result + nested.hashCode()
+        result = 31 * result + nestedList.hashCode()
+        result = 31 * result + nestedMap.hashCode()
         result = 31 * result + (nullable?.hashCode() ?: 0)
         result = 31 * result + nullableList.hashCode()
         result = 31 * result + nullableArray.contentHashCode()
