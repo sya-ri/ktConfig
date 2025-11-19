@@ -1,5 +1,6 @@
 package serializer
 
+import dev.s7a.ktconfig.exception.InvalidFormatException
 import dev.s7a.ktconfig.serializer.CalendarSerializer
 import testSerializer
 import java.util.Calendar
@@ -144,10 +145,10 @@ class CalendarSerializerTest {
 
     @Test
     fun testInvalidFormat() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<InvalidFormatException> {
             CalendarSerializer.deserialize("invalid-date")
         }.apply {
-            assertEquals("Invalid date format: invalid-date", message)
+            assertEquals("Invalid format: invalid-date", message)
         }
     }
 }
