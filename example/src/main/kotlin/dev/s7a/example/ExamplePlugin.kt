@@ -13,8 +13,11 @@ import kotlin.random.Random
 
 @Suppress("unused")
 class ExamplePlugin : JavaPlugin() {
+    private val output = Output(this)
+
     override fun onEnable() {
         testSerializer()
+        server.shutdown()
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
@@ -174,245 +177,248 @@ class ExamplePlugin : JavaPlugin() {
                 nullableMap2 = data.nullableMap2.mapValues { map -> map.value.filterValues { it != null } },
             )
 
-        logger.info("Save SerializerTestConfig:")
-        logger.info(data.toString())
+        output.info("Save SerializerTestConfig:")
+        output.info(data.toString())
+        output.info()
 
         val yaml = SerializerTestConfigLoader.saveToString(data)
 
-        logger.info("SerializerTestConfig:\n$yaml")
+        output.info("SerializerTestConfig:")
+        output.info(yaml)
+        output.info()
 
+        output.info("Check comments:")
         val lines = yaml.lines()
         if (lines[0] == "# Header comment" && lines[1] == "# Second line in header") {
-            logger.info("Header comment found")
+            output.info("- Header comment found")
         } else {
-            logger.severe("Header comment not found")
+            output.error("Header comment not found")
         }
         if (lines[3] == "# Property comment" && lines[4] == "# Second line in property") {
-            logger.info("Property comment found")
+            output.info("- Property comment found")
         } else {
-            logger.severe("Property comment not found")
+            output.error("Property comment not found")
         }
+        output.info()
 
         val actual = SerializerTestConfigLoader.loadFromString(yaml)
 
-        logger.info("Loaded SerializerTestConfig:")
-        logger.info(actual.toString())
+        output.info("Loaded SerializerTestConfig:")
+        output.info(actual.toString())
 
         if (expected != actual) {
-            logger.info("Differences found:")
+            output.error("Differences found:")
             if (expected.string != actual.string) {
-                logger.info("string: expected=${expected.string}, actual=${actual.string}")
+                output.error("string: expected=${expected.string}, actual=${actual.string}")
             }
             if (expected.byte != actual.byte) {
-                logger.info("byte: expected=${expected.byte}, actual=${actual.byte}")
+                output.error("byte: expected=${expected.byte}, actual=${actual.byte}")
             }
             if (expected.char != actual.char) {
-                logger.info("char: expected=${expected.char}, actual=${actual.char}")
+                output.error("char: expected=${expected.char}, actual=${actual.char}")
             }
             if (expected.int != actual.int) {
-                logger.info("int: expected=${expected.int}, actual=${actual.int}")
+                output.error("int: expected=${expected.int}, actual=${actual.int}")
             }
             if (expected.long != actual.long) {
-                logger.info("long: expected=${expected.long}, actual=${actual.long}")
+                output.error("long: expected=${expected.long}, actual=${actual.long}")
             }
             if (expected.short != actual.short) {
-                logger.info("short: expected=${expected.short}, actual=${actual.short}")
+                output.error("short: expected=${expected.short}, actual=${actual.short}")
             }
             if (expected.double != actual.double) {
-                logger.info("double: expected=${expected.double}, actual=${actual.double}")
+                output.error("double: expected=${expected.double}, actual=${actual.double}")
             }
             if (expected.float != actual.float) {
-                logger.info("float: expected=${expected.float}, actual=${actual.float}")
+                output.error("float: expected=${expected.float}, actual=${actual.float}")
             }
             if (expected.uByte != actual.uByte) {
-                logger.info("uByte: expected=${expected.uByte}, actual=${actual.uByte}")
+                output.error("uByte: expected=${expected.uByte}, actual=${actual.uByte}")
             }
             if (expected.uInt != actual.uInt) {
-                logger.info("uInt: expected=${expected.uInt}, actual=${actual.uInt}")
+                output.error("uInt: expected=${expected.uInt}, actual=${actual.uInt}")
             }
             if (expected.uLong != actual.uLong) {
-                logger.info("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
+                output.error("uLong: expected=${expected.uLong}, actual=${actual.uLong}")
             }
             if (expected.uShort != actual.uShort) {
-                logger.info("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
+                output.error("uShort: expected=${expected.uShort}, actual=${actual.uShort}")
             }
             if (expected.boolean != actual.boolean) {
-                logger.info("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
+                output.error("boolean: expected=${expected.boolean}, actual=${actual.boolean}")
             }
             if (expected.uuid != actual.uuid) {
-                logger.info("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
+                output.error("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
             }
             if (expected.itemStack != actual.itemStack) {
-                logger.info("itemStack: expected=${expected.itemStack}, actual=${actual.itemStack}")
+                output.error("itemStack: expected=${expected.itemStack}, actual=${actual.itemStack}")
             }
             if (expected.location != actual.location) {
-                logger.info("location: expected=${expected.location}, actual=${actual.location}")
+                output.error("location: expected=${expected.location}, actual=${actual.location}")
             }
             if (expected.formattedVector != actual.formattedVector) {
-                logger.info(
+                output.error(
                     "formattedVector: expected=${expected.formattedVector}, actual=${actual.formattedVector}",
                 )
             }
             if (expected.formattedVector2 != actual.formattedVector2) {
-                logger.info(
+                output.error(
                     "formattedVector2: expected=${expected.formattedVector2}, actual=${actual.formattedVector2}",
                 )
             }
             if (expected.overrideSerializerString != actual.overrideSerializerString) {
-                logger.info(
+                output.error(
                     "overrideSerializerString: expected=${expected.overrideSerializerString}, actual=${actual.overrideSerializerString}",
                 )
             }
             if (expected.array.contentEquals(actual.array).not()) {
-                logger.info("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")
+                output.error("array: expected=${expected.array.contentToString()}, actual=${actual.array.contentToString()}")
             }
             if (expected.byteArray.contentEquals(actual.byteArray).not()) {
-                logger.info("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
+                output.error("byteArray: expected=${expected.byteArray.contentToString()}, actual=${actual.byteArray.contentToString()}")
             }
             if (expected.charArray.contentEquals(actual.charArray).not()) {
-                logger.info("charArray: expected=${expected.charArray.contentToString()}, actual=${actual.charArray.contentToString()}")
+                output.error("charArray: expected=${expected.charArray.contentToString()}, actual=${actual.charArray.contentToString()}")
             }
             if (expected.intArray.contentEquals(actual.intArray).not()) {
-                logger.info("intArray: expected=${expected.intArray.contentToString()}, actual=${actual.intArray.contentToString()}")
+                output.error("intArray: expected=${expected.intArray.contentToString()}, actual=${actual.intArray.contentToString()}")
             }
             if (expected.longArray.contentEquals(actual.longArray).not()) {
-                logger.info("longArray: expected=${expected.longArray.contentToString()}, actual=${actual.longArray.contentToString()}")
+                output.error("longArray: expected=${expected.longArray.contentToString()}, actual=${actual.longArray.contentToString()}")
             }
             if (expected.shortArray.contentEquals(actual.shortArray).not()) {
-                logger.info("shortArray: expected=${expected.shortArray.contentToString()}, actual=${actual.shortArray.contentToString()}")
+                output.error("shortArray: expected=${expected.shortArray.contentToString()}, actual=${actual.shortArray.contentToString()}")
             }
             if (expected.doubleArray.contentEquals(actual.doubleArray).not()) {
-                logger.info(
+                output.error(
                     "doubleArray: expected=${expected.doubleArray.contentToString()}, actual=${actual.doubleArray.contentToString()}",
                 )
             }
             if (expected.floatArray.contentEquals(actual.floatArray).not()) {
-                logger.info("floatArray: expected=${expected.floatArray.contentToString()}, actual=${actual.floatArray.contentToString()}")
+                output.error("floatArray: expected=${expected.floatArray.contentToString()}, actual=${actual.floatArray.contentToString()}")
             }
             if (expected.uByteArray.contentEquals(actual.uByteArray).not()) {
-                logger.info("uByteArray: expected=${expected.uByteArray.contentToString()}, actual=${actual.uByteArray.contentToString()}")
+                output.error("uByteArray: expected=${expected.uByteArray.contentToString()}, actual=${actual.uByteArray.contentToString()}")
             }
             if (expected.uIntArray.contentEquals(actual.uIntArray).not()) {
-                logger.info("uIntArray: expected=${expected.uIntArray.contentToString()}, actual=${actual.uIntArray.contentToString()}")
+                output.error("uIntArray: expected=${expected.uIntArray.contentToString()}, actual=${actual.uIntArray.contentToString()}")
             }
             if (expected.uLongArray.contentEquals(actual.uLongArray).not()) {
-                logger.info("uLongArray: expected=${expected.uLongArray.contentToString()}, actual=${actual.uLongArray.contentToString()}")
+                output.error("uLongArray: expected=${expected.uLongArray.contentToString()}, actual=${actual.uLongArray.contentToString()}")
             }
             if (expected.uShortArray.contentEquals(actual.uShortArray).not()) {
-                logger.info(
+                output.error(
                     "uShortArray: expected=${expected.uShortArray.contentToString()}, actual=${actual.uShortArray.contentToString()}",
                 )
             }
             if (expected.booleanArray.contentEquals(actual.booleanArray).not()) {
-                logger.info(
+                output.error(
                     "booleanArray: expected=${expected.booleanArray.contentToString()}, actual=${actual.booleanArray.contentToString()}",
                 )
             }
             if (expected.list != actual.list) {
-                logger.info("list: expected=${expected.list}, actual=${actual.list}")
+                output.error("list: expected=${expected.list}, actual=${actual.list}")
             }
             if (expected.list2 != actual.list2) {
-                logger.info("list2: expected=${expected.list2}, actual=${actual.list2}")
+                output.error("list2: expected=${expected.list2}, actual=${actual.list2}")
             }
             if (expected.set != actual.set) {
-                logger.info("set: expected=${expected.set}, actual=${actual.set}")
+                output.error("set: expected=${expected.set}, actual=${actual.set}")
             }
             if (expected.array.contentEquals(actual.array).not()) {
-                logger.info("array: expected=${expected.array}, actual=${actual.array}")
+                output.error("array: expected=${expected.array}, actual=${actual.array}")
             }
             if (expected.arrayDeque != actual.arrayDeque) {
-                logger.info("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
+                output.error("arrayDeque: expected=${expected.arrayDeque}, actual=${actual.arrayDeque}")
             }
             if (expected.map != actual.map) {
-                logger.info("map: expected=${expected.map}, actual=${actual.map}")
+                output.error("map: expected=${expected.map}, actual=${actual.map}")
             }
             if (expected.map2 != actual.map2) {
-                logger.info("map2: expected=${expected.map2}, actual=${actual.map2}")
+                output.error("map2: expected=${expected.map2}, actual=${actual.map2}")
             }
             if (expected.listMap != actual.listMap) {
-                logger.info("listMap: expected=${expected.listMap}, actual=${actual.listMap}")
+                output.error("listMap: expected=${expected.listMap}, actual=${actual.listMap}")
             }
             if (expected.mapList != actual.mapList) {
-                logger.info("mapList: expected=${expected.mapList}, actual=${actual.mapList}")
+                output.error("mapList: expected=${expected.mapList}, actual=${actual.mapList}")
             }
             if (expected.enum != actual.enum) {
-                logger.info("enum: expected=${expected.enum}, actual=${actual.enum}")
+                output.error("enum: expected=${expected.enum}, actual=${actual.enum}")
             }
             if (expected.enumList != actual.enumList) {
-                logger.info("enumList: expected=${expected.enumList}, actual=${actual.enumList}")
+                output.error("enumList: expected=${expected.enumList}, actual=${actual.enumList}")
             }
             if (expected.enumMap != actual.enumMap) {
-                logger.info("enumMap: expected=${expected.enumMap}, actual=${actual.enumMap}")
+                output.error("enumMap: expected=${expected.enumMap}, actual=${actual.enumMap}")
             }
             if (expected.value != actual.value) {
-                logger.info("value: expected=${expected.value}, actual=${actual.value}")
+                output.error("value: expected=${expected.value}, actual=${actual.value}")
             }
             if (expected.valueList != actual.valueList) {
-                logger.info("valueList: expected=${expected.valueList}, actual=${actual.valueList}")
+                output.error("valueList: expected=${expected.valueList}, actual=${actual.valueList}")
             }
             if (expected.valueMap != actual.valueMap) {
-                logger.info("valueMap: expected=${expected.valueMap}, actual=${actual.valueMap}")
+                output.error("valueMap: expected=${expected.valueMap}, actual=${actual.valueMap}")
             }
             if (expected.nested != actual.nested) {
-                logger.info("nested: expected=${expected.nested}, actual=${actual.nested}")
+                output.error("nested: expected=${expected.nested}, actual=${actual.nested}")
             }
             if (expected.nestedList != actual.nestedList) {
-                logger.info("nestedList: expected=${expected.nestedList}, actual=${actual.nestedList}")
+                output.error("nestedList: expected=${expected.nestedList}, actual=${actual.nestedList}")
             }
             if (expected.nestedMap != actual.nestedMap) {
-                logger.info("nestedMap: expected=${expected.nestedMap}, actual=${actual.nestedMap}")
+                output.error("nestedMap: expected=${expected.nestedMap}, actual=${actual.nestedMap}")
             }
             if (expected.nullable != actual.nullable) {
-                logger.info("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
+                output.error("nullable: expected=${expected.nullable}, actual=${actual.nullable}")
             }
             if (expected.nullableList !=
                 actual.nullableList
             ) {
-                logger.info("nullableList: expected=${expected.nullableList}, actual=${actual.nullableList}")
+                output.error("nullableList: expected=${expected.nullableList}, actual=${actual.nullableList}")
             }
             if (
                 expected.nullableArray.contentEquals(actual.nullableArray).not()
             ) {
-                logger.info("nullableArray: expected=${expected.nullableArray}, actual=${actual.nullableArray}")
+                output.error("nullableArray: expected=${expected.nullableArray}, actual=${actual.nullableArray}")
             }
             if (expected.nullableArrayDeque !=
                 actual.nullableArrayDeque
             ) {
-                logger.info("nullableArrayDeque: expected=${expected.nullableArrayDeque}, actual=${actual.nullableArrayDeque}")
+                output.error("nullableArrayDeque: expected=${expected.nullableArrayDeque}, actual=${actual.nullableArrayDeque}")
             }
             if (expected.nullableSet !=
                 actual.nullableSet
             ) {
-                logger.info("nullableSet: expected=${expected.nullableSet}, actual=${actual.nullableSet}")
+                output.error("nullableSet: expected=${expected.nullableSet}, actual=${actual.nullableSet}")
             }
             if (expected.nullableMap !=
                 actual.nullableMap
             ) {
-                logger.info("nullableMap: expected=${expected.nullableMap}, actual=${actual.nullableMap}")
+                output.error("nullableMap: expected=${expected.nullableMap}, actual=${actual.nullableMap}")
             }
             if (expected.nullableMap2 != actual.nullableMap2) {
-                logger.info(
+                output.error(
                     "nullableMap2: expected=${expected.nullableMap2}, actual=${actual.nullableMap2}",
                 )
             }
             if (expected.nullableListMap != actual.nullableListMap) {
-                logger.info("nullableListMap: expected=${expected.nullableListMap}, actual=${actual.nullableListMap}")
+                output.error("nullableListMap: expected=${expected.nullableListMap}, actual=${actual.nullableListMap}")
             }
             if (expected.nullableMapList != actual.nullableMapList) {
-                logger.info("nullableMapList: expected=${expected.nullableMapList}, actual=${actual.nullableMapList}")
+                output.error("nullableMapList: expected=${expected.nullableMapList}, actual=${actual.nullableMapList}")
             }
             if (expected.nullableListNullableMap != actual.nullableListNullableMap) {
-                logger.info(
+                output.error(
                     "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
                 )
             }
             if (expected.nullableListNullableMap != actual.nullableListNullableMap) {
-                logger.info(
+                output.error(
                     "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
                 )
             }
-
-            throw AssertionError("SerializerTestConfig is not loaded correctly. expected: $expected, actual: $actual")
         }
     }
 }

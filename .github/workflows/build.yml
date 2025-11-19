@@ -17,3 +17,9 @@ jobs:
           java-version: 21
       - name: Build
         run: ./gradlew build
+      - name: Run check
+        run: ./gradlew check
+      - name: Run server tests (1.8.8)
+        run: ./gradlew testPlugin8
+      - name: Run server tests (1.21.10)
+        run: ./gradlew testPlugin21

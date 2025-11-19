@@ -50,6 +50,26 @@ listOf(
             }
         }
 
+        doLast {
+            logger.lifecycle("Test finished for Minecraft $version")
+            val outputFile = layout.buildDirectory.file("MinecraftServer$minor/plugins/example/output.txt")
+            val errorFile = layout.buildDirectory.file("MinecraftServer$minor/plugins/example/error.txt")
+            if (outputFile.get().asFile.exists()) {
+                val message = outputFile.get().asFile.readText()
+                if (message.isNotEmpty()) {
+                    logger.lifecycle(message)
+                }
+            }
+            if (errorFile.get().asFile.exists()) {
+                val message = errorFile.get().asFile.readText()
+                if (message.isNotEmpty()) {
+                    logger.error(message)
+
+                    throw GradleException("Test failed for Minecraft $version")
+                }
+            }
+        }
+
         serverDirectory.set(
             layout.buildDirectory
                 .dir("MinecraftServer$minor")
