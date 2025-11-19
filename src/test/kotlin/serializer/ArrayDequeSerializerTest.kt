@@ -34,4 +34,52 @@ class ArrayDequeSerializerTest {
             ArrayDeque(listOf(1, 2, 3)),
             ArrayDequeSerializer(IntSerializer),
         )
+
+    @Test
+    fun testNullableElements() =
+        testSerializer(
+            ArrayDeque(listOf("hello", null, "world", "null")),
+            ArrayDequeSerializer.Nullable(StringSerializer),
+            expectedYaml =
+                """
+                test:
+                - hello
+                - null
+                - world
+                - 'null'
+
+                """.trimIndent(),
+        )
+
+    @Test
+    fun testNestedNullable() =
+        testSerializer(
+            ArrayDeque(listOf(ArrayDeque(listOf("a", null)), ArrayDeque(listOf(null, "b")))),
+            ArrayDequeSerializer(ArrayDequeSerializer.Nullable(StringSerializer)),
+            expectedYaml =
+                """
+                test:
+                - - a
+                  - null
+                - - null
+                  - b
+
+                """.trimIndent(),
+        )
+
+    @Test
+    fun testNullableNested() =
+        testSerializer(
+            ArrayDeque(listOf(ArrayDeque(listOf("hello", "world")), null, ArrayDeque(listOf("test")))),
+            ArrayDequeSerializer.Nullable(ArrayDequeSerializer(StringSerializer)),
+            expectedYaml =
+                """
+                test:
+                - - hello
+                  - world
+                - null
+                - - test
+
+                """.trimIndent(),
+        )
 }

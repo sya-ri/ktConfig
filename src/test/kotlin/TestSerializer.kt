@@ -7,16 +7,17 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-private fun configuration() =
-    YamlConfiguration().apply {
-        options().pathSeparator(KtConfigLoader.PATH_SEPARATOR)
-    }
+fun testConfiguration(block: (configuration: YamlConfiguration) -> Unit) =
+    block(
+        YamlConfiguration().apply {
+            options().pathSeparator(KtConfigLoader.PATH_SEPARATOR)
+        },
+    )
 
 private fun <T> testSerializerKey(
     expected: T,
     serializer: Serializer.Keyable<T>,
-) {
-    val configuration = configuration()
+) = testConfiguration { configuration ->
     val path = "test"
     val value = "test"
     val mapSerializer = MapSerializer(serializer, StringSerializer)
@@ -32,8 +33,7 @@ private fun <T> testSerializerValue(
     expectedValues: Map<String, Any>? = null,
     expectedYaml: String? = null,
     assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
-) {
-    val configuration = configuration()
+) = testConfiguration { configuration ->
     val path = "test"
     serializer.set(configuration, path, expected)
     if (expectedValues != null) {
