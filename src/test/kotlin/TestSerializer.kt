@@ -1,3 +1,4 @@
+import dev.s7a.ktconfig.KtConfigLoader
 import dev.s7a.ktconfig.serializer.MapSerializer
 import dev.s7a.ktconfig.serializer.Serializer
 import dev.s7a.ktconfig.serializer.StringSerializer
@@ -5,11 +6,10 @@ import org.bukkit.configuration.file.YamlConfiguration
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 private fun configuration() =
     YamlConfiguration().apply {
-        options().pathSeparator(0x00.toChar())
+        options().pathSeparator(KtConfigLoader.PATH_SEPARATOR)
     }
 
 private fun <T> testSerializerKey(

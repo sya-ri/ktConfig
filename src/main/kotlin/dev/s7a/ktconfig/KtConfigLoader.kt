@@ -15,7 +15,7 @@ abstract class KtConfigLoader<T> {
         /**
          * Change the path separator to be able to use Double or Float as a key
          */
-        private const val PATH_SEPARATOR = 0x00.toChar()
+        const val PATH_SEPARATOR = 0x00.toChar()
     }
 
     private fun configuration() =
