@@ -87,6 +87,7 @@ class KtConfigSymbolProcessor(
             val fullName = getFullName(classDeclaration)
             val className = ClassName(packageName, fullName)
             val loaderSimpleName = getLoaderName(classDeclaration)
+            val useDefault = classDeclaration.annotations.hasUseDefault()
 
             FileSpec
                 .builder(packageName, loaderSimpleName)
@@ -112,7 +113,17 @@ class KtConfigSymbolProcessor(
                         TypeSpec
                             .objectBuilder(loaderSimpleName)
                             .superclass(loaderClassName.parameterizedBy(className))
-                            .addFunction(
+                            .apply {
+                                if (useDefault) {
+                                    addProperty(
+                                        PropertySpec
+                                            .builder("defaultValue", className)
+                                            .addModifiers(KModifier.PRIVATE)
+                                            .initializer("%T()", className)
+                                            .build(),
+                                    )
+                                }
+                            }.addFunction(
                                 // Add `load` function to KtConfig loader class
                                 FunSpec
                                     .builder("load")
@@ -124,12 +135,21 @@ class KtConfigSymbolProcessor(
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
-                                            addStatement(
-                                                $$"%L.%N(configuration, \"${parentPath}%L\"),",
-                                                parameter.serializer.ref,
-                                                parameter.serializer.getFn,
-                                                parameter.pathName,
-                                            )
+                                            if (useDefault) {
+                                                addStatement(
+                                                    $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%L,",
+                                                    parameter.serializer.ref,
+                                                    parameter.pathName,
+                                                    parameter.name,
+                                                )
+                                            } else {
+                                                addStatement(
+                                                    $$"%L.%N(configuration, \"${parentPath}%L\"),",
+                                                    parameter.serializer.ref,
+                                                    parameter.serializer.getFn,
+                                                    parameter.pathName,
+                                                )
+                                            }
                                         }
                                     }.addCode(")")
                                     .returns(className)
@@ -185,20 +205,31 @@ class KtConfigSymbolProcessor(
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
-                                            if (parameter.isNullable) {
-                                                addStatement(
-                                                    "value[%S]?.let(%L::deserialize),",
-                                                    parameter.pathName,
-                                                    parameter.serializer.ref,
-                                                )
-                                            } else {
-                                                addStatement(
-                                                    "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
-                                                    parameter.pathName,
-                                                    parameter.serializer.ref,
-                                                    notFoundValueExceptionClassName,
-                                                    parameter.pathName,
-                                                )
+                                            when {
+                                                useDefault -> {
+                                                    addStatement(
+                                                        "value[%S]?.let(%L::deserialize) ?: defaultValue.%L,",
+                                                        parameter.pathName,
+                                                        parameter.serializer.ref,
+                                                        parameter.name,
+                                                    )
+                                                }
+                                                parameter.isNullable -> {
+                                                    addStatement(
+                                                        "value[%S]?.let(%L::deserialize),",
+                                                        parameter.pathName,
+                                                        parameter.serializer.ref,
+                                                    )
+                                                }
+                                                else -> {
+                                                    addStatement(
+                                                        "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
+                                                        parameter.pathName,
+                                                        parameter.serializer.ref,
+                                                        notFoundValueExceptionClassName,
+                                                        parameter.pathName,
+                                                    )
+                                                }
                                             }
                                         }
                                     }.addCode(")")
@@ -295,6 +326,13 @@ class KtConfigSymbolProcessor(
          * @return True if @KtConfig annotation is present, false otherwise
          */
         private fun Sequence<KSAnnotation>.hasKtConfig() = any { it.shortName.asString() == "KtConfig" }
+
+        /**
+         * Checks if the sequence contains a @UseDefault annotation.
+         *
+         * @return True if @UseDefault annotation is present, false otherwise
+         */
+        private fun Sequence<KSAnnotation>.hasUseDefault() = any { it.shortName.asString() == "UseDefault" }
 
         /**
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.

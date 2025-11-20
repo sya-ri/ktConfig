@@ -1,5 +1,6 @@
 package dev.s7a.example
 
+import dev.s7a.example.config.HasDefaultConfigLoader
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
 import org.bukkit.Bukkit
@@ -17,6 +18,7 @@ class ExamplePlugin : JavaPlugin() {
 
     override fun onEnable() {
         testSerializer()
+        testDefaultSerializer()
         server.shutdown()
     }
 
@@ -424,6 +426,24 @@ class ExamplePlugin : JavaPlugin() {
                     "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
                 )
             }
+        }
+    }
+
+    private fun testDefaultSerializer() {
+        output.info("Test default serializer:")
+
+        val config = HasDefaultConfigLoader.loadFromString("")
+        if (config.value != "default") {
+            output.error("[default] value: expected=default, actual=${config.value}")
+        } else {
+            output.info("value: OK")
+        }
+
+        val config2 = HasDefaultConfigLoader.loadFromString("value: test")
+        if (config2.value != "test") {
+            output.error("[default] value: expected=test, actual=${config2.value}")
+        } else {
+            output.info("value: OK")
         }
     }
 }

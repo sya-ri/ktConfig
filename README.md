@@ -47,12 +47,7 @@ The loader class provides the following methods:
 - **Type-Safe**: Fully typed configuration using Kotlin data classes.
 - **Wide Type Support**: Supports primitives, collections, Bukkit types, and more out of the box.
 - **Rich Features**: Built-in support for comments and custom serializers.
-
-> [!IMPORTANT]
-> **Default Values are NOT Supported**
->
-> Kotlin default values (e.g., `val count: Int = 0`) are currently **ignored**.
-> All properties must be present in the configuration file. If a value is optional, you **must** use a nullable type (e.g., `val count: Int?`).
+- **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
 
 ## 📦 Supported Types
 
@@ -119,6 +114,77 @@ data class AppConfig(
     val debug: Boolean
 )
 ```
+
+### Default Values
+
+You can support Kotlin's default values by adding the `@UseDefault` annotation to your class.
+
+```kotlin
+@KtConfig
+@UseDefault
+data class AppConfig(
+    val message: String = "Hello",
+    val count: Int = 10
+)
+```
+
+> [!WARNING]
+> **Rules for @UseDefault**
+>
+> 1. **All properties MUST have default values.**
+> You cannot mix properties with and without default values in a `@UseDefault` annotated class.
+>　
+> ```kotlin
+> // 👌 This is valid
+> @KtConfig
+> @UseDefault
+> data class AppConfig(
+>     val message: String = "Hello"
+> )
+> 
+> // ❌ This is invalid
+> @KtConfig
+> @UseDefault
+> data class AppConfig(
+>     val message: String,
+>     val count: Int = 10
+> )
+> ```
+> 
+> 2. **Default values must be static.**
+> Default values are generated once during construction and reused, so they must be static values.
+>
+> ```kotlin
+> // 👌 This is valid
+> @KtConfig
+> @UseDefault
+> data class AppConfig(
+>     val message: String = "Hello",
+>     val count: Int = 10,
+>     val list: List<String> = listOf("a", "b")
+> )
+>
+> // ❌ This is invalid
+> @KtConfig
+> @UseDefault
+> data class AppConfig(
+>     val timestamp: Long = System.currentTimeMillis(), // Not static
+>     val random: Int = Random().nextInt(), // Not static
+>     val uuid: UUID = UUID.randomUUID()     // Not static
+> )
+> ```
+> 
+> 3. **No Auto-Save for defaults.**
+> If a value is missing in the file and the default value is used during loading, it is **not** automatically written back to the file. You must manually save the configuration if you want to persist the default values.
+> Example of saving manually:
+>
+> ```kotlin
+> // Load configuration (uses default values if keys are missing)
+> val config = AppConfigLoader.load(file)
+>
+> // Manually save to ensure default values are written to the file
+> AppConfigLoader.save(file, config)
+> ```
 
 ### Custom Serializers
 
