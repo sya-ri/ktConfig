@@ -214,6 +214,7 @@ class KtConfigSymbolProcessor(
                                                         parameter.name,
                                                     )
                                                 }
+
                                                 parameter.isNullable -> {
                                                     addStatement(
                                                         "value[%S]?.let(%L::deserialize),",
@@ -221,6 +222,7 @@ class KtConfigSymbolProcessor(
                                                         parameter.serializer.ref,
                                                     )
                                                 }
+
                                                 else -> {
                                                     addStatement(
                                                         "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
