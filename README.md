@@ -6,6 +6,14 @@
 Spigot configuration library for Kotlin using class annotations. The library generates configuration loaders at
 build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
 
+## ⚡ Features
+
+- **Zero Runtime Overhead**: All configuration loaders are generated at build-time (KSP).
+- **Type-Safe**: Fully typed configuration using Kotlin data classes.
+- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more out of the box.
+- **Rich Features**: Built-in support for comments and custom serializers.
+- **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
+
 ## 📝 Quick Example
 
 Add the `@KtConfig` annotation to your data class
@@ -36,18 +44,10 @@ maxPlayers: 100
 
 The loader class provides the following methods:
 
-- load(File): T
-- loadFromString(String): T
-- save(T, File)
-- saveToString(T): String
-
-## ⚡ Features
-
-- **Zero Runtime Overhead**: All configuration loaders are generated at build-time (KSP).
-- **Type-Safe**: Fully typed configuration using Kotlin data classes.
-- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more out of the box.
-- **Rich Features**: Built-in support for comments and custom serializers.
-- **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
+- `load(File): T`
+- `loadFromString(String): T`
+- `save(T, File)`
+- `saveToString(T): String`
 
 ## 🚀 Usage
 
