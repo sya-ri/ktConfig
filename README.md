@@ -49,57 +49,6 @@ The loader class provides the following methods:
 - **Rich Features**: Built-in support for comments and custom serializers.
 - **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
 
-## 📦 Supported Types
-
-ktConfig supports the following types:
-
-### Primitives
-
-- `Boolean`
-- `Byte`
-- `Short`
-- `Int`
-- `Long`
-- `Float`
-- `Double`
-- `Char`
-- `String`
-- `UByte`
-- `UShort`
-- `UInt`
-- `ULong`
-- `BigInteger`
-- `BigDecimal`
-
-### Collections
-
-- `List`
-- `Set`
-- `Map`
-- `ArrayDeque`
-- `Array`
-- `BooleanArray`
-- `ByteArray`
-- `CharArray`
-- `ShortArray`
-- `IntArray`
-- `LongArray`
-- `FloatArray`
-- `DoubleArray`
-- `UByteArray`
-- `UShortArray`
-- `UIntArray`
-- `ULongArray`
-
-### Others
-
-- `org.bukkit.configuration.serialization.ConfigurationSerializable` : ItemStack, Location, ...
-- `java.util.UUID`
-- `java.util.Date`
-- `java.util.Calendar`
-- [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
-- [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
-
 ## 🚀 Usage
 
 ### Adding Comments
@@ -132,6 +81,7 @@ data class AppConfig(
 > **Rules for @UseDefault**
 >
 > 1. **All properties MUST have default values.**
+>
 > You cannot mix properties with and without default values in a `@UseDefault` annotated class.
 >　
 > ```kotlin
@@ -152,6 +102,7 @@ data class AppConfig(
 > ```
 > 
 > 2. **Default values must be static.**
+>
 > Default values are generated once during construction and reused, so they must be static values.
 >
 > ```kotlin
@@ -175,6 +126,7 @@ data class AppConfig(
 > ```
 > 
 > 3. **No Auto-Save for defaults.**
+>
 > If a value is missing in the file and the default value is used during loading, it is **not** automatically written back to the file. You must manually save the configuration if you want to persist the default values.
 > Example of saving manually:
 >
@@ -235,6 +187,57 @@ data class CustomConfig(
     val data: Wrapper
 )
 ```
+
+## 📦 Supported Types
+
+ktConfig supports the following types:
+
+### Primitives
+
+- `Boolean`
+- `Byte`
+- `Short`
+- `Int`
+- `Long`
+- `Float`
+- `Double`
+- `Char`
+- `String`
+- `UByte`
+- `UShort`
+- `UInt`
+- `ULong`
+- `BigInteger`
+- `BigDecimal`
+
+### Collections
+
+- `List`
+- `Set`
+- `Map`
+- `ArrayDeque`
+- `Array`
+- `BooleanArray`
+- `ByteArray`
+- `CharArray`
+- `ShortArray`
+- `IntArray`
+- `LongArray`
+- `FloatArray`
+- `DoubleArray`
+- `UByteArray`
+- `UShortArray`
+- `UIntArray`
+- `ULongArray`
+
+### Others
+
+- `org.bukkit.configuration.serialization.ConfigurationSerializable` : ItemStack, Location, ...
+- `java.util.UUID`
+- `java.util.Date`
+- `java.util.Calendar`
+- [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
+- [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
 
 ## 🔑 License
 
