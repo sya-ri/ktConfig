@@ -14,6 +14,22 @@ build-time, ensuring zero runtime overhead (except for YamlConfiguration operati
 - **Rich Features**: Built-in support for comments and custom serializers.
 - **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
 
+## 📦 Installation
+
+Add the following dependencies to your `build.gradle.kts`
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.2.21"
+    id("com.google.devtools.ksp") version "2.3.2"
+}
+
+dependencies {
+    implementation("com.github.sya-ri:ktConfig:2.0.0-SNAPSHOT")
+    ksp("com.github.sya-ri:ktConfig-ksp:2.0.0-SNAPSHOT")
+}
+```
+
 ## 📝 Quick Example
 
 Add the `@KtConfig` annotation to your data class
