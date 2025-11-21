@@ -10,12 +10,28 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
+val useLocalBuild = project.properties.getOrDefault("useLocalBuild", "false") == "true"
+
+repositories {
+    if (useLocalBuild) {
+        mavenLocal()
+    }
+}
+
 dependencies {
     library(kotlin("stdlib"))
     compileOnly(libs.spigot8)
-    implementation(project(":"))
-    shadow(project(":"))
-    ksp(project(":ksp"))
+
+    project.logger.lifecycle("Use Local Build: $useLocalBuild")
+    if (useLocalBuild) {
+        implementation("dev.s7a:ktConfig:${rootProject.version}")
+        shadow("dev.s7a:ktConfig:${rootProject.version}")
+        ksp("dev.s7a:ktConfig-ksp:${rootProject.version}")
+    } else {
+        implementation(project(":"))
+        shadow(project(":"))
+        ksp(project(":ksp"))
+    }
 }
 
 configure<BukkitPluginDescription> {
