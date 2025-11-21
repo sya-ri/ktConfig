@@ -27,6 +27,9 @@ dependencies {
 }
 ```
 
+Auto generate configuration loaders on build: `./gradlew build`.
+Manually generate loaders: `./gradlew kspKotlin` (maybe required)
+
 ## 📝 Quick Example
 
 Add the `@KtConfig` annotation to your data class
