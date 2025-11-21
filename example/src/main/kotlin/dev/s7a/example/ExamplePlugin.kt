@@ -228,7 +228,7 @@ class ExamplePlugin : JavaPlugin() {
         } else {
             output.error("List path name not found")
         }
-        if (lines.contains("key1: ${expected.mapPathName["key1"]!!.string}")) {
+        if (lines.contains("    path-name: ${expected.mapPathName["key1"]!!.string}")) {
             output.info("- Map path name is overridden")
         } else {
             output.error("Map path name not found")
