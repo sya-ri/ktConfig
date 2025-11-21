@@ -1,8 +1,5 @@
 # ktConfig v2
 
-> [!WARNING]
-> This library is under development.
-
 Spigot configuration library for Kotlin using class annotations. The library generates configuration loaders at
 build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
 
