@@ -44,59 +44,10 @@ val sourceJar by tasks.registering(Jar::class) {
     from(sourceSets["main"].allSource)
 }
 
-publishing {
-    repositories {
-        maven {
-            url =
-                uri(
-                    if (version.toString().endsWith("SNAPSHOT")) {
-                        "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                    } else {
-                        "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    },
-                )
-            credentials {
-                username = properties["sonatypeUsername"].toString()
-                password = properties["sonatypePassword"].toString()
-            }
-        }
-    }
-    publications {
-        register<MavenPublication>("maven") {
-            groupId = "dev.s7a"
-            artifactId = "ktConfig"
-            from(components["kotlin"])
-            artifact(sourceJar.get())
-            pom {
-                name.set("ktConfig")
-                description.set("Spigot config library for Kotlin handled using class constructor")
-                url.set("https://github.com/sya-ri/ktConfig")
-
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://github.com/sya-ri/ktConfig/blob/master/LICENSE")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("sya-ri")
-                        name.set("sya-ri")
-                        email.set("contact@s7a.dev")
-                    }
-                }
-                scm {
-                    url.set("https://github.com/sya-ri/ktConfig")
-                }
-            }
-        }
-    }
-}
-
-signing {
-    val key = properties["signingKey"]?.toString()?.replace("\\n", "\n")
-    val password = properties["signingPassword"]?.toString()
-
-    useInMemoryPgpKeys(key, password)
-    sign(publishing.publications["maven"])
-}
+applyPublishingConfig(
+    "ktConfig",
+    publication = {
+        from(components["kotlin"])
+        artifact(sourceJar.get())
+    },
+)
