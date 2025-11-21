@@ -27,8 +27,8 @@ dependencies {
 }
 ```
 
-Auto generate configuration loaders on build: `./gradlew build`.
-Manually generate loaders: `./gradlew kspKotlin` (maybe required)
+- Auto generate configuration loaders on build: `./gradlew build`.
+- Manually generate loaders: `./gradlew kspKotlin` (maybe required)
 
 ## 📝 Quick Example
 
