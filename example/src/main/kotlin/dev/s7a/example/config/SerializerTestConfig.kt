@@ -5,6 +5,7 @@ import dev.s7a.example.serializer.FormattedVectorSerializer
 import dev.s7a.example.serializer.OverrideIncorrectString
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfig
+import dev.s7a.ktconfig.PathName
 import dev.s7a.ktconfig.UseSerializer
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
@@ -77,6 +78,10 @@ data class SerializerTestConfig(
     val nullableListMap: List<Map<String, String?>>,
     val nullableMapList: Map<String, List<String?>>,
     val nullableListNullableMap: List<Map<String, String?>?>,
+    @PathName("path-name")
+    val pathName: String,
+    val listPathName: List<NestedPathName>,
+    val mapPathName: Map<String, NestedPathName>,
 ) {
     enum class TestEnum {
         A,
@@ -110,6 +115,12 @@ data class SerializerTestConfig(
         val string: String,
         val uint: UInt,
         val nested: Nested?,
+    )
+
+    @KtConfig
+    data class NestedPathName(
+        @PathName("path-name")
+        val string: String,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -177,6 +188,9 @@ data class SerializerTestConfig(
         if (nullableListMap != other.nullableListMap) return false
         if (nullableMapList != other.nullableMapList) return false
         if (nullableListNullableMap != other.nullableListNullableMap) return false
+        if (pathName != other.pathName) return false
+        if (listPathName != other.listPathName) return false
+        if (mapPathName != other.mapPathName) return false
 
         return true
     }
@@ -241,6 +255,9 @@ data class SerializerTestConfig(
         result = 31 * result + nullableListMap.hashCode()
         result = 31 * result + nullableMapList.hashCode()
         result = 31 * result + nullableListNullableMap.hashCode()
+        result = 31 * result + pathName.hashCode()
+        result = 31 * result + listPathName.hashCode()
+        result = 31 * result + mapPathName.hashCode()
         return result
     }
 }

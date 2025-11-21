@@ -323,6 +323,28 @@ class KtConfigSymbolProcessor(
         }
 
         /**
+         * Extracts the path name from @PathName annotations in the sequence.
+         * Processes the annotation arguments to get the path name string.
+         *
+         * @return The path name string from the annotation, or null if no valid @PathName annotation is found
+         */
+        private fun Sequence<KSAnnotation>.getPathName(): String? {
+            forEach { annotation ->
+                if (annotation.shortName.asString() == "PathName") {
+                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "name" }
+                    if (content != null) {
+                        val value = content.value
+                        if (value is String) {
+                            return value
+                        }
+                    }
+                }
+            }
+
+            return null
+        }
+
+        /**
          * Checks if the sequence contains a @KtConfig annotation.
          *
          * @return True if @KtConfig annotation is present, false otherwise
@@ -348,8 +370,9 @@ class KtConfigSymbolProcessor(
             }
 
             val serializer = getSerializer(declaration) ?: return null
+            val pathName = declaration.annotations.getPathName()
             val comment = declaration.annotations.getComment()
-            return Parameter(name, name, serializer, comment)
+            return Parameter(pathName ?: name, name, serializer, comment)
         }
 
         private fun Sequence<KSAnnotation>.getSerializer(): Serializer.Custom? {

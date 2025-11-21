@@ -170,6 +170,15 @@ class ExamplePlugin : JavaPlugin() {
                     listOf(
                         mapOf("null" to null, "not null" to UUID.randomUUID().toString()),
                     ),
+                pathName = UUID.randomUUID().toString(),
+                listPathName =
+                    listOf(
+                        SerializerTestConfig.NestedPathName(UUID.randomUUID().toString()),
+                    ),
+                mapPathName =
+                    mapOf(
+                        "key1" to SerializerTestConfig.NestedPathName(UUID.randomUUID().toString()),
+                    ),
             )
 
         val expected =
@@ -205,6 +214,24 @@ class ExamplePlugin : JavaPlugin() {
             } else {
                 output.error("Property comment not found")
             }
+        }
+        output.info()
+
+        output.info("Check @PathName")
+        if (lines.contains("path-name: ${expected.pathName}")) {
+            output.info("- Path name is overridden")
+        } else {
+            output.error("Path name not found")
+        }
+        if (lines.contains("- path-name: ${expected.listPathName[0].string}")) {
+            output.info("- List path name is overridden")
+        } else {
+            output.error("List path name not found")
+        }
+        if (lines.contains("key1: ${expected.mapPathName["key1"]!!.string}")) {
+            output.info("- Map path name is overridden")
+        } else {
+            output.error("Map path name not found")
         }
         output.info()
 
@@ -425,6 +452,15 @@ class ExamplePlugin : JavaPlugin() {
                 output.error(
                     "nullableListNullableMap: expected=${expected.nullableListNullableMap}, actual=${actual.nullableListNullableMap}",
                 )
+            }
+            if (expected.pathName != actual.pathName) {
+                output.error("pathName: expected=${expected.pathName}, actual=${actual.pathName}")
+            }
+            if (expected.listPathName != actual.listPathName) {
+                output.error("listPathName: expected=${expected.listPathName}, actual=${actual.listPathName}")
+            }
+            if (expected.mapPathName != actual.mapPathName) {
+                output.error("mapPathName: expected=${expected.mapPathName}, actual=${actual.mapPathName}")
             }
         }
     }
