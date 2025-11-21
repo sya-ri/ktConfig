@@ -88,6 +88,7 @@ data class SerializerTestConfig(
         B,
         C,
         D,
+        E,
     }
 
     @JvmInline

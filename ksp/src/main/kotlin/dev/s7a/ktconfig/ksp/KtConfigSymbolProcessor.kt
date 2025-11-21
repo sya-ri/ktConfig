@@ -25,6 +25,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
 
 /**
@@ -89,6 +90,12 @@ class KtConfigSymbolProcessor(
             val loaderSimpleName = getLoaderName(classDeclaration)
             val useDefault = classDeclaration.annotations.hasUseDefault()
 
+            val file =
+                classDeclaration.containingFile
+                    ?: throw IllegalStateException(
+                        "Containing file not found for class declaration: ${classDeclaration.simpleName.asString()}",
+                    )
+
             FileSpec
                 .builder(packageName, loaderSimpleName)
                 .apply {
@@ -112,6 +119,7 @@ class KtConfigSymbolProcessor(
                     addType(
                         TypeSpec
                             .objectBuilder(loaderSimpleName)
+                            .addOriginatingKSFile(file)
                             .superclass(loaderClassName.parameterizedBy(className))
                             .apply {
                                 if (useDefault) {
