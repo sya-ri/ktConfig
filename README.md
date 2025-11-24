@@ -21,9 +21,13 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.2"
 }
 
+repositories {
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
+}
+
 dependencies {
-    implementation("com.github.sya-ri:ktConfig:2.0.0-SNAPSHOT")
-    ksp("com.github.sya-ri:ktConfig-ksp:2.0.0-SNAPSHOT")
+    implementation("dev.s7a:ktConfig:2.0.0-SNAPSHOT")
+    ksp("dev.s7a:ktConfig-ksp:2.0.0-SNAPSHOT")
 }
 ```
 
