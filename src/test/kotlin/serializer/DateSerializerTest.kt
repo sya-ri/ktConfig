@@ -18,7 +18,7 @@ class DateSerializerTest {
     ) {
         val expected = Calendar.getInstance(TimeZone.getTimeZone(timeZone)).apply(block).time
         testSerializer(expected, DateSerializer, expectedYaml = output)
-        assertEquals(expected, DateSerializer.deserialize(DateSerializer.deserialize(input)))
+        assertEquals(expected, DateSerializer.deserialize(input))
     }
 
     @Test

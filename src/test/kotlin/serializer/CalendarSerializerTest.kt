@@ -19,15 +19,27 @@ class CalendarSerializerTest {
         isTimeZoneDifferent: Boolean = false,
     ) {
         val expected = Calendar.getInstance(TimeZone.getTimeZone(timeZone)).apply(block)
-        testSerializer(expected, CalendarSerializer, expectedYaml = output) { expected, actual ->
-            if (isTimeZoneDifferent) {
-                assertEquals(expected.timeInMillis, actual.timeInMillis)
-                assertNotEquals(expected, actual)
-            } else {
-                assertEquals(expected, actual)
-            }
-        }
-        assertEquals(expected.time, CalendarSerializer.deserialize(CalendarSerializer.deserialize(input)).time)
+        testSerializer(
+            expected,
+            CalendarSerializer,
+            expectedYaml = output,
+            assertKey = { expected, actual ->
+                if (isTimeZoneDifferent) {
+                    assertEquals(expected.mapKeys { it.key.timeInMillis }, actual.mapKeys { it.key.timeInMillis })
+                } else {
+                    assertEquals(expected, actual)
+                }
+            },
+            assertValue = { expected, actual ->
+                if (isTimeZoneDifferent) {
+                    assertEquals(expected.timeInMillis, actual.timeInMillis)
+                    assertNotEquals(expected, actual)
+                } else {
+                    assertEquals(expected, actual)
+                }
+            },
+        )
+        assertEquals(expected.time, CalendarSerializer.deserialize(input).time)
     }
 
     @Test

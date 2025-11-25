@@ -17,6 +17,7 @@ fun testConfiguration(block: (configuration: YamlConfiguration) -> Unit) =
 private fun <T> testSerializerKey(
     expected: T,
     serializer: Serializer.Keyable<T>,
+    assert: (Map<T, String>, Map<T, String>) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) = testConfiguration { configuration ->
     val path = "test"
     val value = "test"
@@ -24,7 +25,7 @@ private fun <T> testSerializerKey(
     val mapExpected = mapOf(expected to value)
     mapSerializer.set(configuration, path, mapExpected)
     val actual = mapSerializer.getOrThrow(configuration, path)
-    assertEquals(mapExpected, actual)
+    assert(mapExpected, actual)
 }
 
 private fun <T> testSerializerValue(
@@ -61,10 +62,11 @@ fun <T> testSerializer(
     serializer: Serializer.Keyable<T>,
     expectedValues: Map<String, Any>? = null,
     expectedYaml: String? = null,
-    assert: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
+    assertKey: (Map<T, String>, Map<T, String>) -> Unit = { expected, actual -> assertEquals(expected, actual) },
+    assertValue: (T, T) -> Unit = { expected, actual -> assertEquals(expected, actual) },
 ) {
-    testSerializerKey(expected, serializer)
-    testSerializerValue(expected, serializer, expectedValues, expectedYaml, assert)
+    testSerializerKey(expected, serializer, assertKey)
+    testSerializerValue(expected, serializer, expectedValues, expectedYaml, assertValue)
 }
 
 fun <T> testSerializer(
