@@ -166,6 +166,7 @@ You can define custom serialization logic for specific types.
 
 The easiest way is to transform your type into a supported type (like `String` or `Map`).
 Extend `TransformSerializer<YOUR_TYPE, BASE_TYPE>` and pass a base serializer to the constructor.
+Classes implementing `Serializer.Keyable<T>` can be used as Map keys.
 
 ```kotlin
 // Example: Serialize a custom Wrapper class as a String
@@ -183,6 +184,7 @@ object WrapperSerializer : TransformSerializer<Wrapper, String>(StringSerializer
 #### 2. Implementing `Serializer` Interface
 
 For full control, implement the `Serializer<T>` interface directly.
+Classes implementing `Serializer.Keyable<T>` can be used as Map keys.
 
 ```kotlin
 object MyTypeSerializer : Serializer<MyType> {

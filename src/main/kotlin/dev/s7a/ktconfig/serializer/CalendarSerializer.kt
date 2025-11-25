@@ -10,7 +10,7 @@ import java.util.TimeZone
  *
  * @since 2.0.0
  */
-object CalendarSerializer : TransformSerializer<Calendar, Date>(DateSerializer) {
+object CalendarSerializer : TransformSerializer.Keyable<Calendar, Date>(DateSerializer) {
     override fun transform(value: Date): Calendar =
         Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
             this.time = value
