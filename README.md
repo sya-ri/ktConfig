@@ -261,6 +261,19 @@ ktConfig supports the following types:
 - [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
 - [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
 
+### Formatted Types
+
+ktConfig provides several formatted types for easier string-based serialization:
+
+- `FormattedBlock`: Represents a block with world and coordinates (`World, X, Y, Z`)
+- `FormattedBlockVector`: Represents block coordinates with comma-separated values (`X, Y, Z`)
+- `FormattedColor`: Represents a color in hex format (`#AARRGGBB` or `#RRGGBB`)
+- `FormattedLocation`: Represents a location with world and coordinates (`World, X, Y, Z` or `World, X, Y, Z, Yaw, Pitch`)
+- `FormattedVector`: Represents a vector with comma-separated coordinates (`X, Y, Z`)
+- `FormattedWorld`: Represents a world by its name (`WorldName`)
+
+These types are automatically serialized to and from their string representations.
+
 ## 🔑 License
 
 ```
