@@ -63,6 +63,6 @@ object DateSerializer : Serializer.Keyable<Date> {
             return calendar.time
         }
 
-        throw InvalidFormatException(text)
+        throw InvalidFormatException(text, "yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss")
     }
 }

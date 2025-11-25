@@ -137,7 +137,7 @@ class DateSerializerTest {
         assertFailsWith<InvalidFormatException> {
             DateSerializer.deserialize("invalid-date")
         }.apply {
-            assertEquals("Invalid format: invalid-date", message)
+            assertEquals("Invalid format: invalid-date, expected: yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss", message)
         }
     }
 }
