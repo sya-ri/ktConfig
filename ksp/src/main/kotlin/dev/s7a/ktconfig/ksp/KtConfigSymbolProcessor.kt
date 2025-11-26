@@ -428,13 +428,7 @@ class KtConfigSymbolProcessor(
 
         private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
             val (type, customSerializer) = declaration.type.resolve().solveTypeAlias()
-            val qualifiedName = type.declaration.qualifiedName?.asString()
-            if (qualifiedName == null) {
-                logger.error("Type must have a qualified name", declaration)
-                return null
-            }
-
-            return getSerializer(type, qualifiedName, customSerializer)
+            return getSerializer(type, customSerializer)
         }
 
         private fun getSerializer(declaration: KSTypeArgument): Parameter.Serializer? {
@@ -444,13 +438,7 @@ class KtConfigSymbolProcessor(
                 return null
             }
             val (type, customSerializer) = declarationType.resolve().solveTypeAlias()
-            val qualifiedName = type.declaration.qualifiedName?.asString()
-            if (qualifiedName == null) {
-                logger.error("Type must have a qualified name", declaration)
-                return null
-            }
-
-            return getSerializer(type, qualifiedName, customSerializer)
+            return getSerializer(type, customSerializer)
         }
 
         /**
@@ -459,12 +447,18 @@ class KtConfigSymbolProcessor(
          */
         private fun getSerializer(
             type: KSType,
-            qualifiedName: String,
             customSerializer: Serializer.Custom?,
         ): Parameter.Serializer? {
+            // Get qualifiedName, className
+            val declaration = type.declaration
+            val qualifiedName = declaration.qualifiedName?.asString()
+            if (qualifiedName == null) {
+                logger.error("Type must have a qualified name", declaration)
+                return null
+            }
             val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
 
-            val declaration = type.declaration
+            // Handle enum class, value class
             val modifiers = declaration.modifiers
             when {
                 modifiers.contains(Modifier.ENUM) -> {
@@ -501,6 +495,7 @@ class KtConfigSymbolProcessor(
                 }
             }
 
+            // Get serializer
             val serializer = customSerializer ?: findSerializer(qualifiedName, type)
             if (serializer == null) {
                 logger.error("Unsupported type: $qualifiedName", declaration)
