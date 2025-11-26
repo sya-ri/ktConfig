@@ -71,6 +71,14 @@ The loader class provides the following methods:
 
 ## 🚀 Usage
 
+ktConfig provides various annotations to customize configuration behavior:
+
+- `@KtConfig`: Marks a class as a configuration class. Required for code generation.
+- `@Comment`: Adds comments to configuration headers or properties.
+- `@PathName`: Customizes the YAML path name for a property.
+- `@UseDefault`: Enables support for Kotlin default values in the class.
+- `@UseSerializer`: Specifies a custom serializer for a property.
+
 ### Adding Comments
 
 You can add comments to the generated YAML file using the `@Comment` annotation.
