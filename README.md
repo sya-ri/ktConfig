@@ -84,6 +84,24 @@ data class AppConfig(
 )
 ```
 
+### Change the YAML Path Name
+
+You can customize the YAML path name using the `@PathName` annotation.
+
+```kotlin
+@KtConfig
+data class ServerConfig(
+    @PathName("server-name")
+    val serverName: String
+)
+```
+
+The YAML file will look like this:
+
+```yaml
+server-name: "My Server"
+```
+
 ### Default Values
 
 You can support Kotlin's default values by adding the `@UseDefault` annotation to your class.
