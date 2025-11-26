@@ -292,8 +292,8 @@ ktConfig provides several formatted types for easier string-based serialization:
 
 - `FormattedBlock`: Represents [org.bukkit.Block](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Block.html) (`World, X, Y, Z`)
 - `FormattedBlockVector`: Represents [org.bukkit.util.BlockVector](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/util/BlockVector.html) (`X, Y, Z`)
-- `FormattedColor`: Represents [org.bukkit.Color](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Color.html) (`#AARRGGBB` or `#RRGGBB`)
-- `FormattedLocation`: Represents [org.bukkit.Location](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Location.html) (`World, X, Y, Z` or `World, X, Y, Z, Yaw, Pitch`)
+- `FormattedColor`: Represents [org.bukkit.Color](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Color.html) (`#AARRGGBB`, `#RRGGBB`, `AARRGGBB`, `RRGGBB`)
+- `FormattedLocation`: Represents [org.bukkit.Location](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Location.html) (`World, X, Y, Z`, `World, X, Y, Z, Yaw, Pitch`)
 - `FormattedVector`: Represents [org.bukkit.Vector](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/util/Vector.html) (`X, Y, Z`)
 - `FormattedWorld`: Represents [org.bukkit.World](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/World.html) by its name (`WorldName`)
 
