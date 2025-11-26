@@ -426,19 +426,20 @@ class KtConfigSymbolProcessor(
             return this to serializer
         }
 
-        private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? {
-            val (type, customSerializer) = declaration.type.resolve().solveTypeAlias()
-            return getSerializer(type, customSerializer)
-        }
+        private fun getSerializer(declaration: KSValueParameter): Parameter.Serializer? = getSerializer(declaration.type.resolve())
 
         private fun getSerializer(declaration: KSTypeArgument): Parameter.Serializer? {
-            val declarationType = declaration.type
-            if (declarationType == null) {
+            val type = declaration.type
+            if (type == null) {
                 logger.error("Type argument must have a type", declaration)
                 return null
             }
-            val (type, customSerializer) = declarationType.resolve().solveTypeAlias()
-            return getSerializer(type, customSerializer)
+            return getSerializer(type.resolve())
+        }
+
+        private fun getSerializer(type: KSType): Parameter.Serializer? {
+            val (solvedType, customSerializer) = type.solveTypeAlias()
+            return getSerializer(solvedType, customSerializer)
         }
 
         /**
