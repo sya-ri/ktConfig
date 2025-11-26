@@ -580,6 +580,8 @@ class KtConfigSymbolProcessor(
                 "kotlin.Boolean" to "Boolean",
                 // Common
                 "java.util.UUID" to "UUID",
+                "java.util.Date" to "Date",
+                "java.util.Calendar" to "Calendar",
             )
 
         private val collectionSerializers =
