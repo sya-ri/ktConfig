@@ -231,8 +231,7 @@ Use the `@UseSerializer` annotation on the property to apply your custom seriali
 ```kotlin
 @KtConfig
 data class CustomConfig(
-    @UseSerializer(WrapperSerializer::class)
-    val data: Wrapper
+    val data: @UseSerializer(WrapperSerializer::class) Wrapper
 )
 ```
 
