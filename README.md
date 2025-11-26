@@ -300,6 +300,105 @@ ktConfig provides several formatted types for easier string-based serialization:
 
 These types are automatically serialized to and from their string representations.
 
+## 🔧 Troubleshooting
+
+### Unsupported type
+
+Log example:
+
+```text
+[ksp] Unsupported type: java.sql.Date
+```
+
+If you encounter an error when using a type that is not supported by ktConfig.
+
+```kotlin
+@KtConfig
+class InvalidConfig(
+    val date: java.sql.Date, // Unsupported type
+)
+```
+
+Define a custom serializer and specify it using `@UseSerializer` annotation to handle this type.
+
+```kotlin
+object SqlDateSerializer : Serializer<java.sql.Date> {
+    // ...
+}
+
+@KtConfig
+data class Config(
+    val date: @UseSerializer(SqlDateSerializer::class) java.sql.Date,
+)
+```
+
+Alternatively, handle YAML using supported types and convert them externally.
+
+```kotlin
+@KtConfig
+data class Config(
+    val date: java.util.Date, // Supported type
+) {
+    val sqlDate
+        get() = java.sql.Date(date.time)
+}
+```
+
+### Unresolve reference properties
+
+Log example:
+
+```
+Unresolved reference 'text'.
+```
+
+If you encounter unresolved reference errors when using ktConfig, make sure your properties are properly declared.
+Properties in Kotlin must be declared using `val` or `var` to be accessible:
+
+```kotlin
+@KtConfig
+class InvalidConfig(
+    text: String,
+)
+```
+
+Using data classes is recommended as they enforce `val`/`var` declarations for all primary constructor properties
+automatically.
+
+```kotlin
+@KtConfig
+data class Config(
+    val text: String,
+)
+```
+
+### Unresolved reference using custom serializers
+
+Log example:
+
+```
+Unresolved reference 'getOrThrow'
+Unresolved reference 'set'
+Inapplicable candidate(s): fun deserialize(value: Any): Date
+Unresolved reference 'serialize'
+```
+
+If you encounter unresolved reference errors when using custom serializers, make sure you use objects instead of classes.
+
+```kotlin
+class SqlDateSerializer : Serializer<java.sql.Date> {
+    // ...
+}
+```
+
+Should be:
+
+```kotlin
+object SqlDateSerializer : Serializer<java.sql.Date> {
+    // ...
+}
+```
+
 ## 🔑 License
 
 ```
