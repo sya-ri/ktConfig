@@ -2,7 +2,6 @@ package dev.s7a.ktconfig.serializer
 
 import java.time.LocalDate
 
-
 /**
  * Serializer for [LocalDate] that transforms between [LocalDate] and [String] representations.
  * Uses ISO-8601 date format for string representation.
