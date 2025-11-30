@@ -44,7 +44,9 @@ abstract class KtConfigLoader<T> :
     fun load(file: File) =
         load(
             configuration().apply {
-                load(file)
+                if (file.exists()) {
+                    load(file)
+                }
             },
         )
 
