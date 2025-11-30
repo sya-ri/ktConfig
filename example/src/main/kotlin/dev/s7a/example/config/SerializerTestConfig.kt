@@ -10,6 +10,17 @@ import dev.s7a.ktconfig.UseSerializer
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.Period
+import java.time.Year
+import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @KtConfig
@@ -31,6 +42,17 @@ data class SerializerTestConfig(
     val uShort: UShort,
     val boolean: Boolean,
     val uuid: UUID,
+    val localTime: LocalTime,
+    val localDate: LocalDate,
+    val localDateTime: LocalDateTime,
+    val year: Year,
+    val yearMonth: YearMonth,
+    val offsetTime: OffsetTime,
+    val offsetDateTime: OffsetDateTime,
+    val zonedDateTime: ZonedDateTime,
+    val instant: Instant,
+    val duration: Duration,
+    val period: Period,
     val itemStack: ItemStack,
     val location: Location,
     val formattedVector: FormattedVector,
@@ -144,6 +166,17 @@ data class SerializerTestConfig(
         if (uShort != other.uShort) return false
         if (boolean != other.boolean) return false
         if (uuid != other.uuid) return false
+        if (localTime != other.localTime) return false
+        if (localDate != other.localDate) return false
+        if (localDateTime != other.localDateTime) return false
+        if (year != other.year) return false
+        if (yearMonth != other.yearMonth) return false
+        if (offsetTime != other.offsetTime) return false
+        if (offsetDateTime != other.offsetDateTime) return false
+        if (zonedDateTime != other.zonedDateTime) return false
+        if (instant != other.instant) return false
+        if (duration != other.duration) return false
+        if (period != other.period) return false
         if (itemStack != other.itemStack) return false
         if (location != other.location) return false
         if (formattedVector != other.formattedVector) return false
@@ -211,6 +244,17 @@ data class SerializerTestConfig(
         result = 31 * result + uShort.hashCode()
         result = 31 * result + boolean.hashCode()
         result = 31 * result + uuid.hashCode()
+        result = 31 * result + localTime.hashCode()
+        result = 31 * result + localDate.hashCode()
+        result = 31 * result + localDateTime.hashCode()
+        result = 31 * result + year.hashCode()
+        result = 31 * result + yearMonth.hashCode()
+        result = 31 * result + offsetTime.hashCode()
+        result = 31 * result + offsetDateTime.hashCode()
+        result = 31 * result + zonedDateTime.hashCode()
+        result = 31 * result + instant.hashCode()
+        result = 31 * result + duration.hashCode()
+        result = 31 * result + period.hashCode()
         result = 31 * result + itemStack.hashCode()
         result = 31 * result + location.hashCode()
         result = 31 * result + formattedVector.hashCode()

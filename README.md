@@ -281,8 +281,17 @@ ktConfig supports the following types:
 
 - `org.bukkit.configuration.serialization.ConfigurationSerializable` : ItemStack, Location, ...
 - `java.util.UUID`
-- `java.util.Date`
-- `java.util.Calendar`
+- `java.time.Instant`
+- `java.time.LocalTime`
+- `java.time.LocalDate`
+- `java.time.LocalDateTime`
+- `java.time.Year`
+- `java.time.YearMonth`
+- `java.time.OffsetTime`
+- `java.time.OffsetDateTime`
+- `java.time.ZonedDateTime`
+- `java.time.Duration`
+- `java.time.Period`
 - [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
 - [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
 
@@ -306,7 +315,7 @@ These types are automatically serialized to and from their string representation
 Log example:
 
 ```text
-[ksp] Unsupported type: java.sql.Date
+[ksp] Unsupported type: java.util.Date
 ```
 
 If you encounter an error when using a type that is not supported by ktConfig.
@@ -314,20 +323,20 @@ If you encounter an error when using a type that is not supported by ktConfig.
 ```kotlin
 @KtConfig
 class InvalidConfig(
-    val date: java.sql.Date, // Unsupported type
+    val date: java.util.Date, // Unsupported type
 )
 ```
 
 Define a custom serializer and specify it using `@UseSerializer` annotation to handle this type.
 
 ```kotlin
-object SqlDateSerializer : Serializer<java.sql.Date> {
+object DateSerializer : Serializer<java.util.Date> {
     // ...
 }
 
 @KtConfig
 data class Config(
-    val date: @UseSerializer(SqlDateSerializer::class) java.sql.Date,
+    val date: @UseSerializer(DateSerializer::class) java.util.Date,
 )
 ```
 
@@ -336,10 +345,10 @@ Alternatively, handle YAML using supported types and convert them externally.
 ```kotlin
 @KtConfig
 data class Config(
-    val date: java.util.Date, // Supported type
+    val instant: java.time.Instant, // Supported type
 ) {
-    val sqlDate
-        get() = java.sql.Date(date.time)
+    val date
+        get() = Date.from(instant)
 }
 ```
 
@@ -385,7 +394,7 @@ Unresolved reference 'serialize'
 If you encounter unresolved reference errors when using custom serializers, make sure you use objects instead of classes.
 
 ```kotlin
-class SqlDateSerializer : Serializer<java.sql.Date> {
+class DateSerializer : Serializer<java.util.Date> {
     // ...
 }
 ```
@@ -393,7 +402,7 @@ class SqlDateSerializer : Serializer<java.sql.Date> {
 Should be:
 
 ```kotlin
-object SqlDateSerializer : Serializer<java.sql.Date> {
+object DateSerializer : Serializer<java.util.Date> {
     // ...
 }
 ```

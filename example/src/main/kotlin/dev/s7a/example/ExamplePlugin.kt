@@ -9,6 +9,17 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.Period
+import java.time.Year
+import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
 
@@ -40,6 +51,17 @@ class ExamplePlugin : JavaPlugin() {
                 uShort = Random.nextInt(0, 65535).toUShort(),
                 boolean = Random.nextBoolean(),
                 uuid = UUID.randomUUID(),
+                localTime = LocalTime.now(),
+                localDate = LocalDate.now(),
+                localDateTime = LocalDateTime.now(),
+                year = Year.now(),
+                yearMonth = YearMonth.now(),
+                offsetTime = OffsetTime.now(),
+                offsetDateTime = OffsetDateTime.now(),
+                zonedDateTime = ZonedDateTime.now(),
+                instant = Instant.now(),
+                duration = Duration.ofSeconds(Random.nextLong()),
+                period = Period.of(Random.nextInt(), Random.nextInt(), Random.nextInt()),
                 itemStack = ItemStack(Material.STONE, Random.nextInt(1, 64)),
                 location =
                     Location(
@@ -283,6 +305,39 @@ class ExamplePlugin : JavaPlugin() {
             }
             if (expected.uuid != actual.uuid) {
                 output.error("uuid: expected=${expected.uuid}, actual=${actual.uuid}")
+            }
+            if (expected.localTime != actual.localTime) {
+                output.error("localTime: expected=${expected.localTime}, actual=${actual.localTime}")
+            }
+            if (expected.localDate != actual.localDate) {
+                output.error("localDate: expected=${expected.localDate}, actual=${actual.localDate}")
+            }
+            if (expected.localDateTime != actual.localDateTime) {
+                output.error("localDateTime: expected=${expected.localDateTime}, actual=${actual.localDateTime}")
+            }
+            if (expected.year != actual.year) {
+                output.error("year: expected=${expected.year}, actual=${actual.year}")
+            }
+            if (expected.yearMonth != actual.yearMonth) {
+                output.error("yearMonth: expected=${expected.yearMonth}, actual=${actual.yearMonth}")
+            }
+            if (expected.offsetTime != actual.offsetTime) {
+                output.error("offsetTime: expected=${expected.offsetTime}, actual=${actual.offsetTime}")
+            }
+            if (expected.offsetDateTime != actual.offsetDateTime) {
+                output.error("offsetDateTime: expected=${expected.offsetDateTime}, actual=${actual.offsetDateTime}")
+            }
+            if (expected.zonedDateTime != actual.zonedDateTime) {
+                output.error("zonedDateTime: expected=${expected.zonedDateTime}, actual=${actual.zonedDateTime}")
+            }
+            if (expected.instant != actual.instant) {
+                output.error("instant: expected=${expected.instant}, actual=${actual.instant}")
+            }
+            if (expected.duration != actual.duration) {
+                output.error("duration: expected=${expected.duration}, actual=${actual.duration}")
+            }
+            if (expected.period != actual.period) {
+                output.error("period: expected=${expected.period}, actual=${actual.period}")
             }
             if (expected.itemStack != actual.itemStack) {
                 output.error("itemStack: expected=${expected.itemStack}, actual=${actual.itemStack}")

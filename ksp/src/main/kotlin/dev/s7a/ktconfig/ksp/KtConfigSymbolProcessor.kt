@@ -580,8 +580,17 @@ class KtConfigSymbolProcessor(
                 "kotlin.Boolean" to "Boolean",
                 // Common
                 "java.util.UUID" to "UUID",
-                "java.util.Date" to "Date",
-                "java.util.Calendar" to "Calendar",
+                "java.time.Instant" to "Instant",
+                "java.time.LocalTime" to "LocalTime",
+                "java.time.LocalDate" to "LocalDate",
+                "java.time.LocalDateTime" to "LocalDateTime",
+                "java.time.Year" to "Year",
+                "java.time.YearMonth" to "YearMonth",
+                "java.time.OffsetTime" to "OffsetTime",
+                "java.time.OffsetDateTime" to "OffsetDateTime",
+                "java.time.ZonedDateTime" to "ZonedDateTime",
+                "java.time.Duration" to "Duration",
+                "java.time.Period" to "Period",
             )
 
         private val collectionSerializers =
