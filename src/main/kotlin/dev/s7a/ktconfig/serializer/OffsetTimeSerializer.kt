@@ -9,7 +9,7 @@ import java.time.OffsetTime
  * @since 2.0.0
  */
 object OffsetTimeSerializer : TransformSerializer<OffsetTime, String>(StringSerializer) {
-    override fun transform(value: String): OffsetTime = OffsetTime.parse(value)
+    override fun decode(value: String): OffsetTime = OffsetTime.parse(value)
 
-    override fun transformBack(value: OffsetTime) = value.toString()
+    override fun encode(value: OffsetTime) = value.toString()
 }

@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object FloatSerializer : TransformSerializer.Keyable<Float, Number>(NumberSerializer) {
-    override fun transform(value: Number) = value.toFloat()
+    override fun decode(value: Number) = value.toFloat()
 
-    override fun transformBack(value: Float) = value
+    override fun encode(value: Float) = value
 }

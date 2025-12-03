@@ -205,9 +205,9 @@ class KtConfigSymbolProcessor(
                                         }
                                     }.build(),
                             ).addFunction(
-                                // Add `transform` function to KtConfig loader class
+                                // Add `decode` function to KtConfig loader class
                                 FunSpec
-                                    .builder("transform")
+                                    .builder("decode")
                                     .addModifiers(KModifier.OVERRIDE)
                                     .addParameter(
                                         ParameterSpec(
@@ -252,9 +252,9 @@ class KtConfigSymbolProcessor(
                                     .returns(className)
                                     .build(),
                             ).addFunction(
-                                // Add `transformBack` function to KtConfig loader class
+                                // Add `encode` function to KtConfig loader class
                                 FunSpec
-                                    .builder("transformBack")
+                                    .builder("encode")
                                     .addModifiers(KModifier.OVERRIDE)
                                     .addParameter(ParameterSpec("value", className))
                                     .addCode(

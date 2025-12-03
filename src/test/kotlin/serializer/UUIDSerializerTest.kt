@@ -16,7 +16,7 @@ class UUIDSerializerTest {
     @Test
     fun testInvalid() {
         assertFailsWith<IllegalArgumentException> {
-            UUIDSerializer.transform("not-a-uuid")
+            UUIDSerializer.decode("not-a-uuid")
         }
     }
 }

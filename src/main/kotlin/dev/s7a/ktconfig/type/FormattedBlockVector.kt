@@ -29,7 +29,7 @@ typealias FormattedBlockVector =
  * @since 2.0.0
  */
 object FormattedBlockVectorSerializer : TransformSerializer.Keyable<BlockVector, String>(StringSerializer) {
-    override fun transform(value: String): BlockVector {
+    override fun decode(value: String): BlockVector {
         val split = value.split("\\s*,\\s*".toRegex(), limit = 3)
         if (split.size != 3) {
             throw InvalidFormatException(value, "X, Y, Z")
@@ -41,5 +41,5 @@ object FormattedBlockVectorSerializer : TransformSerializer.Keyable<BlockVector,
         )
     }
 
-    override fun transformBack(value: BlockVector) = "${value.x},${value.y},${value.z}"
+    override fun encode(value: BlockVector) = "${value.x},${value.y},${value.z}"
 }

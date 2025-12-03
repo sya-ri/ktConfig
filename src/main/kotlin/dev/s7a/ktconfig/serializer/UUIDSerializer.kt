@@ -9,7 +9,7 @@ import java.util.UUID
  * @since 2.0.0
  */
 object UUIDSerializer : TransformSerializer.Keyable<UUID, String>(StringSerializer) {
-    override fun transform(value: String): UUID = UUID.fromString(value)
+    override fun decode(value: String): UUID = UUID.fromString(value)
 
-    override fun transformBack(value: UUID): String = value.toString()
+    override fun encode(value: UUID): String = value.toString()
 }

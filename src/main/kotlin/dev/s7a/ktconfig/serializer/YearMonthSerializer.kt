@@ -9,7 +9,7 @@ import java.time.YearMonth
  * @since 2.0.0
  */
 object YearMonthSerializer : TransformSerializer<YearMonth, String>(StringSerializer) {
-    override fun transform(value: String): YearMonth = YearMonth.parse(value)
+    override fun decode(value: String): YearMonth = YearMonth.parse(value)
 
-    override fun transformBack(value: YearMonth) = value.toString()
+    override fun encode(value: YearMonth) = value.toString()
 }

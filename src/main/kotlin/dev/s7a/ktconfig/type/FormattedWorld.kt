@@ -28,7 +28,7 @@ typealias FormattedWorld =
  * @since 2.0.0
  */
 object FormattedWorldSerializer : TransformSerializer.Keyable<World, String>(StringSerializer) {
-    override fun transform(value: String) = Bukkit.getWorld(value) ?: throw RuntimeException("World not found: $value")
+    override fun decode(value: String) = Bukkit.getWorld(value) ?: throw RuntimeException("World not found: $value")
 
-    override fun transformBack(value: World) = value.name
+    override fun encode(value: World) = value.name
 }

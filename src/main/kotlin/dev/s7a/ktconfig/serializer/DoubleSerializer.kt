@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object DoubleSerializer : TransformSerializer.Keyable<Double, Number>(NumberSerializer) {
-    override fun transform(value: Number) = value.toDouble()
+    override fun decode(value: Number) = value.toDouble()
 
-    override fun transformBack(value: Double) = value
+    override fun encode(value: Double) = value
 }

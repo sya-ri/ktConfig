@@ -9,8 +9,8 @@ data class CustomData(
     val value: Int,
 ) {
     object Serializer : TransformSerializer<CustomData, Int>(IntSerializer) {
-        override fun transform(value: Int) = CustomData(value)
+        override fun decode(value: Int) = CustomData(value)
 
-        override fun transformBack(value: CustomData) = value.value
+        override fun encode(value: CustomData) = value.value
     }
 }

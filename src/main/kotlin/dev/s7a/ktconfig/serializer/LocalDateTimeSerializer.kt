@@ -9,7 +9,7 @@ import java.time.LocalDateTime
  * @since 2.0.0
  */
 object LocalDateTimeSerializer : TransformSerializer<LocalDateTime, String>(StringSerializer) {
-    override fun transform(value: String): LocalDateTime = LocalDateTime.parse(value)
+    override fun decode(value: String): LocalDateTime = LocalDateTime.parse(value)
 
-    override fun transformBack(value: LocalDateTime) = value.toString()
+    override fun encode(value: LocalDateTime) = value.toString()
 }

@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object UIntSerializer : TransformSerializer.Keyable<UInt, Number>(NumberSerializer) {
-    override fun transform(value: Number) = value.toLong().toUInt()
+    override fun decode(value: Number) = value.toLong().toUInt()
 
-    override fun transformBack(value: UInt) = value.toLong()
+    override fun encode(value: UInt) = value.toLong()
 }

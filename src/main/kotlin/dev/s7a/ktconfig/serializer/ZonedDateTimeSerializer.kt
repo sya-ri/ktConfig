@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
  * @since 2.0.0
  */
 object ZonedDateTimeSerializer : TransformSerializer<ZonedDateTime, String>(StringSerializer) {
-    override fun transform(value: String): ZonedDateTime = ZonedDateTime.parse(value)
+    override fun decode(value: String): ZonedDateTime = ZonedDateTime.parse(value)
 
-    override fun transformBack(value: ZonedDateTime) = value.toString()
+    override fun encode(value: ZonedDateTime) = value.toString()
 }

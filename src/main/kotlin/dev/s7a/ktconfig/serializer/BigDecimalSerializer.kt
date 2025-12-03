@@ -9,7 +9,7 @@ import java.math.BigDecimal
  * @since 2.0.0
  */
 object BigDecimalSerializer : TransformSerializer.Keyable<BigDecimal, Number>(NumberSerializer) {
-    override fun transform(value: Number) = BigDecimal(value.toString())
+    override fun decode(value: Number) = BigDecimal(value.toString())
 
-    override fun transformBack(value: BigDecimal) = value
+    override fun encode(value: BigDecimal) = value
 }

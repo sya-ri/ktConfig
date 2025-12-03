@@ -36,7 +36,7 @@ typealias FormattedColor =
  * @since 2.0.0
  */
 object FormattedColorSerializer : TransformSerializer.Keyable<Color, String>(StringSerializer) {
-    override fun transform(value: String): Color {
+    override fun decode(value: String): Color {
         val regex = "^#?([0-9A-Fa-f]{6,8})$".toRegex()
         val result = regex.find(value) ?: throw InvalidFormatException(value, "[#]?[AA]?RRGGBB")
         val hex = result.groupValues[1]
@@ -47,7 +47,7 @@ object FormattedColorSerializer : TransformSerializer.Keyable<Color, String>(Str
         }
     }
 
-    override fun transformBack(value: Color) =
+    override fun encode(value: Color) =
         buildString {
             append('#')
             append(value.alpha.toString(16).padStart(2, '0'))

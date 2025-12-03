@@ -13,7 +13,7 @@ import java.lang.Enum.valueOf
 class EnumSerializer<E : Enum<E>>(
     val clazz: Class<E>,
 ) : TransformSerializer.Keyable<E, String>(StringSerializer) {
-    override fun transform(value: String): E = valueOf(clazz, value)
+    override fun decode(value: String): E = valueOf(clazz, value)
 
-    override fun transformBack(value: E) = value.name
+    override fun encode(value: E) = value.name
 }

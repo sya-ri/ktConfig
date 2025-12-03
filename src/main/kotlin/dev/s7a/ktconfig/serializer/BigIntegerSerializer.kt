@@ -9,7 +9,7 @@ import java.math.BigInteger
  * @since 2.0.0
  */
 object BigIntegerSerializer : TransformSerializer.Keyable<BigInteger, Number>(NumberSerializer) {
-    override fun transform(value: Number) = BigInteger(value.toString())
+    override fun decode(value: Number) = BigInteger(value.toString())
 
-    override fun transformBack(value: BigInteger) = value
+    override fun encode(value: BigInteger) = value
 }

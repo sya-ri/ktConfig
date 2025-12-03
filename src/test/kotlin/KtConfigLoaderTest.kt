@@ -30,11 +30,11 @@ class KtConfigLoaderTest {
             StringSerializer.set(configuration, "${parentPath}value", value.value)
         }
 
-        override fun transform(value: Map<String, Any?>): CustomData {
+        override fun decode(value: Map<String, Any?>): CustomData {
             TODO("Not yet implemented")
         }
 
-        override fun transformBack(value: CustomData): Map<String, Any?> {
+        override fun encode(value: CustomData): Map<String, Any?> {
             TODO("Not yet implemented")
         }
     }

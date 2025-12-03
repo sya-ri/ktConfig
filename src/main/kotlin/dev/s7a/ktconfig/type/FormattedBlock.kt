@@ -31,7 +31,7 @@ typealias FormattedBlock =
  * @since 2.0.0
  */
 object FormattedBlockSerializer : TransformSerializer.Keyable<Block, String>(StringSerializer) {
-    override fun transform(value: String): Block {
+    override fun decode(value: String): Block {
         val split = value.split("\\s*,\\s*".toRegex(), limit = 4)
         val world = Bukkit.getWorld(split[0]) ?: throw RuntimeException("World not found: ${split[0]}")
         return world.getBlockAt(
@@ -41,5 +41,5 @@ object FormattedBlockSerializer : TransformSerializer.Keyable<Block, String>(Str
         )
     }
 
-    override fun transformBack(value: Block) = "${value.world.name}, ${value.x}, ${value.y}, ${value.z}"
+    override fun encode(value: Block) = "${value.world.name}, ${value.x}, ${value.y}, ${value.z}"
 }

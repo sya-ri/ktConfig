@@ -9,7 +9,7 @@ import java.time.Duration
  * @since 2.0.0
  */
 object DurationSerializer : TransformSerializer<Duration, String>(StringSerializer) {
-    override fun transform(value: String): Duration = Duration.parse(value)
+    override fun decode(value: String): Duration = Duration.parse(value)
 
-    override fun transformBack(value: Duration) = value.toString()
+    override fun encode(value: Duration) = value.toString()
 }

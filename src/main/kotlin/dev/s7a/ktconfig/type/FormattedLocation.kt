@@ -33,7 +33,7 @@ typealias FormattedLocation =
  * @since 2.0.0
  */
 object FormatedLocationSerializer : TransformSerializer.Keyable<Location, String>(StringSerializer) {
-    override fun transform(value: String): Location {
+    override fun decode(value: String): Location {
         val split = value.split("\\s*,\\s*".toRegex(), limit = 6)
         val length = split.size
         if (length != 4 && length != 6) {
@@ -49,7 +49,7 @@ object FormatedLocationSerializer : TransformSerializer.Keyable<Location, String
         )
     }
 
-    override fun transformBack(value: Location): String =
+    override fun encode(value: Location): String =
         buildString {
             append("${value.world?.name}, ${value.x}, ${value.y}, ${value.z}")
             if (value.yaw != 0F || value.pitch != 0F) {

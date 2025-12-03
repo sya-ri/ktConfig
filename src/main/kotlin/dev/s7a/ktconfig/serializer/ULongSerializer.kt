@@ -7,7 +7,7 @@ package dev.s7a.ktconfig.serializer
  * @since 2.0.0
  */
 object ULongSerializer : TransformSerializer.Keyable<ULong, Number>(NumberSerializer) {
-    override fun transform(value: Number) = value.toLong().toULong()
+    override fun decode(value: Number) = value.toLong().toULong()
 
-    override fun transformBack(value: ULong) = value.toLong()
+    override fun encode(value: ULong) = value.toLong()
 }

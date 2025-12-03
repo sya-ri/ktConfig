@@ -31,12 +31,12 @@ class NestedSerializerTest {
             StringSerializer.set(configuration, "${parentPath}value", value.value)
         }
 
-        override fun transform(value: Map<String, Any?>): CustomData =
+        override fun decode(value: Map<String, Any?>): CustomData =
             CustomData(
                 value["value"]?.let(StringSerializer::deserialize) ?: throw IllegalArgumentException("value is null"),
             )
 
-        override fun transformBack(value: CustomData): Map<String, Any?> =
+        override fun encode(value: CustomData): Map<String, Any?> =
             mapOf(
                 "value" to StringSerializer.serialize(value.value),
             )

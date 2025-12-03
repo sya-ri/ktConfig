@@ -27,25 +27,27 @@ abstract class TransformSerializer<T, B>(
     ) : TransformSerializer<T, B>(base),
         Serializer.Keyable<T>
 
-    override fun deserialize(value: Any) = transform(base.deserialize(value))
+    override fun deserialize(value: Any) = decode(base.deserialize(value))
 
-    override fun serialize(value: T) = base.serialize(transformBack(value))
-
-    /**
-     * Transforms a value from the base type to the target type.
-     *
-     * @param value The value of base type to transform
-     * @return The transformed value of target type
-     * @since 2.0.0
-     */
-    abstract fun transform(value: B): T
+    override fun serialize(value: T) = base.serialize(encode(value))
 
     /**
-     * Transforms a value from the target type back to the base type.
+     * Transforms a value of base type B into a value of target type T.
+     * This method is used during deserialization to convert from the base type to the desired type.
      *
-     * @param value The value of target type to transform back
-     * @return The transformed value of base type
+     * @param value The value of base type B to transform
+     * @return The transformed value of target type T
      * @since 2.0.0
      */
-    abstract fun transformBack(value: T): B
+    abstract fun decode(value: B): T
+
+    /**
+     * Transforms a value of target type T into a value of base type B.
+     * This method is used during serialization to convert back to the base type.
+     *
+     * @param value The value of target type T to transform
+     * @return The transformed value of base type B
+     * @since 2.0.0
+     */
+    abstract fun encode(value: T): B
 }

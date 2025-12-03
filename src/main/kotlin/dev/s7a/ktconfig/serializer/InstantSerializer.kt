@@ -9,7 +9,7 @@ import java.time.Instant
  * @since 2.0.0
  */
 object InstantSerializer : TransformSerializer<Instant, String>(StringSerializer) {
-    override fun transform(value: String): Instant = Instant.parse(value)
+    override fun decode(value: String): Instant = Instant.parse(value)
 
-    override fun transformBack(value: Instant) = value.toString()
+    override fun encode(value: Instant) = value.toString()
 }

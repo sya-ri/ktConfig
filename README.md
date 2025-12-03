@@ -190,11 +190,11 @@ Classes implementing `Serializer.Keyable<T>` can be used as Map keys.
 ```kotlin
 // Example: Serialize a custom Wrapper class as a String
 object WrapperSerializer : TransformSerializer<Wrapper, String>(StringSerializer) {
-    override fun transform(value: String): Wrapper {
+    override fun decode(value: String): Wrapper {
         return Wrapper(value) // Convert String -> Wrapper
     }
 
-    override fun transformBack(value: Wrapper): String {
+    override fun encode(value: Wrapper): String {
         return value.data // Convert Wrapper -> String
     }
 }

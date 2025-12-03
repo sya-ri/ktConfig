@@ -34,12 +34,12 @@ class ValueSerializer<T, B>(
         private val toClass: (B) -> T,
         private val toValue: (T) -> B,
     ) : TransformSerializer.Keyable<T, B>(base) {
-        override fun transform(value: B) = toClass(value)
+        override fun decode(value: B) = toClass(value)
 
-        override fun transformBack(value: T) = toValue(value)
+        override fun encode(value: T) = toValue(value)
     }
 
-    override fun transform(value: B) = toClass(value)
+    override fun decode(value: B) = toClass(value)
 
-    override fun transformBack(value: T) = toValue(value)
+    override fun encode(value: T) = toValue(value)
 }

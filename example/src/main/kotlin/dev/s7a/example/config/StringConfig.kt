@@ -39,12 +39,12 @@ data class StringConfig(
                 StringSerializer.set(configuration, "${parentPath}value", value.value)
             }
 
-            override fun transform(value: Map<String, Any?>): Default =
+            override fun decode(value: Map<String, Any?>): Default =
                 Default(
                     value["value"]?.let(StringSerializer::deserialize) ?: defaultValue.value,
                 )
 
-            override fun transformBack(value: Default): Map<String, Any?> =
+            override fun encode(value: Default): Map<String, Any?> =
                 mapOf(
                     "value" to StringSerializer.serialize(value.value),
                 )
@@ -69,14 +69,14 @@ data class StringConfig(
             StringSerializer.set(configuration, "value", value.value)
         }
 
-        override fun transform(value: Map<String, Any?>): StringConfig =
+        override fun decode(value: Map<String, Any?>): StringConfig =
             StringConfig(
                 value["value"]?.let(StringSerializer::deserialize) ?: throw NotFoundValueException("value"),
                 value["nullable"]?.let(StringSerializer::deserialize),
                 value["default"]?.let(DefaultLoader::deserialize) ?: throw NotFoundValueException("default"),
             )
 
-        override fun transformBack(value: StringConfig): Map<String, Any?> =
+        override fun encode(value: StringConfig): Map<String, Any?> =
             mapOf(
                 "value" to StringSerializer.serialize(value.value),
                 "nullable" to value.nullable?.let(StringSerializer::serialize),
