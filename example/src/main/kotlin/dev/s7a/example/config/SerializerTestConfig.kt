@@ -1,12 +1,12 @@
 package dev.s7a.example.config
 
-import dev.s7a.example.serializer.FormattedVector
-import dev.s7a.example.serializer.FormattedVectorSerializer
-import dev.s7a.example.serializer.OverrideIncorrectString
+import dev.s7a.example.type.CustomData
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.PathName
 import dev.s7a.ktconfig.UseSerializer
+import dev.s7a.ktconfig.type.FormattedVector
+import dev.s7a.ktconfig.type.FormattedVectorSerializer
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
@@ -22,6 +22,12 @@ import java.time.Year
 import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.util.UUID
+
+typealias FormattedVectorAlias = FormattedVector
+
+typealias FormattedVector2Alias =
+    @UseSerializer(FormattedVectorSerializer::class)
+    Vector
 
 @KtConfig
 @Comment("Header comment", "Second line in header")
@@ -59,7 +65,9 @@ data class SerializerTestConfig(
     val formattedVector2:
         @UseSerializer(FormattedVectorSerializer::class)
         Vector,
-    val overrideSerializerString: OverrideIncorrectString,
+    val formattedVector3: FormattedVectorAlias,
+    val formattedVector4: FormattedVector2Alias,
+    val customData: CustomData,
     val byteArray: ByteArray,
     val charArray: CharArray,
     val intArray: IntArray,
@@ -181,7 +189,9 @@ data class SerializerTestConfig(
         if (location != other.location) return false
         if (formattedVector != other.formattedVector) return false
         if (formattedVector2 != other.formattedVector2) return false
-        if (overrideSerializerString != other.overrideSerializerString) return false
+        if (formattedVector3 != other.formattedVector3) return false
+        if (formattedVector4 != other.formattedVector4) return false
+        if (customData != other.customData) return false
         if (byteArray.contentEquals(other.byteArray).not()) return false
         if (charArray.contentEquals(other.charArray).not()) return false
         if (intArray.contentEquals(other.intArray).not()) return false
@@ -259,7 +269,9 @@ data class SerializerTestConfig(
         result = 31 * result + location.hashCode()
         result = 31 * result + formattedVector.hashCode()
         result = 31 * result + formattedVector2.hashCode()
-        result = 31 * result + overrideSerializerString.hashCode()
+        result = 31 * result + formattedVector3.hashCode()
+        result = 31 * result + formattedVector4.hashCode()
+        result = 31 * result + customData.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()
         result = 31 * result + intArray.contentHashCode()

@@ -403,24 +403,17 @@ class KtConfigSymbolProcessor(
         }
 
         private fun KSType.solveTypeAlias(): Pair<KSType, Serializer.Custom?> {
-            val serializer = annotations.getSerializer()
+            val declaration = this.declaration
+            val serializer =
+                // Get typealias-annotated serializer
+                annotations.getSerializer()
+                    ?: // Get class-annotated serializer
+                    declaration.annotations.getSerializer()
 
-            val alias = this.declaration
-            if (alias is KSTypeAlias) {
-                val (resolvedType, resolvedSerializer) = alias.type.resolve().solveTypeAlias()
-
-                // Allow overriding serializer by checking custom serializer first before falling back to resolved serializer
-                //
-                // typealias IncorrectString =
-                //         @UseSerializer(IncorrectSerializer::class)
-                //         String
-                //
-                // typealias OverrideIncorrectString =
-                //         @UseSerializer(StringSerializer::class)
-                //         IncorrectString
-                //
-                // OverrideIncorrectString should be serialized with StringSerializer, not IncorrectSerializer
-                return resolvedType to (serializer ?: resolvedSerializer)
+            // Solve typealias
+            if (declaration is KSTypeAlias) {
+                val (resolvedType, resolvedSerializer) = declaration.type.resolve().solveTypeAlias()
+                return resolvedType to (resolvedSerializer ?: serializer)
             }
 
             return this to serializer

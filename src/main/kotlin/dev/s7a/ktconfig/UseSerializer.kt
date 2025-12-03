@@ -14,8 +14,7 @@ import kotlin.reflect.KClass
  * @property serializer The [KClass] of the [Serializer] implementation to be used for the annotated type.
  * @since 2.0.0
  */
-@Target(AnnotationTarget.TYPE)
-@Repeatable
+@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS)
 annotation class UseSerializer(
     val serializer: KClass<out Serializer<*>>,
 )

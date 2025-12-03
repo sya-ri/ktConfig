@@ -3,6 +3,7 @@ package dev.s7a.example
 import dev.s7a.example.config.HasDefaultConfigLoader
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
+import dev.s7a.example.type.CustomData
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -74,7 +75,9 @@ class ExamplePlugin : JavaPlugin() {
                     ),
                 formattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
-                overrideSerializerString = UUID.randomUUID().toString(),
+                formattedVector3 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
+                formattedVector4 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
+                customData = CustomData(Random.nextInt()),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
                 charArray = CharArray(3) { Random.nextInt(32, 127).toChar() },
@@ -355,9 +358,19 @@ class ExamplePlugin : JavaPlugin() {
                     "formattedVector2: expected=${expected.formattedVector2}, actual=${actual.formattedVector2}",
                 )
             }
-            if (expected.overrideSerializerString != actual.overrideSerializerString) {
+            if (expected.formattedVector3 != actual.formattedVector3) {
                 output.error(
-                    "overrideSerializerString: expected=${expected.overrideSerializerString}, actual=${actual.overrideSerializerString}",
+                    "formattedVector3: expected=${expected.formattedVector3}, actual=${actual.formattedVector3}",
+                )
+            }
+            if (expected.formattedVector4 != actual.formattedVector4) {
+                output.error(
+                    "formattedVector4: expected=${expected.formattedVector4}, actual=${actual.formattedVector4}",
+                )
+            }
+            if (expected.customData != actual.customData) {
+                output.error(
+                    "customData: expected=${expected.customData}, actual=${actual.customData}",
                 )
             }
             if (expected.array.contentEquals(actual.array).not()) {
