@@ -407,6 +407,17 @@ object DateSerializer : Serializer<java.util.Date> {
 }
 ```
 
+### Mismatched dependency versions
+
+Log example:
+
+```
+'org.gradle.api.provider.Property org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions.getJvmDefault()'
+```
+
+This error might occur due to version incompatibility between Kotlin and KSP. Please check and ensure that your Kotlin
+and KSP versions are compatible.
+
 ## 🔑 License
 
 ```
