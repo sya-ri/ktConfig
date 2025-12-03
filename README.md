@@ -76,7 +76,6 @@ ktConfig provides various annotations to customize configuration behavior:
 - `@KtConfig`: Marks a class as a configuration class. Required for code generation.
 - `@Comment`: Adds comments to configuration headers or properties.
 - `@PathName`: Customizes the YAML path name for a property.
-- `@UseDefault`: Enables support for Kotlin default values in the class.
 - `@UseSerializer`: Specifies a custom serializer for a property.
 
 ### Adding Comments
@@ -112,11 +111,10 @@ server-name: "My Server"
 
 ### Default Values
 
-You can support Kotlin's default values by adding the `@UseDefault` annotation to your class.
+You can support Kotlin's default values by adding `hasDefault = true` property to your `@KtConfig` annotation.
 
 ```kotlin
-@KtConfig
-@UseDefault
+@KtConfig(hasDefault = true)
 data class AppConfig(
     val message: String = "Hello",
     val count: Int = 10
@@ -124,23 +122,20 @@ data class AppConfig(
 ```
 
 > [!WARNING]
-> **Rules for @UseDefault**
 >
 > 1. **All properties MUST have default values.**
 >
-> You cannot mix properties with and without default values in a `@UseDefault` annotated class.
+> You cannot mix properties with and without default values in a `@KtConfig(hasDefault = true)` annotated class.
 >　
 > ```kotlin
 > // 👌 This is valid
-> @KtConfig
-> @UseDefault
+> @KtConfig(hasDefault = true)
 > data class AppConfig(
 >     val message: String = "Hello"
 > )
 > 
 > // ❌ This is invalid
-> @KtConfig
-> @UseDefault
+> @KtConfig(hasDefault = true)
 > data class AppConfig(
 >     val message: String,
 >     val count: Int = 10
@@ -153,8 +148,7 @@ data class AppConfig(
 >
 > ```kotlin
 > // 👌 This is valid
-> @KtConfig
-> @UseDefault
+> @KtConfig(hasDefault = true)
 > data class AppConfig(
 >     val message: String = "Hello",
 >     val count: Int = 10,
@@ -162,8 +156,7 @@ data class AppConfig(
 > )
 >
 > // ❌ This is invalid
-> @KtConfig
-> @UseDefault
+> @KtConfig(hasDefault = true)
 > data class AppConfig(
 >     val timestamp: Long = System.currentTimeMillis(), // Not static
 >     val random: Int = Random().nextInt(), // Not static

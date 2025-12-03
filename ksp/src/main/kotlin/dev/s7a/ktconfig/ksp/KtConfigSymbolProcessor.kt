@@ -71,6 +71,13 @@ class KtConfigSymbolProcessor(
             classDeclaration: KSClassDeclaration,
             data: Unit,
         ) {
+            // Get @KtConfig annotation
+            val ktConfig = classDeclaration.annotations.getKtConfig()
+            if (ktConfig == null) {
+                logger.error("Classes must be annotated with @KtConfig", classDeclaration)
+                return
+            }
+
             // Get primary constructor from data class
             val primaryConstructor = classDeclaration.primaryConstructor
             if (primaryConstructor == null) {
@@ -88,7 +95,6 @@ class KtConfigSymbolProcessor(
             val fullName = getFullName(classDeclaration)
             val className = ClassName(packageName, fullName)
             val loaderSimpleName = getLoaderName(classDeclaration)
-            val useDefault = classDeclaration.annotations.hasUseDefault()
 
             val file =
                 classDeclaration.containingFile
@@ -122,7 +128,7 @@ class KtConfigSymbolProcessor(
                             .addOriginatingKSFile(file)
                             .superclass(loaderClassName.parameterizedBy(className))
                             .apply {
-                                if (useDefault) {
+                                if (ktConfig.hasDefault) {
                                     addProperty(
                                         PropertySpec
                                             .builder("defaultValue", className)
@@ -143,7 +149,7 @@ class KtConfigSymbolProcessor(
                                         className,
                                     ).apply {
                                         parameters.forEach { parameter ->
-                                            if (useDefault) {
+                                            if (ktConfig.hasDefault) {
                                                 addStatement(
                                                     $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%L,",
                                                     parameter.serializer.ref,
@@ -214,7 +220,7 @@ class KtConfigSymbolProcessor(
                                     ).apply {
                                         parameters.forEach { parameter ->
                                             when {
-                                                useDefault -> {
+                                                ktConfig.hasDefault -> {
                                                     addStatement(
                                                         "value[%S]?.let(%L::deserialize) ?: defaultValue.%L,",
                                                         parameter.pathName,
@@ -357,14 +363,14 @@ class KtConfigSymbolProcessor(
          *
          * @return True if @KtConfig annotation is present, false otherwise
          */
-        private fun Sequence<KSAnnotation>.hasKtConfig() = any { it.shortName.asString() == "KtConfig" }
-
-        /**
-         * Checks if the sequence contains a @UseDefault annotation.
-         *
-         * @return True if @UseDefault annotation is present, false otherwise
-         */
-        private fun Sequence<KSAnnotation>.hasUseDefault() = any { it.shortName.asString() == "UseDefault" }
+        private fun Sequence<KSAnnotation>.getKtConfig(): KtConfigAnnotation? =
+            firstNotNullOfOrNull { annotation ->
+                if (annotation.shortName.asString() != "KtConfig") return null
+                val arguments = annotation.arguments.associate { it.name?.asString() to it.value }
+                KtConfigAnnotation(
+                    hasDefault = arguments["hasDefault"] as? Boolean ?: false,
+                )
+            }
 
         /**
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
@@ -623,7 +629,8 @@ class KtConfigSymbolProcessor(
             val declaration = type.declaration
             if (declaration is KSClassDeclaration) {
                 // Check if type marked @KtConfig
-                if (declaration.annotations.hasKtConfig()) {
+                val ktConfig = declaration.annotations.getKtConfig()
+                if (ktConfig != null) {
                     return Serializer.Nested(qualifiedName, "${declaration.packageName.asString()}.${getLoaderName(declaration)}")
                 }
 
@@ -681,6 +688,10 @@ class KtConfigSymbolProcessor(
                     }
                 }.distinctBy(Parameter.Serializer::uniqueName)
     }
+
+    private data class KtConfigAnnotation(
+        val hasDefault: Boolean,
+    )
 
     private data class Parameter(
         val pathName: String,

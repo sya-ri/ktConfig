@@ -3,7 +3,6 @@ package dev.s7a.example.config
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.KtConfigLoader
-import dev.s7a.ktconfig.UseDefault
 import dev.s7a.ktconfig.exception.NotFoundValueException
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
@@ -16,8 +15,7 @@ data class StringConfig(
     val nullable: String?,
     val default: Default,
 ) {
-    @KtConfig
-    @UseDefault
+    @KtConfig(hasDefault = true)
     data class Default(
         val value: String = "default",
     )
