@@ -6,7 +6,7 @@ kover = "0.9.3"
 kotlinter = "5.3.0"
 pluginYml = "0.8.0"
 minecraftServer = "4.0.1"
-shadow = "9.2.2"
+shadow = "9.3.0"
 kotlinpoet = "2.2.0"
 
 # Libraries
