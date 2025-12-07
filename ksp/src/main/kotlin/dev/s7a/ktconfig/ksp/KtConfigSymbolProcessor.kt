@@ -561,56 +561,53 @@ class KtConfigSymbolProcessor(
             }
         }
 
-        private val builtInSerializers =
+        private val serializers =
             mapOf(
                 // Primitive
-                "kotlin.Byte" to "Byte",
-                "kotlin.Char" to "Char",
-                "kotlin.Int" to "Int",
-                "kotlin.Long" to "Long",
-                "kotlin.Short" to "Short",
-                "kotlin.String" to "String",
-                "kotlin.UByte" to "UByte",
-                "kotlin.UInt" to "UInt",
-                "kotlin.ULong" to "ULong",
-                "kotlin.UShort" to "UShort",
-                "kotlin.Double" to "Double",
-                "kotlin.Float" to "Float",
-                "kotlin.Boolean" to "Boolean",
+                "kotlin.Byte" to Serializer.BuiltIn("Byte"),
+                "kotlin.Char" to Serializer.BuiltIn("Char"),
+                "kotlin.Int" to Serializer.BuiltIn("Int"),
+                "kotlin.Long" to Serializer.BuiltIn("Long"),
+                "kotlin.Short" to Serializer.BuiltIn("Short"),
+                "kotlin.String" to Serializer.BuiltIn("String"),
+                "kotlin.UByte" to Serializer.BuiltIn("UByte"),
+                "kotlin.UInt" to Serializer.BuiltIn("UInt"),
+                "kotlin.ULong" to Serializer.BuiltIn("ULong"),
+                "kotlin.UShort" to Serializer.BuiltIn("UShort"),
+                "kotlin.Double" to Serializer.BuiltIn("Double"),
+                "kotlin.Float" to Serializer.BuiltIn("Float"),
+                "kotlin.Boolean" to Serializer.BuiltIn("Boolean"),
                 // Common
-                "java.util.UUID" to "UUID",
-                "java.time.Instant" to "Instant",
-                "java.time.LocalTime" to "LocalTime",
-                "java.time.LocalDate" to "LocalDate",
-                "java.time.LocalDateTime" to "LocalDateTime",
-                "java.time.Year" to "Year",
-                "java.time.YearMonth" to "YearMonth",
-                "java.time.OffsetTime" to "OffsetTime",
-                "java.time.OffsetDateTime" to "OffsetDateTime",
-                "java.time.ZonedDateTime" to "ZonedDateTime",
-                "java.time.Duration" to "Duration",
-                "java.time.Period" to "Period",
-            )
-
-        private val collectionSerializers =
-            mapOf(
-                "kotlin.Array" to ("Array" to true),
-                "kotlin.ByteArray" to ("ByteArray" to false),
-                "kotlin.CharArray" to ("CharArray" to false),
-                "kotlin.IntArray" to ("IntArray" to false),
-                "kotlin.LongArray" to ("LongArray" to false),
-                "kotlin.ShortArray" to ("ShortArray" to false),
-                "kotlin.UByteArray" to ("UByteArray" to false),
-                "kotlin.UIntArray" to ("UIntArray" to false),
-                "kotlin.ULongArray" to ("ULongArray" to false),
-                "kotlin.UShortArray" to ("UShortArray" to false),
-                "kotlin.DoubleArray" to ("DoubleArray" to false),
-                "kotlin.FloatArray" to ("FloatArray" to false),
-                "kotlin.BooleanArray" to ("BooleanArray" to false),
-                "kotlin.collections.List" to ("List" to true),
-                "kotlin.collections.Set" to ("Set" to true),
-                "kotlin.collections.ArrayDeque" to ("ArrayDeque" to true),
-                "kotlin.collections.Map" to ("Map" to true),
+                "java.util.UUID" to Serializer.BuiltIn("UUID"),
+                "java.time.Instant" to Serializer.BuiltIn("Instant"),
+                "java.time.LocalTime" to Serializer.BuiltIn("LocalTime"),
+                "java.time.LocalDate" to Serializer.BuiltIn("LocalDate"),
+                "java.time.LocalDateTime" to Serializer.BuiltIn("LocalDateTime"),
+                "java.time.Year" to Serializer.BuiltIn("Year"),
+                "java.time.YearMonth" to Serializer.BuiltIn("YearMonth"),
+                "java.time.OffsetTime" to Serializer.BuiltIn("OffsetTime"),
+                "java.time.OffsetDateTime" to Serializer.BuiltIn("OffsetDateTime"),
+                "java.time.ZonedDateTime" to Serializer.BuiltIn("ZonedDateTime"),
+                "java.time.Duration" to Serializer.BuiltIn("Duration"),
+                "java.time.Period" to Serializer.BuiltIn("Period"),
+                // Collections
+                "kotlin.Array" to Serializer.Collection("Array", true),
+                "kotlin.ByteArray" to Serializer.Collection("ByteArray", false),
+                "kotlin.CharArray" to Serializer.Collection("CharArray", false),
+                "kotlin.IntArray" to Serializer.Collection("IntArray", false),
+                "kotlin.LongArray" to Serializer.Collection("LongArray", false),
+                "kotlin.ShortArray" to Serializer.Collection("ShortArray", false),
+                "kotlin.UByteArray" to Serializer.Collection("UByteArray", false),
+                "kotlin.UIntArray" to Serializer.Collection("UIntArray", false),
+                "kotlin.ULongArray" to Serializer.Collection("ULongArray", false),
+                "kotlin.UShortArray" to Serializer.Collection("UShortArray", false),
+                "kotlin.DoubleArray" to Serializer.Collection("DoubleArray", false),
+                "kotlin.FloatArray" to Serializer.Collection("FloatArray", false),
+                "kotlin.BooleanArray" to Serializer.Collection("BooleanArray", false),
+                "kotlin.collections.List" to Serializer.Collection("List", true),
+                "kotlin.collections.Set" to Serializer.Collection("Set", true),
+                "kotlin.collections.ArrayDeque" to Serializer.Collection("ArrayDeque", true),
+                "kotlin.collections.Map" to Serializer.Collection("Map", true),
             )
 
         /**
@@ -644,17 +641,7 @@ class KtConfigSymbolProcessor(
             }
 
             // Lookup serializer name from the predefined map of built-in serializers
-            val builtIn = builtInSerializers[qualifiedName]
-            if (builtIn != null) {
-                return Serializer.BuiltIn(builtIn)
-            }
-
-            val collection = collectionSerializers[qualifiedName]
-            if (collection != null) {
-                return Serializer.Collection(collection.first, collection.second)
-            }
-
-            return null
+            return serializers[qualifiedName]
         }
 
         /**
