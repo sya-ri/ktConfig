@@ -151,7 +151,7 @@ class KtConfigSymbolProcessor(
                                         parameters.forEach { parameter ->
                                             if (ktConfig.hasDefault) {
                                                 addStatement(
-                                                    $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%L,",
+                                                    $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%N,",
                                                     parameter.serializer.ref,
                                                     parameter.pathName,
                                                     parameter.name,
@@ -222,7 +222,7 @@ class KtConfigSymbolProcessor(
                                             when {
                                                 ktConfig.hasDefault -> {
                                                     addStatement(
-                                                        "value[%S]?.let(%L::deserialize) ?: defaultValue.%L,",
+                                                        "value[%S]?.let(%L::deserialize) ?: defaultValue.%N,",
                                                         parameter.pathName,
                                                         parameter.serializer.ref,
                                                         parameter.name,
@@ -270,7 +270,7 @@ class KtConfigSymbolProcessor(
                                                 )
                                             } else {
                                                 addStatement(
-                                                    "%S to %L.serialize(value.%L),",
+                                                    "%S to %L.serialize(value.%N),",
                                                     parameter.pathName,
                                                     parameter.serializer.ref,
                                                     parameter.name,
