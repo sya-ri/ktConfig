@@ -1,7 +1,7 @@
 [versions]
 # Plugins
 kotlin = "2.3.0"
-ksp = "2.3.3"
+ksp = "2.3.4"
 kover = "0.9.4"
 kotlinter = "5.3.0"
 pluginYml = "0.8.0"
