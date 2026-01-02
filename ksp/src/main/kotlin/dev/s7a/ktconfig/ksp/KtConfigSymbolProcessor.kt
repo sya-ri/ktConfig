@@ -112,6 +112,11 @@ class KtConfigSymbolProcessor(
                         .map(Parameter::serializer)
                         .extractInitializableSerializers()
                         .forEach { serializer ->
+                            if (serializer.keyable) {
+                                // generates ...Serializer.Keyable as Keyable
+                                addAliasedImport(keyableSerializerClassName, "Keyable")
+                            }
+
                             val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
                             addProperty(
                                 PropertySpec
