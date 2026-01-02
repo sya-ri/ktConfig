@@ -56,7 +56,7 @@ class KtConfigSymbolProcessor(
     private inner class Visitor : KSVisitorVoid() {
         private val loaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
-        private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer.Keyable")
+        private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer.Serializer", "Keyable")
         private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
         private val stringClassName = ClassName("kotlin", "String")
         private val mapClassName = ClassName("kotlin.collections", "Map")
