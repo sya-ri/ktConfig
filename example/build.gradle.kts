@@ -54,7 +54,7 @@ tasks.named("build") {
 
 listOf(
     "8" to "1.8.8",
-    "21" to "1.21.10",
+    "21" to "1.21.11",
 ).forEach { (minor, version) ->
     tasks.register<LaunchMinecraftServerTask>("testPlugin$minor") {
         dependsOn("build")
