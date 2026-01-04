@@ -1,7 +1,6 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import kotlin.jvm.java
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -15,7 +14,7 @@ plugins {
 }
 
 group = "dev.s7a"
-version = "2.0.0-SNAPSHOT"
+version = "2.0.0"
 
 allprojects {
     apply(plugin = "kotlin")
