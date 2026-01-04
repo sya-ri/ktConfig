@@ -8,6 +8,8 @@ pluginYml = "0.8.0"
 minecraftServer = "4.0.1"
 shadow = "9.3.0"
 kotlinpoet = "2.2.0"
+dokka = "2.1.0"
+mavenPublish = "0.35.0"
 
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
@@ -21,6 +23,9 @@ kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 pluginYml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+dokka-javadoc = { id = "org.jetbrains.dokka-javadoc", version.ref = "dokka" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 
 [libraries]
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -28,3 +33,4 @@ kotlinpoet = { group = "com.squareup", name = "kotlinpoet", version.ref = "kotli
 kotlinpoet-ksp = { group = "com.squareup", name = "kotlinpoet-ksp", version.ref = "kotlinpoet" }
 spigot8 = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot8" }
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
+mavenPublish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "mavenPublish" }
