@@ -246,7 +246,7 @@ class ExamplePlugin : JavaPlugin() {
         }
         output.info()
 
-        output.info("Check @PathName")
+        output.info("Check @SerialName")
         if (lines.contains("path-name: ${expected.pathName}")) {
             output.info("- Path name is overridden")
         } else {

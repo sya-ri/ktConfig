@@ -76,7 +76,7 @@ ktConfig provides various annotations to customize configuration behavior:
 
 - `@KtConfig`: Marks a class as a configuration class. Required for code generation.
 - `@Comment`: Adds comments to configuration headers or properties.
-- `@PathName`: Customizes the YAML path name for a property.
+- `@SerialName`: Customizes the YAML path name for a property.
 - `@UseSerializer`: Specifies a custom serializer for a property.
 
 ### Adding Comments
@@ -94,12 +94,16 @@ data class AppConfig(
 
 ### Change the YAML Path Name
 
-You can customize the YAML path name using the `@PathName` annotation.
+You can customize the YAML path name using the `@SerialName` annotation.
+
+> [!WARNING]
+> 
+> `@PathName` is deprecated since v2.1.0 and will be removed in v2.4.0.
 
 ```kotlin
 @KtConfig
 data class ServerConfig(
-    @PathName("server-name")
+    @SerialName("server-name")
     val serverName: String
 )
 ```

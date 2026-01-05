@@ -651,28 +651,6 @@ class KtConfigSymbolProcessor(
         }
 
         /**
-         * Extracts the path name from @PathName annotations in the sequence.
-         * Processes the annotation arguments to get the path name string.
-         *
-         * @return The path name string from the annotation, or null if no valid @PathName annotation is found
-         */
-        private fun Sequence<KSAnnotation>.getPathName(): String? {
-            forEach { annotation ->
-                if (annotation.shortName.asString() == "PathName") {
-                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "name" }
-                    if (content != null) {
-                        val value = content.value
-                        if (value is String) {
-                            return value
-                        }
-                    }
-                }
-            }
-
-            return null
-        }
-
-        /**
          * Extracts the serial name from @SerialName annotations in the sequence.
          * The @SerialName annotation is used to specify a custom serialization name for sealed class subclasses.
          *
@@ -721,7 +699,7 @@ class KtConfigSymbolProcessor(
             }
 
             val serializer = getSerializer(declaration) ?: return null
-            val pathName = declaration.annotations.getPathName()
+            val pathName = declaration.annotations.getSerialName()
             val comment = declaration.annotations.getComment()
             return Parameter(pathName ?: name, name, serializer, comment)
         }
