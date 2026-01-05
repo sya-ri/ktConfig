@@ -365,7 +365,7 @@ class KtConfigSymbolProcessor(
          */
         private fun Sequence<KSAnnotation>.getKtConfig(): KtConfigAnnotation? =
             firstNotNullOfOrNull { annotation ->
-                if (annotation.shortName.asString() != "KtConfig") return null
+                if (annotation.shortName.asString() != "KtConfig") return@firstNotNullOfOrNull null
                 val arguments = annotation.arguments.associate { it.name?.asString() to it.value }
                 KtConfigAnnotation(
                     hasDefault = arguments["hasDefault"] as? Boolean ?: false,
