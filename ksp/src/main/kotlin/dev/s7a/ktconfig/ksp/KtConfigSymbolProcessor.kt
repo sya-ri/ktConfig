@@ -25,8 +25,12 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.buildCodeBlock
+import com.squareup.kotlinpoet.joinToCode
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
+import kotlin.collections.joinToString
+import kotlin.collections.map
 
 /**
  * Symbol processor that generates loader classes for configurations annotated with @KtConfig.
@@ -61,7 +65,9 @@ class KtConfigSymbolProcessor(
         private val stringClassName = ClassName("kotlin", "String")
         private val mapClassName = ClassName("kotlin.collections", "Map")
         private val anyClassName = ClassName("kotlin", "Any")
+        private val stringSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "StringSerializer")
         private val notFoundValueExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "NotFoundValueException")
+        private val invalidDiscriminatorExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "InvalidDiscriminatorException")
 
         /**
          * Visits each class declaration and generates a corresponding loader class.
@@ -77,19 +83,6 @@ class KtConfigSymbolProcessor(
                 logger.error("Classes must be annotated with @KtConfig", classDeclaration)
                 return
             }
-
-            // Get primary constructor from data class
-            val primaryConstructor = classDeclaration.primaryConstructor
-            if (primaryConstructor == null) {
-                logger.error("Classes annotated with @KtConfig must have a primary constructor", classDeclaration)
-                return
-            }
-
-            // Get header comment
-            val headerComment = classDeclaration.annotations.getComment()
-
-            // Get parameters from data class constructor
-            val parameters = primaryConstructor.parameters.map { createParameter(it) ?: return }
 
             val packageName = classDeclaration.packageName.asString()
             val fullName = getFullName(classDeclaration)
@@ -107,184 +100,469 @@ class KtConfigSymbolProcessor(
                 .apply {
                     addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
 
-                    // Add properties for nested type serializer classes like ListOfString
-                    parameters
-                        .map(Parameter::serializer)
-                        .extractInitializableSerializers()
-                        .forEach { serializer ->
-                            val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
+                    // sealed interface/class
+                    val sealedSubclasses = classDeclaration.getSealedSubclasses().toList()
+                    if (sealedSubclasses.isNotEmpty()) {
+                        return@apply addSealedLoader(classDeclaration, className, loaderSimpleName, file, ktConfig, sealedSubclasses)
+                    }
+
+                    // default
+                    addDefaultLoader(classDeclaration, className, loaderSimpleName, file, ktConfig)
+                }.build()
+                .writeTo(codeGenerator, false)
+        }
+
+        /**
+         * Generates a default loader class for non-sealed configuration classes.
+         * Creates implementations for load, save, decode, and encode functions that handle
+         * serialization and deserialization of configuration properties.
+         *
+         * @param classDeclaration The configuration class declaration to generate a loader for
+         * @param className The fully qualified class name
+         * @param loaderSimpleName The name for the generated loader class
+         * @param file The source file containing the class
+         * @param ktConfig The KtConfig annotation configuration including default value settings
+         */
+        private fun FileSpec.Builder.addDefaultLoader(
+            classDeclaration: KSClassDeclaration,
+            className: ClassName,
+            loaderSimpleName: String,
+            file: KSFile,
+            ktConfig: KtConfigAnnotation,
+        ) {
+            val parameters = getParameters(classDeclaration) ?: return
+
+            // Add properties for nested type serializer classes like ListOfString
+            addInitializableSerializerProperties(parameters)
+
+            addType(
+                TypeSpec
+                    .objectBuilder(loaderSimpleName)
+                    .addOriginatingKSFile(file)
+                    .superclass(loaderClassName.parameterizedBy(className))
+                    .apply {
+                        if (ktConfig.hasDefault) {
                             addProperty(
                                 PropertySpec
-                                    .builder(serializer.uniqueName, className.parameterizedBy(serializer.type))
+                                    .builder("defaultValue", className)
                                     .addModifiers(KModifier.PRIVATE)
-                                    .initializer("%L", serializer.initialize)
+                                    .initializer("%T()", className)
                                     .build(),
                             )
                         }
-
-                    addType(
-                        TypeSpec
-                            .objectBuilder(loaderSimpleName)
-                            .addOriginatingKSFile(file)
-                            .superclass(loaderClassName.parameterizedBy(className))
-                            .apply {
-                                if (ktConfig.hasDefault) {
-                                    addProperty(
-                                        PropertySpec
-                                            .builder("defaultValue", className)
-                                            .addModifiers(KModifier.PRIVATE)
-                                            .initializer("%T()", className)
-                                            .build(),
-                                    )
+                    }.addLoadFunSpec(className) {
+                        addCode(
+                            "return %T(\n%L)",
+                            className,
+                            buildCodeBlock {
+                                parameters.forEach { parameter ->
+                                    if (ktConfig.hasDefault) {
+                                        addStatement(
+                                            $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%N,",
+                                            parameter.serializer.ref,
+                                            parameter.pathName,
+                                            parameter.name,
+                                        )
+                                    } else {
+                                        addStatement(
+                                            $$"%L.%N(configuration, \"${parentPath}%L\"),",
+                                            parameter.serializer.ref,
+                                            parameter.serializer.getFn,
+                                            parameter.pathName,
+                                        )
+                                    }
                                 }
-                            }.addFunction(
-                                // Add `load` function to KtConfig loader class
-                                FunSpec
-                                    .builder("load")
-                                    .addModifiers(KModifier.OVERRIDE)
-                                    .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
-                                    .addParameter(ParameterSpec("parentPath", stringClassName))
-                                    .addCode(
-                                        "return %T(\n",
-                                        className,
-                                    ).apply {
-                                        parameters.forEach { parameter ->
-                                            if (ktConfig.hasDefault) {
-                                                addStatement(
-                                                    $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%N,",
-                                                    parameter.serializer.ref,
-                                                    parameter.pathName,
-                                                    parameter.name,
-                                                )
-                                            } else {
-                                                addStatement(
-                                                    $$"%L.%N(configuration, \"${parentPath}%L\"),",
-                                                    parameter.serializer.ref,
-                                                    parameter.serializer.getFn,
-                                                    parameter.pathName,
-                                                )
-                                            }
-                                        }
-                                    }.addCode(")")
-                                    .returns(className)
-                                    .build(),
-                            ).addFunction(
-                                // Add `save` function to KtConfig loader class
-                                FunSpec
-                                    .builder("save")
-                                    .addModifiers(KModifier.OVERRIDE)
-                                    .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
-                                    .addParameter(ParameterSpec("value", className))
-                                    .addParameter(ParameterSpec("parentPath", stringClassName))
-                                    .apply {
-                                        if (headerComment != null) {
-                                            // Add header comment
-                                            addStatement(
-                                                "setHeaderComment(configuration, parentPath, listOf(%L))",
-                                                headerComment.joinToString { "\"${it}\"" },
-                                            )
-                                        }
+                            },
+                        )
+                    }.addSaveFunSpec(classDeclaration, className) {
+                        parameters.forEach { parameter ->
+                            addStatement(
+                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
+                                parameter.serializer.ref,
+                                parameter.pathName,
+                                parameter.name,
+                            )
 
-                                        parameters.forEach { parameter ->
+                            val comment = parameter.comment
+                            if (comment != null) {
+                                // Add property comment
+                                addStatement(
+                                    $$"setComment(configuration, \"${parentPath}%L\", listOf(%L))",
+                                    parameter.pathName,
+                                    comment.joinToString { "\"${it}\"" },
+                                )
+                            }
+                        }
+                    }.addDecodeFunSpec(className) {
+                        addCode(
+                            "return %T(\n%L)",
+                            className,
+                            buildCodeBlock {
+                                parameters.forEach { parameter ->
+                                    when {
+                                        ktConfig.hasDefault -> {
                                             addStatement(
-                                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
-                                                parameter.serializer.ref,
+                                                "value[%S]?.let(%L::deserialize) ?: defaultValue.%N,",
                                                 parameter.pathName,
+                                                parameter.serializer.ref,
                                                 parameter.name,
                                             )
+                                        }
 
-                                            val comment = parameter.comment
-                                            if (comment != null) {
-                                                // Add property comment
+                                        parameter.isNullable -> {
+                                            addStatement(
+                                                "value[%S]?.let(%L::deserialize),",
+                                                parameter.pathName,
+                                                parameter.serializer.ref,
+                                            )
+                                        }
+
+                                        else -> {
+                                            addStatement(
+                                                "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
+                                                parameter.pathName,
+                                                parameter.serializer.ref,
+                                                notFoundValueExceptionClassName,
+                                                parameter.pathName,
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                        )
+                    }.addEncodeFunSpec(className) {
+                        addCode(
+                            "return mapOf(\n%L)",
+                            buildCodeBlock {
+                                parameters.forEach { parameter ->
+                                    if (parameter.isNullable) {
+                                        addStatement(
+                                            "%S to value.%L?.let(%L::serialize),",
+                                            parameter.pathName,
+                                            parameter.name,
+                                            parameter.serializer.ref,
+                                        )
+                                    } else {
+                                        addStatement(
+                                            "%S to %L.serialize(value.%N),",
+                                            parameter.pathName,
+                                            parameter.serializer.ref,
+                                            parameter.name,
+                                        )
+                                    }
+                                }
+                            },
+                        )
+                    }.build(),
+            )
+        }
+
+        /**
+         * Generates a loader class for sealed interfaces/classes.
+         * Creates a loader that handles polymorphic deserialization based on a discriminator field.
+         *
+         * @param classDeclaration The sealed class or interface declaration
+         * @param className The fully qualified class name
+         * @param loaderSimpleName The name for the generated loader class
+         * @param file The source file containing the class
+         * @param ktConfig The KtConfig annotation configuration
+         * @param sealedSubclasses List of sealed subclasses to support in the loader
+         */
+        private fun FileSpec.Builder.addSealedLoader(
+            classDeclaration: KSClassDeclaration,
+            className: ClassName,
+            loaderSimpleName: String,
+            file: KSFile,
+            ktConfig: KtConfigAnnotation,
+            sealedSubclasses: List<KSClassDeclaration>,
+        ) {
+            val sealedSubclassDiscriminators =
+                sealedSubclasses.associateWith { subclass ->
+                    val discriminators = subclass.getSealedSubclasses().toList().map { getDiscriminator(it) ?: return }
+                    if (discriminators.isEmpty()) {
+                        Discriminator.Root(getDiscriminator(subclass) ?: return)
+                    } else {
+                        Discriminator.Childs(discriminators)
+                    }
+                }
+
+            addType(
+                TypeSpec
+                    .objectBuilder(loaderSimpleName)
+                    .addOriginatingKSFile(file)
+                    .superclass(loaderClassName.parameterizedBy(className))
+                    .addLoadFunSpec(className) {
+                        addStatement(
+                            $$"return when (val discriminator = %L.getOrThrow(configuration, \"${parentPath}$${ktConfig.discriminator}\")) {\n%L}",
+                            stringSerializerClassName,
+                            buildCodeBlock {
+                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                    addStatement(
+                                        "%L -> %L.load(configuration, parentPath)",
+                                        discriminator.getAll().joinToCode(",") { buildCodeBlock { add("%S", it) } },
+                                        ClassName(packageName, getLoaderName(subclass)),
+                                    )
+                                }
+                                addStatement(
+                                    "else -> throw %L(discriminator)",
+                                    invalidDiscriminatorExceptionClassName,
+                                )
+                            },
+                        )
+                    }.addSaveFunSpec(classDeclaration, className) {
+                        addCode(
+                            buildCodeBlock {
+                                beginControlFlow("when (value)")
+                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                    val subclassName = ClassName(subclass.packageName.asString(), getFullName(subclass))
+
+                                    add(
+                                        buildCodeBlock {
+                                            beginControlFlow("is %L ->", subclassName)
+                                            if (discriminator is Discriminator.Root) {
                                                 addStatement(
-                                                    $$"setComment(configuration, \"${parentPath}%L\", listOf(%L))",
-                                                    parameter.pathName,
-                                                    comment.joinToString { "\"${it}\"" },
+                                                    $$"%L.set(configuration, \"${parentPath}%L\", %S)",
+                                                    stringSerializerClassName,
+                                                    ktConfig.discriminator,
+                                                    discriminator.value,
                                                 )
                                             }
-                                        }
-                                    }.build(),
-                            ).addFunction(
-                                // Add `decode` function to KtConfig loader class
-                                FunSpec
-                                    .builder("decode")
-                                    .addModifiers(KModifier.OVERRIDE)
-                                    .addParameter(
-                                        ParameterSpec(
-                                            "value",
-                                            mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)),
-                                        ),
-                                    ).addCode(
-                                        "return %T(\n",
-                                        className,
-                                    ).apply {
-                                        parameters.forEach { parameter ->
-                                            when {
-                                                ktConfig.hasDefault -> {
-                                                    addStatement(
-                                                        "value[%S]?.let(%L::deserialize) ?: defaultValue.%N,",
-                                                        parameter.pathName,
-                                                        parameter.serializer.ref,
-                                                        parameter.name,
-                                                    )
-                                                }
+                                            addStatement(
+                                                "%L.save(configuration, value, parentPath)",
+                                                ClassName(packageName, getLoaderName(subclass)),
+                                            )
+                                            endControlFlow()
+                                        },
+                                    )
+                                }
+                                endControlFlow()
+                            },
+                        )
+                    }.addDecodeFunSpec(className) {
+                        addStatement(
+                            $$"return when (val discriminator = value[\"$${ktConfig.discriminator}\"]?.let(%L::deserialize) ?: throw %L(%S)) {\n%L}",
+                            stringSerializerClassName,
+                            notFoundValueExceptionClassName,
+                            ktConfig.discriminator,
+                            buildCodeBlock {
+                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                    addStatement(
+                                        "%L -> %L.decode(value)",
+                                        discriminator.getAll().joinToCode(",") { buildCodeBlock { add("%S", it) } },
+                                        ClassName(packageName, getLoaderName(subclass)),
+                                    )
+                                }
+                                addStatement(
+                                    "else -> throw %L(discriminator)",
+                                    invalidDiscriminatorExceptionClassName,
+                                )
+                            },
+                        )
+                    }.addEncodeFunSpec(className) {
+                        addCode(
+                            buildCodeBlock {
+                                beginControlFlow("return when (value)")
+                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                    val subclassName = ClassName(subclass.packageName.asString(), getFullName(subclass))
 
-                                                parameter.isNullable -> {
-                                                    addStatement(
-                                                        "value[%S]?.let(%L::deserialize),",
-                                                        parameter.pathName,
-                                                        parameter.serializer.ref,
-                                                    )
-                                                }
-
-                                                else -> {
-                                                    addStatement(
-                                                        "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
-                                                        parameter.pathName,
-                                                        parameter.serializer.ref,
-                                                        notFoundValueExceptionClassName,
-                                                        parameter.pathName,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }.addCode(")")
-                                    .returns(className)
-                                    .build(),
-                            ).addFunction(
-                                // Add `encode` function to KtConfig loader class
-                                FunSpec
-                                    .builder("encode")
-                                    .addModifiers(KModifier.OVERRIDE)
-                                    .addParameter(ParameterSpec("value", className))
-                                    .addCode(
-                                        "return mapOf(\n",
-                                    ).apply {
-                                        parameters.forEach { parameter ->
-                                            if (parameter.isNullable) {
+                                    add(
+                                        buildCodeBlock {
+                                            beginControlFlow("is %L ->", subclassName)
+                                            if (discriminator is Discriminator.Root) {
                                                 addStatement(
-                                                    "%S to value.%L?.let(%L::serialize),",
-                                                    parameter.pathName,
-                                                    parameter.name,
-                                                    parameter.serializer.ref,
-                                                )
-                                            } else {
-                                                addStatement(
-                                                    "%S to %L.serialize(value.%N),",
-                                                    parameter.pathName,
-                                                    parameter.serializer.ref,
-                                                    parameter.name,
+                                                    "mapOf(\"${ktConfig.discriminator}\" to %L.serialize(%S)) +",
+                                                    stringSerializerClassName,
+                                                    discriminator.value,
                                                 )
                                             }
-                                        }
-                                    }.addCode(
-                                        ")",
-                                    ).returns(mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)))
-                                    .build(),
-                            ).build(),
+                                            addStatement(
+                                                "%L.encode(value)",
+                                                ClassName(packageName, getLoaderName(subclass)),
+                                            )
+                                            endControlFlow()
+                                        },
+                                    )
+                                }
+                                endControlFlow()
+                            },
+                        )
+                    }.build(),
+            )
+        }
+
+        /**
+         * Adds a load function to the TypeSpec builder by creating and adding the function specification.
+         * This is a convenience wrapper around [createLoadFunSpec].
+         *
+         * @param className The fully qualified class name to return from the load function
+         * @param block Additional configuration for the function builder
+         * @return This TypeSpec.Builder for chaining
+         */
+        private fun TypeSpec.Builder.addLoadFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = addFunction(createLoadFunSpec(className, block))
+
+        /**
+         * Creates a load function specification that deserializes configuration data into a class instance.
+         * This function reads values from a YamlConfiguration using the parent path as a prefix.
+         *
+         * @param className The fully qualified class name to return from the load function
+         * @param block Additional configuration for the function builder
+         * @return A function specification for the load method
+         */
+        private fun createLoadFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = FunSpec
+            .builder("load")
+            .addModifiers(KModifier.OVERRIDE)
+            .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
+            .addParameter(ParameterSpec("parentPath", stringClassName))
+            .apply(block)
+            .returns(className)
+            .build()
+
+        /**
+         * Adds a save function to the TypeSpec builder by creating and adding the function specification.
+         * This is a convenience wrapper around [createSaveFunSpec].
+         *
+         * @param classDeclaration The source class declaration to extract annotations from
+         * @param className The fully qualified class name to accept as a parameter
+         * @param block Additional configuration for the function builder
+         * @return This TypeSpec.Builder for chaining
+         */
+        private fun TypeSpec.Builder.addSaveFunSpec(
+            classDeclaration: KSClassDeclaration,
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = addFunction(createSaveFunSpec(classDeclaration, className, block))
+
+        /**
+         * Creates a save function specification that serializes a class instance into configuration data.
+         * This function writes values to a YamlConfiguration using the parent path as a prefix,
+         * and handles header comments from the class declaration if present.
+         *
+         * @param classDeclaration The source class declaration to extract annotations from
+         * @param className The fully qualified class name to accept as a parameter
+         * @param block Additional configuration for the function builder
+         * @return A function specification for the save method
+         */
+        private fun createSaveFunSpec(
+            classDeclaration: KSClassDeclaration,
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = FunSpec
+            .builder("save")
+            .addModifiers(KModifier.OVERRIDE)
+            .addParameter(ParameterSpec("configuration", yamlConfigurationClassName))
+            .addParameter(ParameterSpec("value", className))
+            .addParameter(ParameterSpec("parentPath", stringClassName))
+            .apply {
+                // Get header comment
+                val headerComment = classDeclaration.annotations.getComment()
+
+                if (headerComment != null) {
+                    // Add header comment
+                    addStatement(
+                        "setHeaderComment(configuration, parentPath, listOf(%L))",
+                        headerComment.joinToString { "\"${it}\"" },
                     )
-                }.build()
-                .writeTo(codeGenerator, false)
+                }
+            }.apply(block)
+            .build()
+
+        /**
+         * Adds a decode function to the TypeSpec builder by creating and adding the function specification.
+         * This is a convenience wrapper around [createDecodeFunSpec].
+         *
+         * @param className The fully qualified class name to return from the decode function
+         * @param block Additional configuration for the function builder
+         * @return This TypeSpec.Builder for chaining
+         */
+        private fun TypeSpec.Builder.addDecodeFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = addFunction(createDecodeFunSpec(className, block))
+
+        /**
+         * Creates a decode function specification that deserializes a map into a class instance.
+         * This function converts a map of string keys to nullable values into the target class type,
+         * validating required fields and handling nullable values appropriately.
+         *
+         * @param className The fully qualified class name to return from the decode function
+         * @param block Additional configuration for the function builder
+         * @return A function specification for the decode method
+         */
+        private fun createDecodeFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = FunSpec
+            .builder("decode")
+            .addModifiers(KModifier.OVERRIDE)
+            .addParameter(
+                ParameterSpec(
+                    "value",
+                    mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)),
+                ),
+            ).apply(block)
+            .returns(className)
+            .build()
+
+        /**
+         * Adds an encode function to the TypeSpec builder by creating and adding the function specification.
+         * This is a convenience wrapper around [createEncodeFunSpec].
+         *
+         * @param className The fully qualified class name to accept as a parameter
+         * @param block Additional configuration for the function builder
+         * @return This TypeSpec.Builder for chaining
+         */
+        private fun TypeSpec.Builder.addEncodeFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = addFunction(createEncodeFunSpec(className, block))
+
+        /**
+         * Creates an encode function specification that serializes a class instance into a map.
+         * This function converts the target class into a map with string keys and nullable values,
+         * preserving the structure for configuration persistence.
+         *
+         * @param className The fully qualified class name to accept as a parameter
+         * @param block Additional configuration for the function builder
+         * @return A function specification for the encode method
+         */
+        private fun createEncodeFunSpec(
+            className: ClassName,
+            block: FunSpec.Builder.() -> Unit,
+        ) = FunSpec
+            .builder("encode")
+            .addModifiers(KModifier.OVERRIDE)
+            .addParameter(ParameterSpec("value", className))
+            .apply(block)
+            .returns(mapClassName.parameterizedBy(stringClassName, anyClassName.copy(nullable = true)))
+            .build()
+
+        /**
+         * Adds property declarations for serializers that require initialization.
+         * Extracts nested type serializers (like ListOfString) from parameters and creates
+         * private properties for them in the generated loader class.
+         *
+         * @param parameters List of configuration parameters that may contain nested serializers
+         */
+        private fun FileSpec.Builder.addInitializableSerializerProperties(parameters: List<Parameter>) {
+            parameters
+                .map(Parameter::serializer)
+                .extractInitializableSerializers()
+                .forEach { serializer ->
+                    val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
+                    addProperty(
+                        PropertySpec
+                            .builder(serializer.uniqueName, className.parameterizedBy(serializer.type))
+                            .addModifiers(KModifier.PRIVATE)
+                            .initializer("%L", serializer.initialize)
+                            .build(),
+                    )
+                }
         }
 
         /**
@@ -301,6 +579,42 @@ class KtConfigSymbolProcessor(
             } else {
                 getFullName(declaration.parent as KSClassDeclaration) + declaration.simpleName.asString()
             }
+
+        private fun getParameters(declaration: KSClassDeclaration): List<Parameter>? {
+            // Get primary constructor from data class
+            val primaryConstructor = declaration.primaryConstructor
+            if (primaryConstructor == null) {
+                logger.error("Classes annotated with @KtConfig must have a primary constructor", declaration)
+                return null
+            }
+
+            // Get parameters from data class constructor
+            return primaryConstructor.parameters.map { createParameter(it) ?: return null }
+        }
+
+        /**
+         * Determines the discriminator value for a sealed class subclass.
+         * The discriminator is used to identify which subclass to deserialize when loading sealed types.
+         *
+         * First checks for a @SerialName annotation on the class declaration and uses that value if present.
+         * If no @SerialName is found, falls back to using the class's fully qualified name as the discriminator.
+         *
+         * @param declaration The sealed class subclass declaration to get the discriminator for
+         * @return The discriminator string (from @SerialName or qualified name), or null if the class has no qualified name
+         */
+        private fun getDiscriminator(declaration: KSClassDeclaration): String? {
+            val serialName = declaration.annotations.getSerialName()
+            if (serialName != null) {
+                return serialName
+            }
+
+            val qualifiedName = declaration.qualifiedName?.asString()
+            if (qualifiedName == null) {
+                logger.error("Class declaration must have a qualified name", declaration)
+                return null
+            }
+            return qualifiedName
+        }
 
         /**
          * Generates a loader class name for the given class declaration.
@@ -359,6 +673,28 @@ class KtConfigSymbolProcessor(
         }
 
         /**
+         * Extracts the serial name from @SerialName annotations in the sequence.
+         * The @SerialName annotation is used to specify a custom serialization name for sealed class subclasses.
+         *
+         * @return The serial name string from the annotation, or null if no valid @SerialName annotation is found
+         */
+        private fun Sequence<KSAnnotation>.getSerialName(): String? {
+            forEach { annotation ->
+                if (annotation.shortName.asString() == "SerialName") {
+                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "name" }
+                    if (content != null) {
+                        val value = content.value
+                        if (value is String) {
+                            return value
+                        }
+                    }
+                }
+            }
+
+            return null
+        }
+
+        /**
          * Checks if the sequence contains a @KtConfig annotation.
          *
          * @return True if @KtConfig annotation is present, false otherwise
@@ -369,6 +705,7 @@ class KtConfigSymbolProcessor(
                 val arguments = annotation.arguments.associate { it.name?.asString() to it.value }
                 KtConfigAnnotation(
                     hasDefault = arguments["hasDefault"] as? Boolean ?: false,
+                    discriminator = (arguments["discriminator"] as? String).orEmpty().ifBlank { "$" },
                 )
             }
 
@@ -678,7 +1015,24 @@ class KtConfigSymbolProcessor(
 
     private data class KtConfigAnnotation(
         val hasDefault: Boolean,
+        val discriminator: String,
     )
+
+    private sealed interface Discriminator {
+        fun getAll(): List<String>
+
+        data class Root(
+            val value: String,
+        ) : Discriminator {
+            override fun getAll() = listOf(value)
+        }
+
+        data class Childs(
+            val values: List<String>,
+        ) : Discriminator {
+            override fun getAll() = values
+        }
+    }
 
     private data class Parameter(
         val pathName: String,

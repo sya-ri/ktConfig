@@ -7,7 +7,8 @@ build-time, ensuring zero runtime overhead (except for YamlConfiguration operati
 
 - **Zero Runtime Overhead**: All configuration loaders are generated at build-time (KSP).
 - **Type-Safe**: Fully typed configuration using Kotlin data classes.
-- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more out of the box.
+- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more.
+- **Sealed Classes and Interfaces Support**: Support for sealed classes and interfaces.
 - **Rich Features**: Built-in support for comments and custom serializers.
 - **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
 
@@ -22,12 +23,12 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.0.0")
-    ksp("dev.s7a:ktConfig-ksp:2.0.0")
+    implementation("dev.s7a:ktConfig:2.1.0-SNAPSHOT")
+    ksp("dev.s7a:ktConfig-ksp:2.1.0-SNAPSHOT")
 }
 ```
 
@@ -228,6 +229,46 @@ data class CustomConfig(
 )
 ```
 
+### Sealed classes and interfaces
+
+- Use the `discriminator` property in `@KtConfig` to specify the YAML key name (default is `$`).
+- Use `@SerialName` on subclasses to define their identifier in YAML (default is the class full name).
+
+```kotlin
+@KtConfig(discriminator = "type")
+sealed interface AppConfig {
+    @KtConfig
+    @SerialName("message")
+    data class Message(
+        val content: String
+    ) : AppConfig
+
+    @KtConfig
+    @SerialName("broadcast")
+    data class Broadcast(
+        val content: String,
+        val delay: Int
+    ) : AppConfig
+}
+```
+
+#### YAML Representation
+
+Depending on the class being saved, the YAML will look like this:
+
+```yaml
+# For AppConfig.Message
+type: message
+content: "Hello World"
+```
+
+```yaml
+# For AppConfig.Broadcast
+type: broadcast
+content: "Attention!"
+delay: 20
+```
+
 ## 📦 Supported Types
 
 ktConfig supports the following types:
@@ -287,6 +328,7 @@ ktConfig supports the following types:
 - `java.time.Period`
 - [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
 - [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
+- [Sealed classes and interfaces](https://kotlinlang.org/docs/sealed-classes.html)
 
 ### Formatted Types
 
