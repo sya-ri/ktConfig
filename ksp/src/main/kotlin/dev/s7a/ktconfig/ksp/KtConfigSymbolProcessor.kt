@@ -30,7 +30,6 @@ import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.SerialName.Companion.getSerialNameAnnotation
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.UseSerializer.Companion.getUseSerializerAnnotation
 import dev.s7a.ktconfig.ksp.Serializer.Companion.extractInitializableSerializers
-import kotlin.collections.joinToString
 import kotlin.collections.map
 
 /**
@@ -159,7 +158,7 @@ class KtConfigSymbolProcessor(
                                 parameters.forEach { parameter ->
                                     if (ktConfig.hasDefault) {
                                         addStatement(
-                                            "%L.get(configuration, \"%L%L\") ?: defaultValue.%N,",
+                                            "${parameter.serializer.refKey}.get(configuration, \"%L%L\") ?: defaultValue.%N,",
                                             parameter.serializer.ref,
                                             $$"${parentPath}",
                                             parameter.pathName,
@@ -167,7 +166,7 @@ class KtConfigSymbolProcessor(
                                         )
                                     } else {
                                         addStatement(
-                                            "%L.%N(configuration, \"%L%L\"),",
+                                            "${parameter.serializer.refKey}.%N(configuration, \"%L%L\"),",
                                             parameter.serializer.ref,
                                             parameter.serializer.getFn,
                                             $$"${parentPath}",
@@ -180,7 +179,7 @@ class KtConfigSymbolProcessor(
                     }.addSaveFunSpec(classDeclaration, className) {
                         parameters.forEach { parameter ->
                             addStatement(
-                                "%L.set(configuration, \"%L%L\", value.%N)",
+                                "${parameter.serializer.refKey}.set(configuration, \"%L%L\", value.%N)",
                                 parameter.serializer.ref,
                                 $$"${parentPath}",
                                 parameter.pathName,
@@ -207,7 +206,7 @@ class KtConfigSymbolProcessor(
                                     when {
                                         ktConfig.hasDefault -> {
                                             addStatement(
-                                                "value[%S]?.let(%L::deserialize) ?: defaultValue.%N,",
+                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: defaultValue.%N,",
                                                 parameter.pathName,
                                                 parameter.serializer.ref,
                                                 parameter.name,
@@ -216,7 +215,7 @@ class KtConfigSymbolProcessor(
 
                                         parameter.isNullable -> {
                                             addStatement(
-                                                "value[%S]?.let(%L::deserialize),",
+                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize),",
                                                 parameter.pathName,
                                                 parameter.serializer.ref,
                                             )
@@ -224,7 +223,7 @@ class KtConfigSymbolProcessor(
 
                                         else -> {
                                             addStatement(
-                                                "value[%S]?.let(%L::deserialize) ?: throw %L(%S),",
+                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S),",
                                                 parameter.pathName,
                                                 parameter.serializer.ref,
                                                 notFoundValueExceptionClassName,
@@ -242,14 +241,14 @@ class KtConfigSymbolProcessor(
                                 parameters.forEach { parameter ->
                                     if (parameter.isNullable) {
                                         addStatement(
-                                            "%S to value.%L?.let(%L::serialize),",
+                                            "%S to value.%N?.let(${parameter.serializer.refKey}::serialize),",
                                             parameter.pathName,
                                             parameter.name,
                                             parameter.serializer.ref,
                                         )
                                     } else {
                                         addStatement(
-                                            "%S to %L.serialize(value.%N),",
+                                            "%S to ${parameter.serializer.refKey}.serialize(value.%N),",
                                             parameter.pathName,
                                             parameter.serializer.ref,
                                             parameter.name,
@@ -293,36 +292,36 @@ class KtConfigSymbolProcessor(
                     .superclass(loaderClassName.parameterizedBy(className))
                     .addLoadFunSpec(className) {
                         addControlFlowCode(
-                            "return when (val discriminator = %L.getOrThrow(configuration, \"%L%L\"))",
+                            "return when (val discriminator = %T.getOrThrow(configuration, \"%L%L\"))",
                             stringSerializerClassName,
                             $$"${parentPath}",
                             ktConfig.discriminator,
                         ) {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                 addControlFlow("%S ->", discriminator) {
-                                    addStatement("%L.load(configuration, parentPath)", ClassName(packageName, getLoaderName(subclass)))
+                                    addStatement("%T.load(configuration, parentPath)", ClassName(packageName, getLoaderName(subclass)))
                                 }
                             }
                             addControlFlow("else ->") {
-                                addStatement("throw %L(discriminator)", invalidDiscriminatorExceptionClassName)
+                                addStatement("throw %T(discriminator)", invalidDiscriminatorExceptionClassName)
                             }
                         }
                     }.addSaveFunSpec(classDeclaration, className) {
                         addControlFlowCode("when (value)") {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                 addControlFlowCode(
-                                    "is %L ->",
+                                    "is %T ->",
                                     ClassName(subclass.packageName.asString(), getFullName(subclass)),
                                 ) {
                                     addStatement(
-                                        "%L.set(configuration, \"%L%L\", %S)",
+                                        "%T.set(configuration, \"%L%L\", %S)",
                                         stringSerializerClassName,
                                         $$"${parentPath}",
                                         ktConfig.discriminator,
                                         discriminator,
                                     )
                                     addStatement(
-                                        "%L.save(configuration, value, parentPath)",
+                                        "%T.save(configuration, value, parentPath)",
                                         ClassName(packageName, getLoaderName(subclass)),
                                     )
                                 }
@@ -330,7 +329,7 @@ class KtConfigSymbolProcessor(
                         }
                     }.addDecodeFunSpec(className) {
                         addControlFlowCode(
-                            "return when (val discriminator = value[%S]?.let(%L::deserialize) ?: throw %L(%S))",
+                            "return when (val discriminator = value[%S]?.let(%T::deserialize) ?: throw %T(%S))",
                             ktConfig.discriminator,
                             stringSerializerClassName,
                             notFoundValueExceptionClassName,
@@ -338,22 +337,22 @@ class KtConfigSymbolProcessor(
                         ) {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                 addControlFlow("%S ->", discriminator) {
-                                    addStatement("%L.decode(value)", ClassName(packageName, getLoaderName(subclass)))
+                                    addStatement("%T.decode(value)", ClassName(packageName, getLoaderName(subclass)))
                                 }
                             }
                             addControlFlow("else ->") {
-                                addStatement("throw %L(discriminator)", invalidDiscriminatorExceptionClassName)
+                                addStatement("throw %T(discriminator)", invalidDiscriminatorExceptionClassName)
                             }
                         }
                     }.addEncodeFunSpec(className) {
                         addControlFlowCode("return when (value)") {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                 addControlFlowCode(
-                                    "is %L ->",
+                                    "is %T ->",
                                     ClassName(subclass.packageName.asString(), getFullName(subclass)),
                                 ) {
                                     addStatement(
-                                        "mapOf(%S to %L.serialize(%S)) + %L.encode(value)",
+                                        "mapOf(%S to %T.serialize(%S)) + %T.encode(value)",
                                         ktConfig.discriminator,
                                         stringSerializerClassName,
                                         discriminator,
@@ -533,7 +532,7 @@ class KtConfigSymbolProcessor(
                     val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
                     addProperty(
                         PropertySpec
-                            .builder(serializer.uniqueName, className.parameterizedBy(serializer.type))
+                            .builder(serializer.uniqueName, className.parameterizedBy(serializer.typeName))
                             .addModifiers(KModifier.PRIVATE)
                             .initializer("%L", serializer.initialize)
                             .build(),
@@ -655,7 +654,7 @@ class KtConfigSymbolProcessor(
             val modifiers = declaration.modifiers
             when {
                 modifiers.contains(Modifier.ENUM) -> {
-                    return Parameter.Serializer.EnumClass(className, type.isMarkedNullable, qualifiedName)
+                    return Parameter.Serializer.EnumClass(className, type.isMarkedNullable)
                 }
 
                 modifiers.contains(Modifier.VALUE) -> {
@@ -700,11 +699,11 @@ class KtConfigSymbolProcessor(
 
             when (serializer) {
                 Serializer.ConfigurationSerializable -> {
-                    return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable, qualifiedName)
+                    return Parameter.Serializer.ConfigurationSerializableClass(className, isNullable)
                 }
 
                 is Serializer.BuiltIn -> {
-                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.serializerType)
                 }
 
                 is Serializer.Collection -> {
@@ -725,13 +724,13 @@ class KtConfigSymbolProcessor(
                             className,
                             isNullable,
                             serializer.name,
-                            serializer.qualifiedName,
+                            serializer.serializerType,
                             argumentSerializers,
                             serializer.supportNullableValue && nullableValue,
                         )
                     }
 
-                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.qualifiedName)
+                    return Parameter.Serializer.Object(className, isNullable, serializer.name, serializer.serializerType)
                 }
 
                 is Serializer.Nested -> {
@@ -739,7 +738,7 @@ class KtConfigSymbolProcessor(
                         className,
                         isNullable,
                         serializer.qualifiedName,
-                        serializer.loaderName,
+                        serializer.loaderType,
                     )
                 }
 
@@ -748,7 +747,7 @@ class KtConfigSymbolProcessor(
                         className,
                         isNullable,
                         serializer.qualifiedName.replace('.', '_'), // unique name
-                        serializer.qualifiedName,
+                        serializer.serializerType,
                     )
                 }
             }

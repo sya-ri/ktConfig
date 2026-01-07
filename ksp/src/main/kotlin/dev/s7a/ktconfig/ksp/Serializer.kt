@@ -3,9 +3,9 @@ package dev.s7a.ktconfig.ksp
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.squareup.kotlinpoet.ClassName
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
 import kotlin.sequences.forEach
-import kotlin.text.get
 
 sealed interface Serializer {
     data object ConfigurationSerializable : Serializer
@@ -13,24 +13,26 @@ sealed interface Serializer {
     data class BuiltIn(
         val name: String,
     ) : Serializer {
-        val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
+        val serializerType = ClassName("dev.s7a.ktconfig.serializer", "${name}Serializer")
     }
 
     data class Collection(
         val name: String,
         val supportNullableValue: Boolean,
     ) : Serializer {
-        val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
+        val serializerType = ClassName("dev.s7a.ktconfig.serializer", "${name}Serializer")
     }
 
     data class Nested(
         val qualifiedName: String,
-        val loaderName: String,
+        val loaderType: ClassName,
     ) : Serializer
 
     data class Custom(
         val qualifiedName: String,
-    ) : Serializer
+    ) : Serializer {
+        val serializerType = ClassName(qualifiedName.substringBeforeLast('.'), qualifiedName.substringAfterLast('.'))
+    }
 
     companion object {
         private val serializers =
@@ -100,7 +102,7 @@ sealed interface Serializer {
                 // Check if type marked @KtConfig
                 val ktConfig = declaration.getKtConfigAnnotation()
                 if (ktConfig != null) {
-                    return Nested(qualifiedName, "${declaration.packageName.asString()}.${getLoaderName(declaration)}")
+                    return Nested(qualifiedName, ClassName(declaration.packageName.asString(), getLoaderName(declaration)))
                 }
 
                 // Check if type implements ConfigurationSerializable

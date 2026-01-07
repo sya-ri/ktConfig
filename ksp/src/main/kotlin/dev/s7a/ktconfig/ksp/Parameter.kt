@@ -1,8 +1,11 @@
 package dev.s7a.ktconfig.ksp
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.buildCodeBlock
+import com.squareup.kotlinpoet.joinToCode
 
 data class Parameter(
     val pathName: String,
@@ -14,11 +17,12 @@ data class Parameter(
         get() = serializer.isNullable
 
     sealed class Serializer(
-        val type: TypeName,
+        val typeName: TypeName,
         val isNullable: Boolean,
     ) {
         abstract val uniqueName: String
-        abstract val ref: String
+        abstract val refKey: String
+        abstract val ref: Any
         abstract val keyable: Boolean
 
         val getFn = if (isNullable) "get" else "getOrThrow"
@@ -27,10 +31,11 @@ data class Parameter(
             type: ClassName,
             isNullable: Boolean,
             name: String,
-            qualifiedName: String,
+            serializerType: ClassName,
         ) : Serializer(type, isNullable) {
             override val uniqueName = name
-            override val ref = qualifiedName
+            override val refKey = "%T"
+            override val ref = serializerType
             override val keyable = true
         }
 
@@ -38,9 +43,10 @@ data class Parameter(
             type: TypeName,
             isNullable: Boolean,
             name: String,
-            protected val qualifiedName: String = "dev.s7a.ktconfig.serializer.${name}Serializer",
+            protected val serializerType: ClassName = ClassName("dev.s7a.ktconfig.serializer", "${name}Serializer"),
         ) : Serializer(type, isNullable) {
-            abstract val initialize: String
+            abstract val initialize: CodeBlock
+            override val refKey = "%L"
         }
 
         // Properties like type, uniqueName, ref are stored as class properties
@@ -49,22 +55,22 @@ data class Parameter(
             parentType: ClassName,
             isNullable: Boolean,
             name: String,
-            qualifiedName: String,
+            serializerType: ClassName,
             val arguments: List<Serializer>,
             val nullableValue: Boolean,
         ) : InitializableSerializer(
                 parentType.parameterizedBy(
                     arguments.mapIndexed { index, it ->
                         if (arguments.lastIndex == index) {
-                            it.type.copy(nullable = nullableValue)
+                            it.typeName.copy(nullable = nullableValue)
                         } else {
-                            it.type
+                            it.typeName
                         }
                     },
                 ),
                 isNullable,
                 name,
-                qualifiedName,
+                serializerType,
             ) {
             override val uniqueName =
                 buildString {
@@ -78,12 +84,16 @@ data class Parameter(
             override val ref = uniqueName
             override val keyable = false
             override val initialize =
-                buildString {
-                    append(qualifiedName)
-                    if (nullableValue) {
-                        append(".Nullable")
-                    }
-                    append("(${arguments.joinToString(", ") { it.ref }})")
+                buildCodeBlock {
+                    add(
+                        "%T(%L)",
+                        if (nullableValue) serializerType.nestedClass("Nullable") else serializerType,
+                        arguments.joinToCode {
+                            buildCodeBlock {
+                                add(it.refKey, it.ref)
+                            }
+                        },
+                    )
                 }
         }
 
@@ -91,34 +101,41 @@ data class Parameter(
             type: ClassName,
             isNullable: Boolean,
             qualifiedName: String,
-            loaderName: String,
+            loaderType: ClassName,
         ) : InitializableSerializer(type, isNullable, "Nested") {
             override val uniqueName = qualifiedName.replace('.', '_')
             override val ref = uniqueName
             override val keyable = false
-            override val initialize = "${super.qualifiedName}($loaderName)"
+            override val initialize =
+                buildCodeBlock {
+                    add("%T(%T)", serializerType, loaderType)
+                }
         }
 
         class ConfigurationSerializableClass(
             type: ClassName,
             isNullable: Boolean,
-            classQualifiedName: String,
         ) : InitializableSerializer(type, isNullable, "ConfigurationSerializable") {
             override val uniqueName = type.canonicalName.replace(".", "_")
             override val ref = uniqueName
             override val keyable = false
-            override val initialize = "$qualifiedName<$classQualifiedName>()"
+            override val initialize =
+                buildCodeBlock {
+                    add("%T<%T>()", serializerType, type)
+                }
         }
 
         class EnumClass(
             type: ClassName,
             isNullable: Boolean,
-            enumQualifiedName: String,
         ) : InitializableSerializer(type, isNullable, "Enum") {
             override val uniqueName = type.canonicalName.replace(".", "_")
             override val ref = uniqueName
             override val keyable = true
-            override val initialize = "$qualifiedName($enumQualifiedName::class.java)"
+            override val initialize =
+                buildCodeBlock {
+                    add("%T(%T::class.java)", serializerType, type)
+                }
         }
 
         class ValueClass(
@@ -131,10 +148,14 @@ data class Parameter(
             override val ref = uniqueName
             override val keyable = argument.keyable
             override val initialize =
-                buildString {
-                    append(qualifiedName)
-                    if (keyable) append(".Keyable")
-                    append("(${argument.ref}, { $type(it) }, { it.$parameterName })")
+                buildCodeBlock {
+                    add(
+                        "%T(${argument.refKey}, { %T(it) }, { it.%L })",
+                        if (keyable) serializerType.nestedClass("Keyable") else serializerType,
+                        argument.ref,
+                        type,
+                        parameterName,
+                    )
                 }
         }
     }
