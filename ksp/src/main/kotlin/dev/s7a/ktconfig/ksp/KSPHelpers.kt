@@ -29,3 +29,19 @@ fun getLoaderName(declaration: KSClassDeclaration): String {
     val fullName = getFullName(declaration).joinToString("")
     return "${fullName}Loader"
 }
+
+
+/**
+ * Recursively retrieves all sealed subclasses of this class declaration.
+ * For sealed classes with nested sealed subclasses, this function traverses the entire hierarchy
+ * and returns only the leaf (non-sealed or final sealed) subclasses.
+ *
+ * @receiver The sealed class declaration to get subclasses from
+ * @return List of all leaf sealed subclasses in the hierarchy
+ */
+fun KSClassDeclaration.getSealedSubclassesDeeply(): List<KSClassDeclaration> {
+    val subclasses = getSealedSubclasses().toList()
+    return subclasses.flatMap {
+        it.getSealedSubclassesDeeply().ifEmpty { listOf(it) }
+    }
+}

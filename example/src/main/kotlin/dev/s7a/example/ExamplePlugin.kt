@@ -561,12 +561,13 @@ class ExamplePlugin : JavaPlugin() {
     private fun testSealedSerializer() {
         output.info("Test sealed serializer:")
 
+        // Use discriminator: '$' (ignore 'type')
         listOf(
             Pair(
                 """
                 $: dev.s7a.example.config.SealedTestConfig.A
                 a: text1
-                value: 5
+                value: '5'
                 enum: TestA
                 
                 """.trimIndent(),
@@ -576,7 +577,7 @@ class ExamplePlugin : JavaPlugin() {
                 """
                 $: dev.s7a.example.config.SealedTestConfig.A
                 a: text1
-                value: 5
+                value: '5'
                 enum: TestA
                 
                 """.trimIndent(),
@@ -585,7 +586,6 @@ class ExamplePlugin : JavaPlugin() {
             Pair(
                 """
                 $: b1
-                type: b1
                 b1: text2
                 enum: TestB1
                 
@@ -595,7 +595,6 @@ class ExamplePlugin : JavaPlugin() {
             Pair(
                 """
                 $: dev.s7a.example.config.SealedTestConfig.B.B2
-                type: dev.s7a.example.config.SealedTestConfig.B.B2
                 b2: text3
                 
                 """.trimIndent(),
@@ -625,6 +624,7 @@ class ExamplePlugin : JavaPlugin() {
             }
         }
 
+        // Use discriminator: 'type'
         listOf(
             Pair(
                 """
