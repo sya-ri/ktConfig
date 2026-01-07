@@ -7,7 +7,9 @@ import dev.s7a.example.config.SealedTestConfigLoader
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
 import dev.s7a.example.type.CustomData
+import dev.s7a.ktconfig.type.FormattedColorSerializer
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -35,6 +37,7 @@ class ExamplePlugin : JavaPlugin() {
         testSerializer()
         testDefaultSerializer()
         testSealedSerializer()
+        testFormattedColor()
         server.shutdown()
     }
 
@@ -646,6 +649,34 @@ class ExamplePlugin : JavaPlugin() {
                 output.error("SealedTestConfigB: expected=$yaml, actual=$actual")
             } else {
                 output.info("SealedTestConfigB: OK")
+            }
+        }
+    }
+
+    private fun testFormattedColor() {
+        val expected = Color.fromRGB(0x1F, 0x2E, 0x3D)
+        val actual = FormattedColorSerializer.decode("#1F2E3D")
+        if (actual != expected) {
+            output.error("FormattedColorSerializer: expected=$expected, actual=$actual")
+        } else {
+            output.info("FormattedColorSerializer: OK")
+        }
+
+        if (FormattedColorSerializer.isSupportedAlpha) {
+            // Check alpha
+            val expected = Color.fromARGB(0x1F, 0x2E, 0x3D, 0x4C)
+            val actual = FormattedColorSerializer.decode("#1F2E3D4C")
+            if (actual != expected) {
+                output.error("FormattedColorSerializer(alpha): expected=$expected, actual=$actual")
+            } else {
+                output.info("FormattedColorSerializer(alpha): OK")
+            }
+        } else {
+            // Check alpha support
+            if (Bukkit.getVersion().contains("1.8.8").not()) {
+                output.error("FormattedColorSerializer(alpha): isSupportedAlpha=false")
+            } else {
+                output.info("FormattedColorSerializer(alpha): Unsupported version")
             }
         }
     }

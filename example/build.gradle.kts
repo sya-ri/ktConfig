@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     library(kotlin("stdlib"))
-    compileOnly(libs.spigot8)
+    compileOnly(libs.spigot)
 
     project.logger.lifecycle("Use Local Build: $useLocalBuild")
     if (useLocalBuild) {
