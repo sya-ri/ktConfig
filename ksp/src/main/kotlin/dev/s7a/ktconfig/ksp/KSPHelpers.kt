@@ -30,7 +30,6 @@ fun getLoaderName(declaration: KSClassDeclaration): String {
     return "${fullName}Loader"
 }
 
-
 /**
  * Recursively retrieves all sealed subclasses of this class declaration.
  * For sealed classes with nested sealed subclasses, this function traverses the entire hierarchy
