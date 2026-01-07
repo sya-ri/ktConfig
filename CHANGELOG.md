@@ -5,6 +5,10 @@
 ### Added
 - Added support for serialization of sealed classes and interfaces.
     - Added `discriminator` property to the `@KtConfig` annotation for handling sealed hierarchies.
+- Added new methods to `KtConfigLoader` for easier file handling:
+    - `loadAndSave`: Loads a file and immediately saves it back.
+    - `loadAndSaveIfNotExists`: Loads a file and saves default values if the file doesn't exist.
+    - `saveIfNotExists`: Saves the configuration only if the file does not already exist.
 - Added `FormattedColorSerializer#isSupportedAlpha` property to detect Minecraft version support for an alpha channel in colors.
 
 ### Changed

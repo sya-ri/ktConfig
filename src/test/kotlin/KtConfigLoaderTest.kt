@@ -7,13 +7,23 @@ import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class KtConfigLoaderTest {
     data class CustomData(
         val value: String,
     )
 
-    class CustomLoader : KtConfigLoader<CustomData>() {
+    open class CustomLoader : KtConfigLoader<CustomData>() {
+        class HasDefault : CustomLoader() {
+            override fun load(
+                configuration: YamlConfiguration,
+                parentPath: String,
+            ) = CustomData(
+                StringSerializer.get(configuration, "${parentPath}value") ?: "default",
+            )
+        }
+
         override fun load(
             configuration: YamlConfiguration,
             parentPath: String,
@@ -65,7 +75,7 @@ class KtConfigLoaderTest {
     }
 
     @Test
-    fun testLoadAndSaveFile() {
+    fun testSaveAndLoadFile() {
         val loader = CustomLoader()
         val tempDir = createTempDirectory().toFile()
         val configFile = File(tempDir, "config.yml")
@@ -75,5 +85,82 @@ class KtConfigLoaderTest {
         val loadedData = loader.load(configFile)
 
         assertEquals(originalData, loadedData)
+    }
+
+    @Test
+    fun testLoadAndSaveFile() {
+        val loader = CustomLoader.HasDefault()
+        val tempDir = createTempDirectory().toFile()
+        val configFile = File(tempDir, "config.yml")
+
+        val expectedData = CustomData("default")
+        val loadedData = loader.loadAndSave(configFile)
+        assertEquals(expectedData, loadedData)
+        assertTrue(configFile.exists())
+    }
+
+    @Test
+    fun testLoadAndSaveFileUpdated() {
+        val loader = CustomLoader.HasDefault()
+        val tempDir = createTempDirectory().toFile()
+        val configFile = File(tempDir, "config.yml")
+        configFile.writeText(
+            """
+            value: updated
+            ignore: delete this value after loadAndSave
+            
+            """.trimIndent(),
+        )
+
+        val expectedData = CustomData("updated")
+        val loadedData = loader.loadAndSave(configFile)
+        assertEquals(expectedData, loadedData)
+        assertTrue(configFile.exists())
+        assertEquals(
+            """
+            value: updated
+            
+            """.trimIndent(),
+            configFile.readText(),
+        )
+    }
+
+    @Test
+    fun testLoadAndSaveFileIfNotExist() {
+        val loader = CustomLoader.HasDefault()
+        val tempDir = createTempDirectory().toFile()
+        val configFile = File(tempDir, "config.yml")
+
+        val expectedData = CustomData("default")
+        val loadedData = loader.loadAndSaveIfNotExists(configFile)
+        assertEquals(expectedData, loadedData)
+        assertTrue(configFile.exists())
+    }
+
+    @Test
+    fun testLoadAndSaveFileIfNotExistUpdated() {
+        val loader = CustomLoader.HasDefault()
+        val tempDir = createTempDirectory().toFile()
+        val configFile = File(tempDir, "config.yml")
+        configFile.writeText(
+            """
+            value: updated
+            ignore: keep this value after loadAndSaveIfNotExists
+            
+            """.trimIndent(),
+        )
+
+        val expectedData = CustomData("updated")
+        val loadedData = loader.loadAndSaveIfNotExists(configFile) // <- if not exists
+        assertEquals(expectedData, loadedData)
+        assertTrue(configFile.exists())
+        assertEquals(
+            """
+            value: updated
+            ignore: keep this value after loadAndSaveIfNotExists
+            
+            """.trimIndent(),
+            configFile.readText(),
+        )
     }
 }
