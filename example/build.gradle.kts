@@ -92,7 +92,11 @@ listOf(
                 .get()
                 .asFile.absolutePath,
         )
-        jarUrl.set(LaunchMinecraftServerTask.JarUrl.Paper(version))
+        jarUrl.set(
+            LaunchMinecraftServerTask.JarUrl {
+                "https://fill-data.papermc.io/v1/objects/5be84d9fc43181a72d5fdee7e3167824d9667bfc97b1bf9721713f9a971481ca/paper-1.21.11-88.jar"
+            },
+        )
         agreeEula.set(true)
     }
 }

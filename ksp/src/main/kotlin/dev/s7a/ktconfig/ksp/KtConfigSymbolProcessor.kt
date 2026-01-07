@@ -1,12 +1,10 @@
 package dev.s7a.ktconfig.ksp
 
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
@@ -23,12 +21,16 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.joinToCode
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
+import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Comment.Companion.getCommentAnnotation
+import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
+import dev.s7a.ktconfig.ksp.KtConfigAnnotation.SerialName.Companion.getSerialNameAnnotation
+import dev.s7a.ktconfig.ksp.KtConfigAnnotation.UseSerializer.Companion.getUseSerializerAnnotation
+import dev.s7a.ktconfig.ksp.Serializer.Companion.extractInitializableSerializers
 import kotlin.collections.joinToString
 import kotlin.collections.map
 
@@ -78,7 +80,7 @@ class KtConfigSymbolProcessor(
             data: Unit,
         ) {
             // Get @KtConfig annotation
-            val ktConfig = classDeclaration.annotations.getKtConfig()
+            val ktConfig = classDeclaration.getKtConfigAnnotation()
             if (ktConfig == null) {
                 logger.error("Classes must be annotated with @KtConfig", classDeclaration)
                 return
@@ -101,7 +103,7 @@ class KtConfigSymbolProcessor(
                     addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
 
                     // sealed interface/class
-                    val sealedSubclasses = classDeclaration.getSealedSubclasses().toList()
+                    val sealedSubclasses = classDeclaration.getSealedSubclassesDeeply()
                     if (sealedSubclasses.isNotEmpty()) {
                         return@apply addSealedLoader(classDeclaration, className, loaderSimpleName, file, ktConfig, sealedSubclasses)
                     }
@@ -278,12 +280,7 @@ class KtConfigSymbolProcessor(
         ) {
             val sealedSubclassDiscriminators =
                 sealedSubclasses.associateWith { subclass ->
-                    val discriminators = subclass.getSealedSubclasses().toList().map { getDiscriminator(it) ?: return }
-                    if (discriminators.isEmpty()) {
-                        Discriminator.Root(getDiscriminator(subclass) ?: return)
-                    } else {
-                        Discriminator.Childs(discriminators)
-                    }
+                    getDiscriminator(subclass) ?: return
                 }
 
             addType(
@@ -298,8 +295,8 @@ class KtConfigSymbolProcessor(
                             buildCodeBlock {
                                 sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                     addStatement(
-                                        "%L -> %L.load(configuration, parentPath)",
-                                        discriminator.getAll().joinToCode(",") { buildCodeBlock { add("%S", it) } },
+                                        "%S -> %L.load(configuration, parentPath)",
+                                        discriminator,
                                         ClassName(packageName, getLoaderName(subclass)),
                                     )
                                 }
@@ -319,14 +316,12 @@ class KtConfigSymbolProcessor(
                                     add(
                                         buildCodeBlock {
                                             beginControlFlow("is %L ->", subclassName)
-                                            if (discriminator is Discriminator.Root) {
-                                                addStatement(
-                                                    $$"%L.set(configuration, \"${parentPath}%L\", %S)",
-                                                    stringSerializerClassName,
-                                                    ktConfig.discriminator,
-                                                    discriminator.value,
-                                                )
-                                            }
+                                            addStatement(
+                                                $$"%L.set(configuration, \"${parentPath}%L\", %S)",
+                                                stringSerializerClassName,
+                                                ktConfig.discriminator,
+                                                discriminator,
+                                            )
                                             addStatement(
                                                 "%L.save(configuration, value, parentPath)",
                                                 ClassName(packageName, getLoaderName(subclass)),
@@ -347,8 +342,8 @@ class KtConfigSymbolProcessor(
                             buildCodeBlock {
                                 sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                     addStatement(
-                                        "%L -> %L.decode(value)",
-                                        discriminator.getAll().joinToCode(",") { buildCodeBlock { add("%S", it) } },
+                                        "%S -> %L.decode(value)",
+                                        discriminator,
                                         ClassName(packageName, getLoaderName(subclass)),
                                     )
                                 }
@@ -368,15 +363,11 @@ class KtConfigSymbolProcessor(
                                     add(
                                         buildCodeBlock {
                                             beginControlFlow("is %L ->", subclassName)
-                                            if (discriminator is Discriminator.Root) {
-                                                addStatement(
-                                                    "mapOf(\"${ktConfig.discriminator}\" to %L.serialize(%S)) +",
-                                                    stringSerializerClassName,
-                                                    discriminator.value,
-                                                )
-                                            }
                                             addStatement(
-                                                "%L.encode(value)",
+                                                "mapOf(%S to %L.serialize(%S)) + %L.encode(value)",
+                                                ktConfig.discriminator,
+                                                stringSerializerClassName,
+                                                discriminator,
                                                 ClassName(packageName, getLoaderName(subclass)),
                                             )
                                             endControlFlow()
@@ -460,7 +451,7 @@ class KtConfigSymbolProcessor(
             .addParameter(ParameterSpec("parentPath", stringClassName))
             .apply {
                 // Get header comment
-                val headerComment = classDeclaration.annotations.getComment()
+                val headerComment = classDeclaration.getCommentAnnotation()?.content
 
                 if (headerComment != null) {
                     // Add header comment
@@ -565,21 +556,6 @@ class KtConfigSymbolProcessor(
                 }
         }
 
-        /**
-         * Gets the full name of a class by traversing its parent hierarchy.
-         * For nested classes, returns a list of class names from outermost to innermost.
-         * For top-level classes, returns a single-element list with the class name.
-         *
-         * @param declaration The class declaration to get the full name for
-         * @return List of class names representing the full hierarchy
-         */
-        private fun getFullName(declaration: KSClassDeclaration): List<String> =
-            if (declaration.parent is KSFile) {
-                listOf(declaration.simpleName.asString())
-            } else {
-                getFullName(declaration.parent as KSClassDeclaration) + declaration.simpleName.asString()
-            }
-
         private fun getParameters(declaration: KSClassDeclaration): List<Parameter>? {
             // Get primary constructor from data class
             val primaryConstructor = declaration.primaryConstructor
@@ -603,9 +579,9 @@ class KtConfigSymbolProcessor(
          * @return The discriminator string (from @SerialName or qualified name), or null if the class has no qualified name
          */
         private fun getDiscriminator(declaration: KSClassDeclaration): String? {
-            val serialName = declaration.annotations.getSerialName()
+            val serialName = declaration.getSerialNameAnnotation()
             if (serialName != null) {
-                return serialName
+                return serialName.name
             }
 
             val qualifiedName = declaration.qualifiedName?.asString()
@@ -615,77 +591,6 @@ class KtConfigSymbolProcessor(
             }
             return qualifiedName
         }
-
-        /**
-         * Generates a loader class name for the given class declaration.
-         * Combines the full class name parts with underscores and appends "Loader".
-         *
-         * @param declaration The class declaration to generate a loader name for
-         * @return The generated loader class name
-         */
-        private fun getLoaderName(declaration: KSClassDeclaration): String {
-            val fullName = getFullName(declaration).joinToString("")
-            return "${fullName}Loader"
-        }
-
-        /**
-         * Extracts comment content from @Comment annotations in the sequence.
-         * Processes the annotation arguments to get the comment strings.
-         *
-         * @return List of comment strings, or null if no valid comment annotation is found
-         */
-        private fun Sequence<KSAnnotation>.getComment(): List<String>? {
-            forEach { annotation ->
-                if (annotation.shortName.asString() == "Comment") {
-                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "content" }
-                    if (content != null) {
-                        val value = content.value
-                        if (value is List<*> && value.isNotEmpty() && value.first() is String) {
-                            return value.map(Any?::toString)
-                        }
-                    }
-                }
-            }
-
-            return null
-        }
-
-        /**
-         * Extracts the serial name from @SerialName annotations in the sequence.
-         * The @SerialName annotation is used to specify a custom serialization name for sealed class subclasses.
-         *
-         * @return The serial name string from the annotation, or null if no valid @SerialName annotation is found
-         */
-        private fun Sequence<KSAnnotation>.getSerialName(): String? {
-            forEach { annotation ->
-                if (annotation.shortName.asString() == "SerialName") {
-                    val content = annotation.arguments.firstOrNull { it.name?.asString() == "name" }
-                    if (content != null) {
-                        val value = content.value
-                        if (value is String) {
-                            return value
-                        }
-                    }
-                }
-            }
-
-            return null
-        }
-
-        /**
-         * Checks if the sequence contains a @KtConfig annotation.
-         *
-         * @return True if @KtConfig annotation is present, false otherwise
-         */
-        private fun Sequence<KSAnnotation>.getKtConfig(): KtConfigAnnotation? =
-            firstNotNullOfOrNull { annotation ->
-                if (annotation.shortName.asString() != "KtConfig") return@firstNotNullOfOrNull null
-                val arguments = annotation.arguments.associate { it.name?.asString() to it.value }
-                KtConfigAnnotation(
-                    hasDefault = arguments["hasDefault"] as? Boolean ?: false,
-                    discriminator = (arguments["discriminator"] as? String).orEmpty().ifBlank { "$" },
-                )
-            }
 
         /**
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
@@ -699,37 +604,25 @@ class KtConfigSymbolProcessor(
             }
 
             val serializer = getSerializer(declaration) ?: return null
-            val pathName = declaration.annotations.getSerialName()
-            val comment = declaration.annotations.getComment()
+            val pathName = declaration.getSerialNameAnnotation()?.name
+            val comment = declaration.getCommentAnnotation()?.content
             return Parameter(pathName ?: name, name, serializer, comment)
-        }
-
-        private fun Sequence<KSAnnotation>.getSerializer(): Serializer.Custom? {
-            forEach { annotation ->
-                if (annotation.shortName.asString() == "UseSerializer") {
-                    val serializer = annotation.arguments.firstOrNull { it.name?.asString() == "serializer" }
-                    if (serializer != null) {
-                        val value = serializer.value
-                        if (value is KSType) {
-                            val qualifiedName = value.declaration.qualifiedName
-                            if (qualifiedName != null) {
-                                return Serializer.Custom(qualifiedName.asString())
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null
         }
 
         private fun KSType.solveTypeAlias(): Pair<KSType, Serializer.Custom?> {
             val declaration = this.declaration
-            val serializer =
+            val annotation =
                 // Get typealias-annotated serializer
-                annotations.getSerializer()
+                getUseSerializerAnnotation()
                     ?: // Get class-annotated serializer
-                    declaration.annotations.getSerializer()
+                    declaration.getUseSerializerAnnotation()
+            val serializer =
+                annotation
+                    ?.serializer
+                    ?.declaration
+                    ?.qualifiedName
+                    ?.asString()
+                    ?.let(Serializer::Custom)
 
             // Solve typealias
             if (declaration is KSTypeAlias) {
@@ -811,7 +704,7 @@ class KtConfigSymbolProcessor(
             }
 
             // Get serializer
-            val serializer = customSerializer ?: findSerializer(qualifiedName, type)
+            val serializer = customSerializer ?: Serializer.findSerializer(qualifiedName, type)
             if (serializer == null) {
                 logger.error("Unsupported type: $qualifiedName", declaration)
                 return null
@@ -875,302 +768,5 @@ class KtConfigSymbolProcessor(
                 }
             }
         }
-
-        private val serializers =
-            mapOf(
-                // Primitive
-                "kotlin.Byte" to Serializer.BuiltIn("Byte"),
-                "kotlin.Char" to Serializer.BuiltIn("Char"),
-                "kotlin.Int" to Serializer.BuiltIn("Int"),
-                "kotlin.Long" to Serializer.BuiltIn("Long"),
-                "kotlin.Short" to Serializer.BuiltIn("Short"),
-                "kotlin.String" to Serializer.BuiltIn("String"),
-                "kotlin.UByte" to Serializer.BuiltIn("UByte"),
-                "kotlin.UInt" to Serializer.BuiltIn("UInt"),
-                "kotlin.ULong" to Serializer.BuiltIn("ULong"),
-                "kotlin.UShort" to Serializer.BuiltIn("UShort"),
-                "kotlin.Double" to Serializer.BuiltIn("Double"),
-                "kotlin.Float" to Serializer.BuiltIn("Float"),
-                "kotlin.Boolean" to Serializer.BuiltIn("Boolean"),
-                // Common
-                "java.util.UUID" to Serializer.BuiltIn("UUID"),
-                "java.time.Instant" to Serializer.BuiltIn("Instant"),
-                "java.time.LocalTime" to Serializer.BuiltIn("LocalTime"),
-                "java.time.LocalDate" to Serializer.BuiltIn("LocalDate"),
-                "java.time.LocalDateTime" to Serializer.BuiltIn("LocalDateTime"),
-                "java.time.Year" to Serializer.BuiltIn("Year"),
-                "java.time.YearMonth" to Serializer.BuiltIn("YearMonth"),
-                "java.time.OffsetTime" to Serializer.BuiltIn("OffsetTime"),
-                "java.time.OffsetDateTime" to Serializer.BuiltIn("OffsetDateTime"),
-                "java.time.ZonedDateTime" to Serializer.BuiltIn("ZonedDateTime"),
-                "java.time.Duration" to Serializer.BuiltIn("Duration"),
-                "java.time.Period" to Serializer.BuiltIn("Period"),
-                // Collections
-                "kotlin.Array" to Serializer.Collection("Array", true),
-                "kotlin.ByteArray" to Serializer.Collection("ByteArray", false),
-                "kotlin.CharArray" to Serializer.Collection("CharArray", false),
-                "kotlin.IntArray" to Serializer.Collection("IntArray", false),
-                "kotlin.LongArray" to Serializer.Collection("LongArray", false),
-                "kotlin.ShortArray" to Serializer.Collection("ShortArray", false),
-                "kotlin.UByteArray" to Serializer.Collection("UByteArray", false),
-                "kotlin.UIntArray" to Serializer.Collection("UIntArray", false),
-                "kotlin.ULongArray" to Serializer.Collection("ULongArray", false),
-                "kotlin.UShortArray" to Serializer.Collection("UShortArray", false),
-                "kotlin.DoubleArray" to Serializer.Collection("DoubleArray", false),
-                "kotlin.FloatArray" to Serializer.Collection("FloatArray", false),
-                "kotlin.BooleanArray" to Serializer.Collection("BooleanArray", false),
-                "kotlin.collections.List" to Serializer.Collection("List", true),
-                "kotlin.collections.Set" to Serializer.Collection("Set", true),
-                "kotlin.collections.ArrayDeque" to Serializer.Collection("ArrayDeque", true),
-                "kotlin.collections.Map" to Serializer.Collection("Map", true),
-            )
-
-        /**
-         * Finds the appropriate serializer name for a given type.
-         * First checks if the type implements ConfigurationSerializable,
-         * then looks up built-in serializers.
-         *
-         * @param qualifiedName The fully qualified name of the type
-         * @param type The KSType representing the type to find a serializer for
-         * @return The name of the serializer to use, or null if no suitable serializer is found
-         */
-        private fun findSerializer(
-            qualifiedName: String,
-            type: KSType,
-        ): Serializer? {
-            val declaration = type.declaration
-            if (declaration is KSClassDeclaration) {
-                // Check if type marked @KtConfig
-                val ktConfig = declaration.annotations.getKtConfig()
-                if (ktConfig != null) {
-                    return Serializer.Nested(qualifiedName, "${declaration.packageName.asString()}.${getLoaderName(declaration)}")
-                }
-
-                // Check if type implements ConfigurationSerializable
-                declaration.getAllSuperTypes().forEach { superType ->
-                    val qualifiedName = superType.declaration.qualifiedName?.asString()
-                    if (qualifiedName == "org.bukkit.configuration.serialization.ConfigurationSerializable") {
-                        return Serializer.ConfigurationSerializable
-                    }
-                }
-            }
-
-            // Lookup serializer name from the predefined map of built-in serializers
-            return serializers[qualifiedName]
-        }
-
-        /**
-         * Resolves a list of serializers by flattening nested serializers and removing duplicates.
-         *
-         * @return A flattened list of unique initializable serializers identified by their unique names that need initialization
-         */
-        private fun List<Parameter.Serializer>.extractInitializableSerializers(): List<Parameter.Serializer.InitializableSerializer> =
-            filterIsInstance<Parameter.Serializer.InitializableSerializer>()
-                .flatMap {
-                    when (it) {
-                        is Parameter.Serializer.Class -> {
-                            it.arguments.extractInitializableSerializers() + it
-                        }
-
-                        is Parameter.Serializer.Nested -> {
-                            listOf(it)
-                        }
-
-                        is Parameter.Serializer.ConfigurationSerializableClass -> {
-                            listOf(it)
-                        }
-
-                        is Parameter.Serializer.EnumClass -> {
-                            listOf(it)
-                        }
-
-                        is Parameter.Serializer.ValueClass -> {
-                            listOf(it.argument).extractInitializableSerializers() + it
-                        }
-                    }
-                }.distinctBy(Parameter.Serializer::uniqueName)
-    }
-
-    private data class KtConfigAnnotation(
-        val hasDefault: Boolean,
-        val discriminator: String,
-    )
-
-    private sealed interface Discriminator {
-        fun getAll(): List<String>
-
-        data class Root(
-            val value: String,
-        ) : Discriminator {
-            override fun getAll() = listOf(value)
-        }
-
-        data class Childs(
-            val values: List<String>,
-        ) : Discriminator {
-            override fun getAll() = values
-        }
-    }
-
-    private data class Parameter(
-        val pathName: String,
-        val name: String,
-        val serializer: Serializer,
-        val comment: List<String>?,
-    ) {
-        val isNullable
-            get() = serializer.isNullable
-
-        sealed class Serializer(
-            val type: TypeName,
-            val isNullable: Boolean,
-        ) {
-            abstract val uniqueName: String
-            abstract val ref: String
-            abstract val keyable: Boolean
-
-            val getFn = if (isNullable) "get" else "getOrThrow"
-
-            class Object(
-                type: ClassName,
-                isNullable: Boolean,
-                name: String,
-                qualifiedName: String,
-            ) : Serializer(type, isNullable) {
-                override val uniqueName = name
-                override val ref = qualifiedName
-                override val keyable = true
-            }
-
-            sealed class InitializableSerializer(
-                type: TypeName,
-                isNullable: Boolean,
-                name: String,
-                protected val qualifiedName: String = "dev.s7a.ktconfig.serializer.${name}Serializer",
-            ) : Serializer(type, isNullable) {
-                abstract val initialize: String
-            }
-
-            // Properties like type, uniqueName, ref are stored as class properties
-            // to avoid recalculating them each time they are accessed
-            class Class(
-                parentType: ClassName,
-                isNullable: Boolean,
-                name: String,
-                qualifiedName: String,
-                val arguments: List<Serializer>,
-                val nullableValue: Boolean,
-            ) : InitializableSerializer(
-                    parentType.parameterizedBy(
-                        arguments.mapIndexed { index, it ->
-                            if (arguments.lastIndex == index) {
-                                it.type.copy(nullable = nullableValue)
-                            } else {
-                                it.type
-                            }
-                        },
-                    ),
-                    isNullable,
-                    name,
-                    qualifiedName,
-                ) {
-                override val uniqueName =
-                    buildString {
-                        if (nullableValue) append("Nullable")
-                        append(name)
-                        append("Of")
-                        arguments.forEach {
-                            append(it.uniqueName)
-                        }
-                    }
-                override val ref = uniqueName
-                override val keyable = false
-                override val initialize =
-                    buildString {
-                        append(qualifiedName)
-                        if (nullableValue) {
-                            append(".Nullable")
-                        }
-                        append("(${arguments.joinToString(", ") { it.ref }})")
-                    }
-            }
-
-            class Nested(
-                type: ClassName,
-                isNullable: Boolean,
-                qualifiedName: String,
-                loaderName: String,
-            ) : InitializableSerializer(type, isNullable, "Nested") {
-                override val uniqueName = qualifiedName.replace('.', '_')
-                override val ref = uniqueName
-                override val keyable = false
-                override val initialize = "${super.qualifiedName}($loaderName)"
-            }
-
-            class ConfigurationSerializableClass(
-                type: ClassName,
-                isNullable: Boolean,
-                classQualifiedName: String,
-            ) : InitializableSerializer(type, isNullable, "ConfigurationSerializable") {
-                override val uniqueName = type.canonicalName.replace(".", "_")
-                override val ref = uniqueName
-                override val keyable = false
-                override val initialize = "$qualifiedName<$classQualifiedName>()"
-            }
-
-            class EnumClass(
-                type: ClassName,
-                isNullable: Boolean,
-                enumQualifiedName: String,
-            ) : InitializableSerializer(type, isNullable, "Enum") {
-                override val uniqueName = type.canonicalName.replace(".", "_")
-                override val ref = uniqueName
-                override val keyable = true
-                override val initialize = "$qualifiedName($enumQualifiedName::class.java)"
-            }
-
-            class ValueClass(
-                type: ClassName,
-                isNullable: Boolean,
-                parameterName: String,
-                val argument: Serializer,
-            ) : InitializableSerializer(type, isNullable, "Value") {
-                override val uniqueName = type.canonicalName.replace(".", "_")
-                override val ref = uniqueName
-                override val keyable = argument.keyable
-                override val initialize =
-                    buildString {
-                        append(qualifiedName)
-                        if (keyable) append(".Keyable")
-                        append("(${argument.ref}, { $type(it) }, { it.$parameterName })")
-                    }
-            }
-        }
-    }
-
-    private sealed interface Serializer {
-        data object ConfigurationSerializable : Serializer
-
-        data class BuiltIn(
-            val name: String,
-        ) : Serializer {
-            val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
-        }
-
-        data class Collection(
-            val name: String,
-            val supportNullableValue: Boolean,
-        ) : Serializer {
-            val qualifiedName = "dev.s7a.ktconfig.serializer.${name}Serializer"
-        }
-
-        data class Nested(
-            val qualifiedName: String,
-            val loaderName: String,
-        ) : Serializer
-
-        data class Custom(
-            val qualifiedName: String,
-        ) : Serializer
     }
 }
