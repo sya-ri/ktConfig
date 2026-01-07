@@ -92,9 +92,25 @@ listOf(
                 .get()
                 .asFile.absolutePath,
         )
+        // FIXME For some reason this doesn't work: 'kotlinx.serialization.KSerializer[] kotlinx.serialization.internal.GeneratedSerializer.typeParametersSerializers()'
+        // jarUrl.set(LaunchMinecraftServerTask.JarUrl.Paper(version))
         jarUrl.set(
-            LaunchMinecraftServerTask.JarUrl {
-                "https://fill-data.papermc.io/v1/objects/5be84d9fc43181a72d5fdee7e3167824d9667bfc97b1bf9721713f9a971481ca/paper-1.21.11-88.jar"
+            when (version) {
+                "1.21.11" -> {
+                    LaunchMinecraftServerTask.JarUrl {
+                        "https://fill-data.papermc.io/v1/objects/5be84d9fc43181a72d5fdee7e3167824d9667bfc97b1bf9721713f9a971481ca/paper-1.21.11-88.jar"
+                    }
+                }
+
+                "1.8.8" -> {
+                    LaunchMinecraftServerTask.JarUrl {
+                        "https://fill-data.papermc.io/v1/objects/7ff6d2cec671ef0d95b3723b5c92890118fb882d73b7f8fa0a2cd31d97c55f86/paper-1.8.8-445.jar"
+                    }
+                }
+
+                else -> {
+                    error("Unknown Minecraft version: $version")
+                }
             },
         )
         agreeEula.set(true)
