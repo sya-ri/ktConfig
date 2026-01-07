@@ -568,6 +568,7 @@ class ExamplePlugin : JavaPlugin() {
                 a: text1
                 value: 5
                 enum: TestA
+                
                 """.trimIndent(),
                 SealedTestConfig.A("text1", 5, SealedTestConfig.A.Enum.TestA),
             ),
@@ -577,15 +578,17 @@ class ExamplePlugin : JavaPlugin() {
                 a: text1
                 value: 5
                 enum: TestA
+                
                 """.trimIndent(),
                 SealedTestConfig.A("text1", 5, SealedTestConfig.A.Enum.TestA),
             ),
             Pair(
                 """
-                $: dev.s7a.example.config.SealedTestConfig.B.B1
-                type: dev.s7a.example.config.SealedTestConfig.B.B1
+                $: b1
+                type: b1
                 b1: text2
-                value: world
+                enum: TestB1
+                
                 """.trimIndent(),
                 SealedTestConfig.B.B1("text2", SealedTestConfig.B.B1.Enum.TestB1),
             ),
@@ -593,7 +596,8 @@ class ExamplePlugin : JavaPlugin() {
                 """
                 $: dev.s7a.example.config.SealedTestConfig.B.B2
                 type: dev.s7a.example.config.SealedTestConfig.B.B2
-                value: text3
+                b2: text3
+                
                 """.trimIndent(),
                 SealedTestConfig.B.B2("text3"),
             ),
@@ -601,6 +605,7 @@ class ExamplePlugin : JavaPlugin() {
                 """
                 $: dev.s7a.example.config.SealedTestConfig.C.C1
                 c1: text4
+                
                 """.trimIndent(),
                 SealedTestConfig.C.C1("text4"),
             ),
@@ -625,7 +630,8 @@ class ExamplePlugin : JavaPlugin() {
                 """
                 type: b1
                 b1: text2
-                value: world
+                enum: TestB1
+                
                 """.trimIndent(),
                 SealedTestConfig.B.B1("text2", SealedTestConfig.B.B1.Enum.TestB1),
             ),
@@ -633,6 +639,7 @@ class ExamplePlugin : JavaPlugin() {
                 """
                 type: dev.s7a.example.config.SealedTestConfig.B.B2
                 b2: text3
+                
                 """.trimIndent(),
                 SealedTestConfig.B.B2("text3"),
             ),
