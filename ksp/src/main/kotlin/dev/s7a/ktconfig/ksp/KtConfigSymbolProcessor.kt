@@ -23,7 +23,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
-import com.squareup.kotlinpoet.joinToCode
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Comment.Companion.getCommentAnnotation
@@ -160,16 +159,18 @@ class KtConfigSymbolProcessor(
                                 parameters.forEach { parameter ->
                                     if (ktConfig.hasDefault) {
                                         addStatement(
-                                            $$"%L.get(configuration, \"${parentPath}%L\") ?: defaultValue.%N,",
+                                            "%L.get(configuration, \"%L%L\") ?: defaultValue.%N,",
                                             parameter.serializer.ref,
+                                            $$"${parentPath}",
                                             parameter.pathName,
                                             parameter.name,
                                         )
                                     } else {
                                         addStatement(
-                                            $$"%L.%N(configuration, \"${parentPath}%L\"),",
+                                            "%L.%N(configuration, \"%L%L\"),",
                                             parameter.serializer.ref,
                                             parameter.serializer.getFn,
+                                            $$"${parentPath}",
                                             parameter.pathName,
                                         )
                                     }
@@ -179,8 +180,9 @@ class KtConfigSymbolProcessor(
                     }.addSaveFunSpec(classDeclaration, className) {
                         parameters.forEach { parameter ->
                             addStatement(
-                                $$"%L.set(configuration, \"${parentPath}%L\", value.%N)",
+                                "%L.set(configuration, \"%L%L\", value.%N)",
                                 parameter.serializer.ref,
+                                $$"${parentPath}",
                                 parameter.pathName,
                                 parameter.name,
                             )
@@ -189,9 +191,10 @@ class KtConfigSymbolProcessor(
                             if (comment != null) {
                                 // Add property comment
                                 addStatement(
-                                    $$"setComment(configuration, \"${parentPath}%L\", listOf(%L))",
+                                    "setComment(configuration, \"%L%L\", %L)",
+                                    $$"${parentPath}",
                                     parameter.pathName,
-                                    comment.joinToString { "\"${it}\"" },
+                                    comment.asLiteralList(),
                                 )
                             }
                         }
@@ -289,94 +292,76 @@ class KtConfigSymbolProcessor(
                     .addOriginatingKSFile(file)
                     .superclass(loaderClassName.parameterizedBy(className))
                     .addLoadFunSpec(className) {
-                        addStatement(
-                            $$"return when (val discriminator = %L.getOrThrow(configuration, \"${parentPath}$${ktConfig.discriminator}\")) {\n%L}",
+                        addControlFlowCode(
+                            "return when (val discriminator = %L.getOrThrow(configuration, \"%L%L\"))",
                             stringSerializerClassName,
-                            buildCodeBlock {
-                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                            $$"${parentPath}",
+                            ktConfig.discriminator,
+                        ) {
+                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                addControlFlow("%S ->", discriminator) {
+                                    addStatement("%L.load(configuration, parentPath)", ClassName(packageName, getLoaderName(subclass)))
+                                }
+                            }
+                            addControlFlow("else ->") {
+                                addStatement("throw %L(discriminator)", invalidDiscriminatorExceptionClassName)
+                            }
+                        }
+                    }.addSaveFunSpec(classDeclaration, className) {
+                        addControlFlowCode("when (value)") {
+                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                addControlFlowCode(
+                                    "is %L ->",
+                                    ClassName(subclass.packageName.asString(), getFullName(subclass)),
+                                ) {
                                     addStatement(
-                                        "%S -> %L.load(configuration, parentPath)",
+                                        "%L.set(configuration, \"%L%L\", %S)",
+                                        stringSerializerClassName,
+                                        $$"${parentPath}",
+                                        ktConfig.discriminator,
                                         discriminator,
+                                    )
+                                    addStatement(
+                                        "%L.save(configuration, value, parentPath)",
                                         ClassName(packageName, getLoaderName(subclass)),
                                     )
                                 }
-                                addStatement(
-                                    "else -> throw %L(discriminator)",
-                                    invalidDiscriminatorExceptionClassName,
-                                )
-                            },
-                        )
-                    }.addSaveFunSpec(classDeclaration, className) {
-                        addCode(
-                            buildCodeBlock {
-                                beginControlFlow("when (value)")
-                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                    val subclassName = ClassName(subclass.packageName.asString(), getFullName(subclass))
-
-                                    add(
-                                        buildCodeBlock {
-                                            beginControlFlow("is %L ->", subclassName)
-                                            addStatement(
-                                                $$"%L.set(configuration, \"${parentPath}%L\", %S)",
-                                                stringSerializerClassName,
-                                                ktConfig.discriminator,
-                                                discriminator,
-                                            )
-                                            addStatement(
-                                                "%L.save(configuration, value, parentPath)",
-                                                ClassName(packageName, getLoaderName(subclass)),
-                                            )
-                                            endControlFlow()
-                                        },
-                                    )
-                                }
-                                endControlFlow()
-                            },
-                        )
+                            }
+                        }
                     }.addDecodeFunSpec(className) {
-                        addStatement(
-                            $$"return when (val discriminator = value[\"$${ktConfig.discriminator}\"]?.let(%L::deserialize) ?: throw %L(%S)) {\n%L}",
+                        addControlFlowCode(
+                            "return when (val discriminator = value[%S]?.let(%L::deserialize) ?: throw %L(%S))",
+                            ktConfig.discriminator,
                             stringSerializerClassName,
                             notFoundValueExceptionClassName,
                             ktConfig.discriminator,
-                            buildCodeBlock {
-                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                        ) {
+                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                addControlFlow("%S ->", discriminator) {
+                                    addStatement("%L.decode(value)", ClassName(packageName, getLoaderName(subclass)))
+                                }
+                            }
+                            addControlFlow("else ->") {
+                                addStatement("throw %L(discriminator)", invalidDiscriminatorExceptionClassName)
+                            }
+                        }
+                    }.addEncodeFunSpec(className) {
+                        addControlFlowCode("return when (value)") {
+                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                addControlFlowCode(
+                                    "is %L ->",
+                                    ClassName(subclass.packageName.asString(), getFullName(subclass)),
+                                ) {
                                     addStatement(
-                                        "%S -> %L.decode(value)",
+                                        "mapOf(%S to %L.serialize(%S)) + %L.encode(value)",
+                                        ktConfig.discriminator,
+                                        stringSerializerClassName,
                                         discriminator,
                                         ClassName(packageName, getLoaderName(subclass)),
                                     )
                                 }
-                                addStatement(
-                                    "else -> throw %L(discriminator)",
-                                    invalidDiscriminatorExceptionClassName,
-                                )
-                            },
-                        )
-                    }.addEncodeFunSpec(className) {
-                        addCode(
-                            buildCodeBlock {
-                                beginControlFlow("return when (value)")
-                                sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                    val subclassName = ClassName(subclass.packageName.asString(), getFullName(subclass))
-
-                                    add(
-                                        buildCodeBlock {
-                                            beginControlFlow("is %L ->", subclassName)
-                                            addStatement(
-                                                "mapOf(%S to %L.serialize(%S)) + %L.encode(value)",
-                                                ktConfig.discriminator,
-                                                stringSerializerClassName,
-                                                discriminator,
-                                                ClassName(packageName, getLoaderName(subclass)),
-                                            )
-                                            endControlFlow()
-                                        },
-                                    )
-                                }
-                                endControlFlow()
-                            },
-                        )
+                            }
+                        }
                     }.build(),
             )
         }
@@ -453,11 +438,11 @@ class KtConfigSymbolProcessor(
                 // Get header comment
                 val headerComment = classDeclaration.getCommentAnnotation()?.content
 
-                if (headerComment != null) {
+                if (headerComment.isNullOrEmpty().not()) {
                     // Add header comment
                     addStatement(
-                        "setHeaderComment(configuration, parentPath, listOf(%L))",
-                        headerComment.joinToString { "\"${it}\"" },
+                        "setHeaderComment(configuration, parentPath, %L)",
+                        headerComment.asLiteralList(),
                     )
                 }
             }.apply(block)
