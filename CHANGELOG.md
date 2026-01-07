@@ -38,9 +38,7 @@
         ListOfString.getOrThrow(configuration, "${parentPath}list"),
       )
       ```
-      
     </details>
-
 - Deprecated `@PathName` and replaced it with `@SerialName` for better consistency.
     - `@PathName` is scheduled to be removed in v2.2.0.
 - Fixed `FormattedColorSerializer` to ignore alpha values of 255 (fully opaque) when encoding colors, treating them as if no alpha channel is specified.
