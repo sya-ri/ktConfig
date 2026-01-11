@@ -1,10 +1,15 @@
 package dev.s7a.example
 
 import dev.s7a.example.config.HasDefaultConfigLoader
+import dev.s7a.example.config.SealedTestConfig
+import dev.s7a.example.config.SealedTestConfigBLoader
+import dev.s7a.example.config.SealedTestConfigLoader
 import dev.s7a.example.config.SerializerTestConfig
 import dev.s7a.example.config.SerializerTestConfigLoader
 import dev.s7a.example.type.CustomData
+import dev.s7a.ktconfig.type.FormattedColorSerializer
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -31,6 +36,8 @@ class ExamplePlugin : JavaPlugin() {
     override fun onEnable() {
         testSerializer()
         testDefaultSerializer()
+        testSealedSerializer()
+        testFormattedColor()
         server.shutdown()
     }
 
@@ -242,7 +249,7 @@ class ExamplePlugin : JavaPlugin() {
         }
         output.info()
 
-        output.info("Check @PathName")
+        output.info("Check @SerialName")
         if (lines.contains("path-name: ${expected.pathName}")) {
             output.info("- Path name is overridden")
         } else {
@@ -548,6 +555,136 @@ class ExamplePlugin : JavaPlugin() {
             output.error("[default] value: expected=test, actual=${config2.value}")
         } else {
             output.info("value: OK")
+        }
+    }
+
+    private fun testSealedSerializer() {
+        output.info("Test sealed serializer:")
+
+        // Use discriminator: '$' (ignore 'type')
+        listOf(
+            Pair(
+                """
+                $: dev.s7a.example.config.SealedTestConfig.A
+                a: text1
+                value: '5'
+                enum: TestA
+                
+                """.trimIndent(),
+                SealedTestConfig.A("text1", 5, SealedTestConfig.A.Enum.TestA),
+            ),
+            Pair(
+                """
+                $: dev.s7a.example.config.SealedTestConfig.A
+                a: text1
+                value: '5'
+                enum: TestA
+                
+                """.trimIndent(),
+                SealedTestConfig.A("text1", 5, SealedTestConfig.A.Enum.TestA),
+            ),
+            Pair(
+                """
+                $: b1
+                b1: text2
+                enum: TestB1
+                
+                """.trimIndent(),
+                SealedTestConfig.B.B1("text2", SealedTestConfig.B.B1.Enum.TestB1),
+            ),
+            Pair(
+                """
+                $: dev.s7a.example.config.SealedTestConfig.B.B2
+                b2: text3
+                
+                """.trimIndent(),
+                SealedTestConfig.B.B2("text3"),
+            ),
+            Pair(
+                """
+                $: dev.s7a.example.config.SealedTestConfig.C.C1
+                c1: text4
+                
+                """.trimIndent(),
+                SealedTestConfig.C.C1("text4"),
+            ),
+        ).forEach { (yaml, expected) ->
+            val config = SealedTestConfigLoader.loadFromString(yaml)
+            if (config != expected) {
+                output.error("SealedTestConfig: expected=$expected, actual=$config")
+            } else {
+                output.info("SealedTestConfig: OK")
+            }
+
+            val actual = SealedTestConfigLoader.saveToString(config)
+            if (actual != yaml) {
+                output.error("SealedTestConfig: expected=$yaml, actual=$actual")
+            } else {
+                output.info("SealedTestConfig: OK")
+            }
+        }
+
+        // Use discriminator: 'type'
+        listOf(
+            Pair(
+                """
+                type: b1
+                b1: text2
+                enum: TestB1
+                
+                """.trimIndent(),
+                SealedTestConfig.B.B1("text2", SealedTestConfig.B.B1.Enum.TestB1),
+            ),
+            Pair(
+                """
+                type: dev.s7a.example.config.SealedTestConfig.B.B2
+                b2: text3
+                
+                """.trimIndent(),
+                SealedTestConfig.B.B2("text3"),
+            ),
+        ).forEach { (yaml, expected) ->
+            val config = SealedTestConfigBLoader.loadFromString(yaml)
+            if (config != expected) {
+                output.error("SealedTestConfigB: expected=$expected, actual=$config")
+            } else {
+                output.info("SealedTestConfigB: OK")
+            }
+
+            val actual = SealedTestConfigBLoader.saveToString(config)
+            if (actual != yaml) {
+                output.error("SealedTestConfigB: expected=$yaml, actual=$actual")
+            } else {
+                output.info("SealedTestConfigB: OK")
+            }
+        }
+    }
+
+    private fun testFormattedColor() {
+        val expected = Color.fromRGB(0x1F, 0x2E, 0x3D)
+        val actual = FormattedColorSerializer.decode("#1F2E3D")
+        if (actual != expected) {
+            output.error("FormattedColorSerializer: expected=$expected, actual=$actual")
+        } else {
+            output.info("FormattedColorSerializer: OK")
+        }
+
+        if (FormattedColorSerializer.isSupportedAlpha) {
+            // Check alpha
+            val expected = Color.fromARGB(0x1F, 0x2E, 0x3D, 0x4C)
+            val actual = FormattedColorSerializer.decode("#1F2E3D4C")
+            if (actual != expected) {
+                output.error("FormattedColorSerializer(alpha): expected=$expected, actual=$actual")
+            } else {
+                output.info("FormattedColorSerializer(alpha): OK")
+            }
+        } else {
+            // Check alpha support
+            if (Bukkit.getVersion().contains("1.8.8").not()) {
+                output.error("FormattedColorSerializer(alpha): isSupportedAlpha=false")
+            } else {
+                output.info("FormattedColorSerializer(alpha): Unsupported version")
+            }
         }
     }
 }
