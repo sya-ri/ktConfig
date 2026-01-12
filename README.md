@@ -1,7 +1,7 @@
 # ktConfig v2
 
-Spigot configuration library for Kotlin using class annotations. The library generates configuration loaders at
-build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
+Spigot configuration library for Kotlin using class annotations.
+The library generates configuration loaders at build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
 
 ## ⚡ Features
 
@@ -233,6 +233,18 @@ Use the `@UseSerializer` annotation on the property to apply your custom seriali
 @KtConfig
 data class CustomConfig(
     val data: @UseSerializer(WrapperSerializer::class) Wrapper
+)
+```
+
+You can also use type aliases with custom serializers for cleaner code reuse:
+
+```kotlin
+typealias SerializableWrapper =
+        @UseSerializer(WrapperSerializer::class) Wrapper
+
+@KtConfig
+data class CustomConfig(
+    val data: SerializableWrapper
 )
 ```
 
