@@ -65,10 +65,13 @@ maxPlayers: 100
 
 The loader class provides the following methods:
 
-- `load(File): T`
-- `loadFromString(String): T`
-- `save(T, File)`
-- `saveToString(T): String`
+- `load(File): T` - Loads configuration from the file.
+- `loadAndSave(File): T` - Loads configuration from the file and immediately saves it back.
+- `loadAndSaveIfNotExists(File): T` - Loads configuration from the file, or creates it with default values if it doesn't exist.
+- `loadFromString(String): T` - Loads configuration from a YAML string.
+- `save(File, T)` - Saves the configuration to the file.
+- `saveIfNotExists(File, T)` - Saves the configuration only if the file doesn't already exist.
+- `saveToString(T): String` - Serializes the configuration to a YAML string.
 
 ## 🚀 Usage
 
