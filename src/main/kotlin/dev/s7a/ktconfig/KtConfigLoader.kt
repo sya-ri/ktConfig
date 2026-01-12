@@ -51,6 +51,32 @@ abstract class KtConfigLoader<T> :
         )
 
     /**
+     * Loads configuration data from a file and immediately saves it back.
+     * This is useful for updating the file with default values or normalizing the format.
+     *
+     * @param file The file to load configuration from and save back to
+     * @return The loaded configuration object of type T
+     * @since 2.1.0
+     */
+    fun loadAndSave(file: File) =
+        load(file).also {
+            save(file, it)
+        }
+
+    /**
+     * Loads configuration data from a file. If the file does not exist, loads the default configuration and saves it to the file.
+     * This is useful for creating configuration files with default values on the first run.
+     *
+     * @param file The file to load configuration from
+     * @return The loaded configuration object of type T
+     * @since 2.1.0
+     */
+    fun loadAndSaveIfNotExists(file: File) =
+        load(file).also {
+            saveIfNotExists(file, it)
+        }
+
+    /**
      * Loads configuration data from a string content.
      *
      * @param content The YAML content string to load configuration from
@@ -91,6 +117,22 @@ abstract class KtConfigLoader<T> :
         .apply {
             save(this, value)
         }.save(file)
+
+    /**
+     * Saves configuration data to a file if not exists.
+     *
+     * @param file The file to save configuration to
+     * @param value The configuration object to save
+     * @since 2.1.0
+     */
+    fun saveIfNotExists(
+        file: File,
+        value: T,
+    ) {
+        if (file.exists().not()) {
+            save(file, value)
+        }
+    }
 
     /**
      * Saves configuration data to a string.

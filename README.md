@@ -1,13 +1,14 @@
 # ktConfig v2
 
-Spigot configuration library for Kotlin using class annotations. The library generates configuration loaders at
-build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
+Spigot configuration library for Kotlin using class annotations.
+The library generates configuration loaders at build-time, ensuring zero runtime overhead (except for YamlConfiguration operations).
 
 ## ⚡ Features
 
 - **Zero Runtime Overhead**: All configuration loaders are generated at build-time (KSP).
 - **Type-Safe**: Fully typed configuration using Kotlin data classes.
-- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more out of the box.
+- **Wide Type Support**: Supports primitives, collections, Bukkit types, and more.
+- **Sealed Classes and Interfaces Support**: Support for sealed classes and interfaces.
 - **Rich Features**: Built-in support for comments and custom serializers.
 - **Default Values**: Support for default values using Kotlin default values (e.g., `val count: Int = 0`).
 
@@ -22,12 +23,12 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.0.0")
-    ksp("dev.s7a:ktConfig-ksp:2.0.0")
+    implementation("dev.s7a:ktConfig:2.1.0-SNAPSHOT")
+    ksp("dev.s7a:ktConfig-ksp:2.1.0-SNAPSHOT")
 }
 ```
 
@@ -64,10 +65,13 @@ maxPlayers: 100
 
 The loader class provides the following methods:
 
-- `load(File): T`
-- `loadFromString(String): T`
-- `save(T, File)`
-- `saveToString(T): String`
+- `load(File): T` - Loads configuration from the file.
+- `loadAndSave(File): T` - Loads configuration from the file and immediately saves it back.
+- `loadAndSaveIfNotExists(File): T` - Loads configuration from the file, or creates it with default values if it doesn't exist.
+- `loadFromString(String): T` - Loads configuration from a YAML string.
+- `save(File, T)` - Saves the configuration to the file.
+- `saveIfNotExists(File, T)` - Saves the configuration only if the file doesn't already exist.
+- `saveToString(T): String` - Serializes the configuration to a YAML string.
 
 ## 🚀 Usage
 
@@ -75,7 +79,7 @@ ktConfig provides various annotations to customize configuration behavior:
 
 - `@KtConfig`: Marks a class as a configuration class. Required for code generation.
 - `@Comment`: Adds comments to configuration headers or properties.
-- `@PathName`: Customizes the YAML path name for a property.
+- `@SerialName`: Customizes the YAML path name for a property.
 - `@UseSerializer`: Specifies a custom serializer for a property.
 
 ### Adding Comments
@@ -93,12 +97,16 @@ data class AppConfig(
 
 ### Change the YAML Path Name
 
-You can customize the YAML path name using the `@PathName` annotation.
+You can customize the YAML path name using the `@SerialName` annotation.
+
+> [!WARNING]
+> 
+> `@PathName` is deprecated since v2.1.0 and will be removed in v2.4.0.
 
 ```kotlin
 @KtConfig
 data class ServerConfig(
-    @PathName("server-name")
+    @SerialName("server-name")
     val serverName: String
 )
 ```
@@ -228,6 +236,58 @@ data class CustomConfig(
 )
 ```
 
+You can also use type aliases with custom serializers for cleaner code reuse:
+
+```kotlin
+typealias SerializableWrapper =
+        @UseSerializer(WrapperSerializer::class) Wrapper
+
+@KtConfig
+data class CustomConfig(
+    val data: SerializableWrapper
+)
+```
+
+### Sealed classes and interfaces
+
+- Use the `discriminator` property in `@KtConfig` to specify the YAML key name (default is `$`).
+- Use `@SerialName` on subclasses to define their identifier in YAML (default is the class full name).
+
+```kotlin
+@KtConfig(discriminator = "type")
+sealed interface AppConfig {
+    @KtConfig
+    @SerialName("message")
+    data class Message(
+        val content: String
+    ) : AppConfig
+
+    @KtConfig
+    @SerialName("broadcast")
+    data class Broadcast(
+        val content: String,
+        val delay: Int
+    ) : AppConfig
+}
+```
+
+#### YAML Representation
+
+Depending on the class being saved, the YAML will look like this:
+
+```yaml
+# For AppConfig.Message
+type: message
+content: "Hello World"
+```
+
+```yaml
+# For AppConfig.Broadcast
+type: broadcast
+content: "Attention!"
+delay: 20
+```
+
 ## 📦 Supported Types
 
 ktConfig supports the following types:
@@ -287,6 +347,7 @@ ktConfig supports the following types:
 - `java.time.Period`
 - [Enum classes](https://kotlinlang.org/docs/enum-classes.html)
 - [Inline value classes](https://kotlinlang.org/docs/inline-classes.html)
+- [Sealed classes and interfaces](https://kotlinlang.org/docs/sealed-classes.html)
 
 ### Formatted Types
 

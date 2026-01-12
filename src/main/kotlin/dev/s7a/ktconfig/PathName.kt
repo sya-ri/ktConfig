@@ -20,8 +20,10 @@ package dev.s7a.ktconfig
  *
  * @property name The custom path name to be used for the annotated property
  * @since 2.0.0
+ * @deprecated Deprecated in version 2.1.0. Will be removed in version 2.4.0. Use [SerialName] instead.
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
+@Deprecated("Use @SerialName instead", ReplaceWith("SerialName(name)", "dev.s7a.ktconfig.SerialName"), level = DeprecationLevel.ERROR)
 annotation class PathName(
     val name: String,
 )
