@@ -49,6 +49,7 @@
 
 ### Fixed
 - Fixed `FormattedColorSerializer` to ignore an alpha channel when encoding colors on Minecraft versions that don't support alpha transparency.
+- Fixed `BigInteger`, `BigDecimal` unsupported exception.
 
 ## v2.0.0
 

@@ -51,6 +51,8 @@ sealed interface Serializer {
                 "kotlin.Double" to BuiltIn("Double"),
                 "kotlin.Float" to BuiltIn("Float"),
                 "kotlin.Boolean" to BuiltIn("Boolean"),
+                "java.math.BigInteger" to BuiltIn("BigInteger"),
+                "java.math.BigDecimal" to BuiltIn("BigDecimal"),
                 // Common
                 "java.util.UUID" to BuiltIn("UUID"),
                 "java.time.Instant" to BuiltIn("Instant"),
