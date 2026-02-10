@@ -2,12 +2,13 @@
 # Plugins
 kotlin = "2.2.0"
 kover = "0.9.1"
-dokka = "2.0.0"
+dokka = "2.1.0"
 kotlinter = "5.1.1"
 pluginYml = "0.6.0"
 minecraftServer = "3.2.1"
 shadow = "8.1.1"
 jmh-gradle = "0.7.3"
+mavenPublish = "0.35.0"
 
 # Libraries
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
@@ -19,11 +20,13 @@ kotest = "5.9.1"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+dokka-javadoc = { id = "org.jetbrains.dokka-javadoc", version.ref = "dokka" }
 jmh = { id = "me.champeau.jmh", version.ref = "jmh-gradle" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 pluginYml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginYml" }
 minecraftServer = { id = "dev.s7a.gradle.minecraft.server", version.ref = "minecraftServer" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 
 [libraries]
 spigot8 = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot8" }
