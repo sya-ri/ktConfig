@@ -48,6 +48,7 @@
 - Fixed `FormattedColorSerializer` to ignore alpha values of 255 (fully opaque) when encoding colors, treating them as if no alpha channel is specified.
 
 ### Fixed
+- Fixed KSP loader generation to respect nullability when the original type is a nullable typealias (previously, `Nullable` could be ignored and a non-null loader would be generated).
 - Fixed `FormattedColorSerializer` to ignore an alpha channel when encoding colors on Minecraft versions that don't support alpha transparency.
 - Fixed `BigInteger`, `BigDecimal` unsupported exception.
 

@@ -611,7 +611,13 @@ class KtConfigSymbolProcessor(
             // Solve typealias
             if (declaration is KSTypeAlias) {
                 val (resolvedType, resolvedSerializer) = declaration.type.resolve().solveTypeAlias()
-                return resolvedType to (resolvedSerializer ?: serializer)
+                return resolvedType.let {
+                    if (isMarkedNullable) {
+                        it.makeNullable()
+                    } else {
+                        it.makeNotNullable()
+                    }
+                } to (resolvedSerializer ?: serializer)
             }
 
             return this to serializer

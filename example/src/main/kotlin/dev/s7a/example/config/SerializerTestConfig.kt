@@ -67,6 +67,7 @@ data class SerializerTestConfig(
         Vector,
     val formattedVector3: FormattedVectorAlias,
     val formattedVector4: FormattedVector2Alias,
+    val nullableFormattedVector: FormattedVector?,
     val customData: CustomData,
     val byteArray: ByteArray,
     val charArray: CharArray,
@@ -271,6 +272,7 @@ data class SerializerTestConfig(
         result = 31 * result + formattedVector2.hashCode()
         result = 31 * result + formattedVector3.hashCode()
         result = 31 * result + formattedVector4.hashCode()
+        result = 31 * result + (nullableFormattedVector?.hashCode() ?: 0)
         result = 31 * result + customData.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()

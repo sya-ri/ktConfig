@@ -84,6 +84,7 @@ class ExamplePlugin : JavaPlugin() {
                 formattedVector2 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector3 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 formattedVector4 = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
+                nullableFormattedVector = Vector(Random.nextDouble(), Random.nextDouble(), Random.nextDouble()),
                 customData = CustomData(Random.nextInt()),
                 array = Array(3) { UUID.randomUUID().toString() },
                 byteArray = ByteArray(3) { Random.nextInt(-128, 128).toByte() },
@@ -373,6 +374,11 @@ class ExamplePlugin : JavaPlugin() {
             if (expected.formattedVector4 != actual.formattedVector4) {
                 output.error(
                     "formattedVector4: expected=${expected.formattedVector4}, actual=${actual.formattedVector4}",
+                )
+            }
+            if (expected.nullableFormattedVector != actual.nullableFormattedVector) {
+                output.error(
+                    "nullableFormattedVector: expected=${expected.nullableFormattedVector}, actual=${actual.nullableFormattedVector}",
                 )
             }
             if (expected.customData != actual.customData) {
