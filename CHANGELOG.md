@@ -5,6 +5,7 @@
 ### Added
 - Added support for serialization of sealed classes and interfaces.
     - Added `discriminator` property to the `@KtConfig` annotation for handling sealed hierarchies.
+- Added `loaderName` property to the `@KtConfig` annotation to allow customizing generated loader class names.
 - Added new methods to `KtConfigLoader` for easier file handling:
     - `loadAndSave`: Loads a file and immediately saves it back.
     - `loadAndSaveIfNotExists`: Loads a file and saves default values if the file doesn't exist.

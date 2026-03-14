@@ -9,10 +9,12 @@ package dev.s7a.ktconfig
  * @property discriminator Discriminator for sealed interfaces/classes, default is '$'.
  *                         This annotation only affects the class it is directly applied to and **does not propagate to child classes**.
  *                         For data classes, changing the discriminator value will be ignored.
+ * @property loaderName Name of the loader class, default is '{CLASS_NAME}Loader'.
  * @since 2.0.0
  */
 @Target(AnnotationTarget.CLASS)
 annotation class KtConfig(
     val hasDefault: Boolean = false,
     val discriminator: String = "$",
+    val loaderName: String = "{CLASS_NAME}Loader",
 )

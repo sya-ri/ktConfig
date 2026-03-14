@@ -9,10 +9,12 @@ import com.google.devtools.ksp.symbol.KSType
  *
  * @property hasDefault Whether the configuration has default values
  * @property discriminator The discriminator character used for configuration keys (defaults to "$")
+ * @property loaderName Name of the loader class, default is '{CLASS_NAME}Loader'.
  */
 data class KtConfigAnnotation(
     val hasDefault: Boolean,
     val discriminator: String,
+    val loaderName: String,
 ) {
     companion object {
         /**
@@ -27,6 +29,7 @@ data class KtConfigAnnotation(
                 KtConfigAnnotation(
                     hasDefault = arguments["hasDefault"] as? Boolean ?: false,
                     discriminator = (arguments["discriminator"] as? String).orEmpty().ifBlank { "$" },
+                    loaderName = (arguments["loaderName"] as? String).orEmpty().ifBlank { "{CLASS_NAME}Loader" },
                 )
             }
     }

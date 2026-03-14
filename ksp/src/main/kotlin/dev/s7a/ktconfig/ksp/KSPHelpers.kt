@@ -2,6 +2,7 @@ package dev.s7a.ktconfig.ksp
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
+import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
 
 /**
  * Gets the full name of a class by traversing its parent hierarchy.
@@ -19,15 +20,18 @@ fun getFullName(declaration: KSClassDeclaration): List<String> =
     }
 
 /**
- * Generates a loader class name for the given class declaration.
- * Combines the full class name parts with underscores and appends "Loader".
+ * Retrieves the loader name for the given class declaration based on the presence
+ * of a `@KtConfig` annotation. It replaces the placeholder `{CLASS_NAME}` in the
+ * `loaderName` value of the annotation with the full class name.
  *
- * @param declaration The class declaration to generate a loader name for
- * @return The generated loader class name
+ * @param declaration The class declaration for which the loader name should be generated.
+ * @return The loader name as a string if the `@KtConfig` annotation is present;
+ *         otherwise, returns `null`.
  */
-fun getLoaderName(declaration: KSClassDeclaration): String {
+fun getLoaderName(declaration: KSClassDeclaration): String? {
     val fullName = getFullName(declaration).joinToString("")
-    return "${fullName}Loader"
+    val annotation = declaration.getKtConfigAnnotation() ?: return null
+    return annotation.loaderName.replace("{CLASS_NAME}", fullName)
 }
 
 /**

@@ -88,6 +88,10 @@ class KtConfigSymbolProcessor(
             val fullName = getFullName(classDeclaration)
             val className = ClassName(packageName, fullName)
             val loaderSimpleName = getLoaderName(classDeclaration)
+            if (loaderSimpleName == null) {
+                logger.error("Classes must be annotated with @KtConfig", classDeclaration)
+                return
+            }
 
             val file =
                 classDeclaration.containingFile
@@ -299,7 +303,12 @@ class KtConfigSymbolProcessor(
                         ) {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
                                 addControlFlow("%S ->", discriminator) {
-                                    addStatement("%T.load(configuration, parentPath)", ClassName(packageName, getLoaderName(subclass)))
+                                    val subclassLoaderName = getLoaderName(subclass)
+                                    if (subclassLoaderName == null) {
+                                        logger.error("Classes must be annotated with @KtConfig", subclass)
+                                        return@addControlFlow
+                                    }
+                                    addStatement("%T.load(configuration, parentPath)", ClassName(packageName, subclassLoaderName))
                                 }
                             }
                             addControlFlow("else ->") {
@@ -309,6 +318,12 @@ class KtConfigSymbolProcessor(
                     }.addSaveFunSpec(classDeclaration, className) {
                         addControlFlowCode("when (value)") {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                val subclassLoaderName = getLoaderName(subclass)
+                                if (subclassLoaderName == null) {
+                                    logger.error("Classes must be annotated with @KtConfig", subclass)
+                                    return@addControlFlowCode
+                                }
+
                                 addControlFlowCode(
                                     "is %T ->",
                                     ClassName(subclass.packageName.asString(), getFullName(subclass)),
@@ -322,7 +337,7 @@ class KtConfigSymbolProcessor(
                                     )
                                     addStatement(
                                         "%T.save(configuration, value, parentPath)",
-                                        ClassName(packageName, getLoaderName(subclass)),
+                                        ClassName(packageName, subclassLoaderName),
                                     )
                                 }
                             }
@@ -336,8 +351,14 @@ class KtConfigSymbolProcessor(
                             ktConfig.discriminator,
                         ) {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                val subclassLoaderName = getLoaderName(subclass)
+                                if (subclassLoaderName == null) {
+                                    logger.error("Classes must be annotated with @KtConfig", subclass)
+                                    return@addControlFlowCode
+                                }
+
                                 addControlFlow("%S ->", discriminator) {
-                                    addStatement("%T.decode(value)", ClassName(packageName, getLoaderName(subclass)))
+                                    addStatement("%T.decode(value)", ClassName(packageName, subclassLoaderName))
                                 }
                             }
                             addControlFlow("else ->") {
@@ -347,6 +368,12 @@ class KtConfigSymbolProcessor(
                     }.addEncodeFunSpec(className) {
                         addControlFlowCode("return when (value)") {
                             sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
+                                val subclassLoaderName = getLoaderName(subclass)
+                                if (subclassLoaderName == null) {
+                                    logger.error("Classes must be annotated with @KtConfig", subclass)
+                                    return@addControlFlowCode
+                                }
+
                                 addControlFlowCode(
                                     "is %T ->",
                                     ClassName(subclass.packageName.asString(), getFullName(subclass)),
@@ -356,7 +383,7 @@ class KtConfigSymbolProcessor(
                                         ktConfig.discriminator,
                                         stringSerializerClassName,
                                         discriminator,
-                                        ClassName(packageName, getLoaderName(subclass)),
+                                        ClassName(packageName, subclassLoaderName),
                                     )
                                 }
                             }

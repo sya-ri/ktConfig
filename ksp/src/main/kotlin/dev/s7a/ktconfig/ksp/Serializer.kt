@@ -104,7 +104,8 @@ sealed interface Serializer {
                 // Check if type marked @KtConfig
                 val ktConfig = declaration.getKtConfigAnnotation()
                 if (ktConfig != null) {
-                    return Nested(qualifiedName, ClassName(declaration.packageName.asString(), getLoaderName(declaration)))
+                    val loaderName = getLoaderName(declaration) ?: return null
+                    return Nested(qualifiedName, ClassName(declaration.packageName.asString(), loaderName))
                 }
 
                 // Check if type implements ConfigurationSerializable
