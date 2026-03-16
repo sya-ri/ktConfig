@@ -3,7 +3,7 @@ package dev.s7a.example.config
 import dev.s7a.example.type.CustomData
 import dev.s7a.ktconfig.Comment
 import dev.s7a.ktconfig.KtConfig
-import dev.s7a.ktconfig.PathName
+import dev.s7a.ktconfig.SerialName
 import dev.s7a.ktconfig.UseSerializer
 import dev.s7a.ktconfig.type.FormattedVector
 import dev.s7a.ktconfig.type.FormattedVectorSerializer
@@ -67,6 +67,7 @@ data class SerializerTestConfig(
         Vector,
     val formattedVector3: FormattedVectorAlias,
     val formattedVector4: FormattedVector2Alias,
+    val nullableFormattedVector: FormattedVector?,
     val customData: CustomData,
     val byteArray: ByteArray,
     val charArray: CharArray,
@@ -108,7 +109,7 @@ data class SerializerTestConfig(
     val nullableListMap: List<Map<String, String?>>,
     val nullableMapList: Map<String, List<String?>>,
     val nullableListNullableMap: List<Map<String, String?>?>,
-    @PathName("path-name")
+    @SerialName("path-name")
     val pathName: String,
     val listPathName: List<NestedPathName>,
     val mapPathName: Map<String, NestedPathName>,
@@ -150,7 +151,7 @@ data class SerializerTestConfig(
 
     @KtConfig
     data class NestedPathName(
-        @PathName("path-name")
+        @SerialName("path-name")
         val string: String,
     )
 
@@ -271,6 +272,7 @@ data class SerializerTestConfig(
         result = 31 * result + formattedVector2.hashCode()
         result = 31 * result + formattedVector3.hashCode()
         result = 31 * result + formattedVector4.hashCode()
+        result = 31 * result + (nullableFormattedVector?.hashCode() ?: 0)
         result = 31 * result + customData.hashCode()
         result = 31 * result + byteArray.contentHashCode()
         result = 31 * result + charArray.contentHashCode()

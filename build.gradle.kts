@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kover)
     alias(libs.plugins.kotlinter)
     alias(libs.plugins.pluginYml.bukkit) apply false
@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "dev.s7a"
-version = "2.0.0"
+version = "2.1.0"
 
 allprojects {
     apply(plugin = "kotlin")
@@ -40,6 +40,7 @@ dependencies {
     compileOnly(libs.spigot)
     testImplementation(kotlin("test"))
     testImplementation(libs.spigot)
+    kspTest(project(":ksp"))
 }
 
 mavenPublishing {
