@@ -23,12 +23,12 @@ plugins {
 }
 
 repositories {
-    maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
+    mavenCentral()
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.1.0-SNAPSHOT")
-    ksp("dev.s7a:ktConfig-ksp:2.1.0-SNAPSHOT")
+    implementation("dev.s7a:ktConfig:2.1.0")
+    ksp("dev.s7a:ktConfig-ksp:2.1.0")
 }
 ```
 

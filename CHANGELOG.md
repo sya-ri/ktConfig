@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0 (SNAPSHOT)
+## v2.1.0
 
 ### Added
 - Added support for serialization of sealed classes and interfaces.
