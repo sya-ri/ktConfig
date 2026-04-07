@@ -1,0 +1,1028 @@
+# ktConfig v2 — LLM Reference Document
+
+> This document is intended as a comprehensive reference for AI assistants generating Kotlin/Bukkit plugin code
+> that uses ktConfig. It covers installation, all annotations, the loader API, supported types, serializers,
+> sealed classes, and common pitfalls with concrete code examples.
+
+---
+
+## Overview
+
+ktConfig is a Spigot/Bukkit configuration library for Kotlin.
+It uses **KSP (Kotlin Symbol Processing)** at build time to generate type-safe YAML loader classes from
+annotated Kotlin data classes. There is zero runtime reflection overhead — all loader logic is compiled code.
+
+Key characteristics:
+- Annotate a data class with `@KtConfig` → KSP generates `<ClassName>Loader` (e.g. `ServerConfigLoader`)
+- The loader reads/writes a YAML file using Bukkit's `YamlConfiguration`
+- Supports Kotlin default values, nullable types, sealed classes/interfaces, and custom serializers
+- Latest stable version: **2.1.0**
+
+---
+
+## Installation
+
+Add to `build.gradle.kts`:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.2.21"
+    id("com.google.devtools.ksp") version "2.3.2"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("dev.s7a:ktConfig:2.1.0")
+    ksp("dev.s7a:ktConfig-ksp:2.1.0")
+}
+```
+
+Run `./gradlew kspKotlin` (or `./gradlew build`) to trigger code generation.
+
+> The KSP version must be compatible with the Kotlin version.
+> Use `2.3.2` (KSP) with `2.2.21` (Kotlin). Mismatches cause cryptic errors.
+
+---
+
+## Quick Start
+
+### 1. Define a config class
+
+```kotlin
+import dev.s7a.ktconfig.KtConfig
+
+@KtConfig
+data class ServerConfig(
+    val serverName: String,
+    val maxPlayers: Int
+)
+```
+
+### 2. Use the generated loader in your plugin
+
+```kotlin
+class MyPlugin : JavaPlugin() {
+    override fun onEnable() {
+        val file = dataFolder.resolve("config.yml")
+        val config = ServerConfigLoader.load(file)
+        logger.info("Server: ${config.serverName}, max: ${config.maxPlayers}")
+    }
+}
+```
+
+### 3. Corresponding YAML
+
+```yaml
+serverName: "My Server"
+maxPlayers: 100
+```
+
+The generated loader class is named `<ClassName>Loader` by default (e.g. `ServerConfigLoader`).
+It is placed in the same package as the annotated class.
+
+---
+
+## Annotations
+
+### `@KtConfig`
+
+**Required** on every class that should have a loader generated.
+
+```kotlin
+@Target(AnnotationTarget.CLASS)
+annotation class KtConfig(
+    val hasDefault: Boolean = false,   // All properties have default values
+    val discriminator: String = "$",   // Key used in sealed class YAML (default "$")
+    val loaderName: String = "{CLASS_NAME}Loader",  // Generated loader class name
+)
+```
+
+| Property | Default | Purpose |
+|---|---|---|
+| `hasDefault` | `false` | When `true`, missing YAML keys fall back to Kotlin default values |
+| `discriminator` | `"$"` | YAML key that identifies sealed class/interface subtypes |
+| `loaderName` | `"{CLASS_NAME}Loader"` | Name of the generated loader; `{CLASS_NAME}` is replaced with the class name |
+
+```kotlin
+// Custom loader name
+@KtConfig(loaderName = "MyCustomLoader")
+data class AppConfig(val value: String)
+// Generates: MyCustomLoader object
+```
+
+---
+
+### `@Comment`
+
+Adds comments to the YAML file. Applies to the class (header comment) or a property.
+
+```kotlin
+@Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER)
+annotation class Comment(vararg val content: String)
+```
+
+```kotlin
+@KtConfig
+@Comment("Global server settings", "Restart required for changes to take effect")
+data class AppConfig(
+    @Comment("Enable verbose logging")
+    val debug: Boolean,
+    @Comment("Maximum concurrent connections", "Default: 100")
+    val maxConnections: Int
+)
+```
+
+Generates YAML:
+
+```yaml
+# Global server settings
+# Restart required for changes to take effect
+debug: false
+# Maximum concurrent connections
+# Default: 100
+maxConnections: 100
+```
+
+---
+
+### `@SerialName`
+
+Overrides the YAML key name for a property or the identifier of a sealed subclass.
+
+```kotlin
+@Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER)
+annotation class SerialName(val name: String)
+```
+
+```kotlin
+@KtConfig
+data class ServerConfig(
+    @SerialName("server-name")   // YAML key is "server-name" instead of "serverName"
+    val serverName: String,
+    @SerialName("max-players")
+    val maxPlayers: Int
+)
+```
+
+YAML output:
+
+```yaml
+server-name: "My Server"
+max-players: 100
+```
+
+> `@PathName` (v2.0) is deprecated since v2.1.0 and will be removed in v2.4.0. Always use `@SerialName`.
+
+---
+
+### `@UseSerializer`
+
+Specifies a custom serializer for a property type or an entire type alias.
+
+```kotlin
+@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS)
+annotation class UseSerializer(val serializer: KClass<out Serializer<*>>)
+```
+
+Usage on a property type annotation:
+
+```kotlin
+@KtConfig
+data class Config(
+    val position: @UseSerializer(PointSerializer::class) Point
+)
+```
+
+Usage via typealias (cleaner for reuse):
+
+```kotlin
+typealias SerializablePoint = @UseSerializer(PointSerializer::class) Point
+
+@KtConfig
+data class Config(
+    val position: SerializablePoint
+)
+```
+
+Usage on the data class itself (applied automatically whenever the type appears):
+
+```kotlin
+@UseSerializer(CustomData.Serializer::class)
+data class CustomData(val value: Int) {
+    object Serializer : TransformSerializer<CustomData, Int>(IntSerializer) {
+        override fun decode(value: Int) = CustomData(value)
+        override fun encode(value: CustomData) = value.value
+    }
+}
+```
+
+---
+
+## Loader API
+
+All generated loaders extend `KtConfigLoader<T>` and expose the following methods:
+
+```kotlin
+// Load from a File (creates empty config if file does not exist)
+fun load(file: File): T
+
+// Load from a File and immediately save it back (useful to normalize / fill comments)
+fun loadAndSave(file: File): T
+
+// Load from a File; if the file doesn't exist, save default values and return them
+fun loadAndSaveIfNotExists(file: File): T
+
+// Load from a raw YAML string
+fun loadFromString(content: String): T
+
+// Save an object to a File (creates parent directories automatically)
+fun save(file: File, value: T)
+
+// Save an object to a File only if the file does not already exist
+fun saveIfNotExists(file: File, value: T)
+
+// Serialize an object to a YAML string
+fun saveToString(value: T): String
+```
+
+### Typical usage patterns
+
+```kotlin
+val file = dataFolder.resolve("config.yml")
+
+// Pattern 1: Simple load (no auto-save)
+val config = MyConfigLoader.load(file)
+
+// Pattern 2: Load and save back (updates comments / normalizes keys)
+val config = MyConfigLoader.loadAndSave(file)
+
+// Pattern 3: First-run setup — create file with defaults if missing
+val config = MyConfigLoader.loadAndSaveIfNotExists(file)
+
+// Pattern 4: Save manually after modifications
+MyConfigLoader.save(file, config.copy(maxPlayers = 50))
+
+// Pattern 5: Serialize to string for logging/debugging
+val yaml = MyConfigLoader.saveToString(config)
+logger.info("Config:\n$yaml")
+```
+
+---
+
+## Default Values
+
+Use `hasDefault = true` to allow missing YAML keys to fall back to Kotlin default values.
+
+```kotlin
+@KtConfig(hasDefault = true)
+data class AppConfig(
+    val message: String = "Hello",
+    val count: Int = 10,
+    val tags: List<String> = listOf("default")
+)
+```
+
+### Rules
+
+1. **All properties must have default values** when `hasDefault = true`. Mixing required and optional
+   properties is not supported.
+
+   ```kotlin
+   // VALID
+   @KtConfig(hasDefault = true)
+   data class Good(val a: String = "a", val b: Int = 0)
+
+   // INVALID — compile error or unexpected behavior
+   @KtConfig(hasDefault = true)
+   data class Bad(val a: String, val b: Int = 0)
+   ```
+
+2. **Default values must be compile-time constants or static expressions.**
+   Dynamic values like `UUID.randomUUID()` or `System.currentTimeMillis()` are not allowed.
+
+   ```kotlin
+   // VALID
+   @KtConfig(hasDefault = true)
+   data class Good(
+       val name: String = "default",
+       val items: List<String> = listOf("a", "b")
+   )
+
+   // INVALID
+   @KtConfig(hasDefault = true)
+   data class Bad(
+       val uuid: UUID = UUID.randomUUID()  // Not static!
+   )
+   ```
+
+3. **Defaults are not auto-saved.** Loading with a missing key uses the default, but the file is not
+   updated automatically. Call `save()` explicitly to persist defaults.
+
+   ```kotlin
+   val config = AppConfigLoader.load(file)
+   AppConfigLoader.save(file, config)  // Persist defaults
+   ```
+
+---
+
+## Supported Types
+
+### Primitives
+
+| Kotlin Type | YAML format |
+|---|---|
+| `Boolean` | `true` / `false` |
+| `Byte` | integer |
+| `Short` | integer |
+| `Int` | integer |
+| `Long` | integer |
+| `Float` | decimal |
+| `Double` | decimal |
+| `Char` | single character string |
+| `String` | string |
+| `UByte` | integer (0–255) |
+| `UShort` | integer (0–65535) |
+| `UInt` | integer |
+| `ULong` | integer |
+| `BigInteger` | integer string |
+| `BigDecimal` | decimal string |
+
+### Collections
+
+All collection types support nullable element types (e.g. `List<String?>`).
+
+| Kotlin Type | Notes |
+|---|---|
+| `List<T>` | ordered |
+| `Set<T>` | unordered, unique |
+| `Map<K, V>` | K must use a `Serializer.Keyable` serializer |
+| `ArrayDeque<T>` | double-ended queue |
+| `Array<T>` | fixed-size array |
+| `BooleanArray` | primitive array |
+| `ByteArray` | primitive array |
+| `CharArray` | primitive array |
+| `ShortArray` | primitive array |
+| `IntArray` | primitive array |
+| `LongArray` | primitive array |
+| `FloatArray` | primitive array |
+| `DoubleArray` | primitive array |
+| `UByteArray` | unsigned primitive array |
+| `UShortArray` | unsigned primitive array |
+| `UIntArray` | unsigned primitive array |
+| `ULongArray` | unsigned primitive array |
+
+### Java Standard Library
+
+| Type | YAML format |
+|---|---|
+| `java.util.UUID` | `"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"` |
+| `java.time.Instant` | ISO-8601 string |
+| `java.time.LocalTime` | `"HH:mm:ss"` |
+| `java.time.LocalDate` | `"YYYY-MM-DD"` |
+| `java.time.LocalDateTime` | `"YYYY-MM-DDTHH:mm:ss"` |
+| `java.time.Year` | `"YYYY"` |
+| `java.time.YearMonth` | `"YYYY-MM"` |
+| `java.time.OffsetTime` | ISO-8601 |
+| `java.time.OffsetDateTime` | ISO-8601 |
+| `java.time.ZonedDateTime` | ISO-8601 |
+| `java.time.Duration` | ISO-8601 duration (`"PT10S"`) |
+| `java.time.Period` | ISO-8601 period (`"P1Y2M3D"`) |
+
+### Bukkit / Spigot
+
+| Type | Notes |
+|---|---|
+| `ConfigurationSerializable` | Bukkit serialization (ItemStack, Location, etc.) |
+| Enum classes | Stored as the enum constant name string |
+| Inline value classes (`@JvmInline value class`) | Unwrapped to inner type |
+| Sealed classes/interfaces | Requires `discriminator` (see below) |
+
+### Formatted Types (String-based Bukkit types)
+
+These are type aliases with built-in serializers for human-readable string formats:
+
+| Type alias | Underlying | Format |
+|---|---|---|
+| `FormattedVector` | `org.bukkit.util.Vector` | `"X, Y, Z"` |
+| `FormattedLocation` | `org.bukkit.Location` | `"World, X, Y, Z"` or `"World, X, Y, Z, Yaw, Pitch"` |
+| `FormattedBlock` | `org.bukkit.block.Block` | `"World, X, Y, Z"` (integers) |
+| `FormattedBlockVector` | `org.bukkit.util.BlockVector` | `"X, Y, Z"` (integers) |
+| `FormattedColor` | `org.bukkit.Color` | `"#RRGGBB"` or `"#AARRGGBB"` |
+| `FormattedWorld` | `org.bukkit.World` | `"WorldName"` |
+
+Usage:
+
+```kotlin
+import dev.s7a.ktconfig.type.FormattedVector
+import dev.s7a.ktconfig.type.FormattedLocation
+import dev.s7a.ktconfig.type.FormattedColor
+
+@KtConfig
+data class SpawnConfig(
+    val spawnPoint: FormattedLocation,    // "world, 0.0, 64.0, 0.0"
+    val velocity: FormattedVector,        // "1.0, 0.5, -1.0"
+    val particleColor: FormattedColor,    // "#FF5733" or "#80FF5733" (with alpha)
+)
+```
+
+You can also apply the serializer inline with a type annotation or via a typealias:
+
+```kotlin
+import dev.s7a.ktconfig.UseSerializer
+import dev.s7a.ktconfig.type.FormattedVectorSerializer
+import org.bukkit.util.Vector
+
+// Inline annotation on property type
+@KtConfig
+data class Config(
+    val pos: @UseSerializer(FormattedVectorSerializer::class) Vector
+)
+
+// Or via typealias (reusable)
+typealias MyVector = @UseSerializer(FormattedVectorSerializer::class) Vector
+
+@KtConfig
+data class Config(val pos: MyVector)
+```
+
+---
+
+## Nested Configs
+
+A property whose type is itself `@KtConfig`-annotated is serialized as a nested YAML section.
+
+```kotlin
+@KtConfig
+data class DatabaseConfig(
+    val host: String,
+    val port: Int
+)
+
+@KtConfig
+data class AppConfig(
+    val server: ServerSection,
+    val database: DatabaseConfig   // nested section
+) {
+    @KtConfig(hasDefault = true)
+    data class ServerSection(
+        val name: String = "My Server",
+        val maxPlayers: Int = 20
+    )
+}
+```
+
+YAML:
+
+```yaml
+server:
+  name: "My Server"
+  maxPlayers: 20
+database:
+  host: "localhost"
+  port: 3306
+```
+
+---
+
+## Nullable Properties
+
+Add `?` to any type to make it optional in YAML. Missing keys produce `null`.
+
+```kotlin
+@KtConfig
+data class Config(
+    val required: String,
+    val optional: String?,           // null if missing
+    val optionalList: List<String>?, // null if missing
+    val listWithNulls: List<String?> // list that may contain null elements
+)
+```
+
+---
+
+## Sealed Classes and Interfaces
+
+Sealed hierarchies are serialized with a **discriminator key** that identifies the subtype.
+
+```kotlin
+@KtConfig(discriminator = "type")
+sealed interface AppConfig {
+    @KtConfig
+    @SerialName("message")
+    data class Message(
+        val content: String
+    ) : AppConfig
+
+    @KtConfig
+    @SerialName("broadcast")
+    data class Broadcast(
+        val content: String,
+        val delay: Int
+    ) : AppConfig
+}
+```
+
+YAML for `Message`:
+
+```yaml
+type: message
+content: "Hello World"
+```
+
+YAML for `Broadcast`:
+
+```yaml
+type: broadcast
+content: "Attention!"
+delay: 20
+```
+
+### Rules
+
+- The parent sealed class/interface must be annotated with `@KtConfig` and specify `discriminator`.
+- Each subclass must also be annotated with `@KtConfig`.
+- Use `@SerialName` on subclasses to control the discriminator value. Without it, the full class name is used.
+- The `discriminator` property defaults to `"$"`. An empty string `""` also resolves to `"$"`.
+- Nested sealed hierarchies are supported; each level can have its own `discriminator`.
+
+```kotlin
+@KtConfig   // discriminator = "$" (default)
+sealed interface SealedTestConfig {
+    @KtConfig
+    data class A(val a: String, val value: Int) : SealedTestConfig
+
+    @KtConfig(discriminator = "type")   // override discriminator for sub-hierarchy
+    sealed interface B : SealedTestConfig {
+        @KtConfig
+        @SerialName("b1")
+        data class B1(val b1: String) : B
+
+        @KtConfig
+        data class B2(val b2: String) : B   // discriminator value = "dev.s7a.example.config.SealedTestConfig.B.B2"
+    }
+
+    @KtConfig(discriminator = "")   // empty string → falls back to "$"
+    sealed class C : SealedTestConfig {
+        @KtConfig
+        data class C1(val c1: String) : C()
+    }
+}
+```
+
+---
+
+## Custom Serializers
+
+### Option 1: `TransformSerializer` (recommended)
+
+Transform your type to/from any already-supported type.
+
+```kotlin
+import dev.s7a.ktconfig.serializer.TransformSerializer
+import dev.s7a.ktconfig.serializer.StringSerializer
+import dev.s7a.ktconfig.serializer.IntSerializer
+
+// Serialize Point as "X,Y" string
+object PointSerializer : TransformSerializer<Point, String>(StringSerializer) {
+    override fun decode(value: String): Point {
+        val (x, y) = value.split(",").map { it.trim().toInt() }
+        return Point(x, y)
+    }
+    override fun encode(value: Point) = "${value.x},${value.y}"
+}
+
+// Serialize CustomData as Int
+data class CustomData(val value: Int) {
+    object Serializer : TransformSerializer<CustomData, Int>(IntSerializer) {
+        override fun decode(value: Int) = CustomData(value)
+        override fun encode(value: CustomData) = value.value
+    }
+}
+```
+
+### Option 2: `Serializer` interface (full control)
+
+```kotlin
+import dev.s7a.ktconfig.serializer.Serializer
+import org.bukkit.configuration.file.YamlConfiguration
+
+object MyTypeSerializer : Serializer<MyType> {
+    override fun deserialize(value: Any): MyType {
+        // value is whatever YAML gave us (String, Int, Map, List, ...)
+        return MyType(value as String)
+    }
+
+    override fun serialize(value: MyType): Any? {
+        return value.data
+    }
+}
+```
+
+### Making a serializer usable as a Map key
+
+Implement `Serializer.Keyable<T>` or `TransformSerializer.Keyable<T, B>`:
+
+```kotlin
+object MyKeySerializer : TransformSerializer.Keyable<MyKey, String>(StringSerializer) {
+    override fun decode(value: String) = MyKey(value)
+    override fun encode(value: MyKey) = value.raw
+}
+```
+
+### Applying the serializer
+
+```kotlin
+@KtConfig
+data class Config(
+    val point: @UseSerializer(PointSerializer::class) Point,
+    val customData: CustomData  // @UseSerializer is on the class itself
+)
+```
+
+> **Important**: Serializer objects must be Kotlin `object` declarations, not `class`.
+> KSP generates code that references the singleton directly. Using a `class` instead of `object`
+> causes "Unresolved reference" compilation errors in the generated loader.
+
+---
+
+## Inline Value Classes
+
+Kotlin `@JvmInline value class` properties are automatically unwrapped to their inner type for serialization.
+
+```kotlin
+@JvmInline
+value class PlayerId(val value: UUID)
+
+@JvmInline
+value class PlayerName(val value: String)
+
+@KtConfig
+data class PlayerConfig(
+    val id: PlayerId,      // serialized as UUID string
+    val name: PlayerName   // serialized as String
+)
+```
+
+Value classes wrapping collections also work:
+
+```kotlin
+@JvmInline
+value class Tags(val value: List<String>)
+
+@KtConfig
+data class Config(val tags: Tags)
+```
+
+---
+
+## Enum Classes
+
+Enums are serialized as their constant name (String).
+
+```kotlin
+enum class Difficulty { EASY, NORMAL, HARD }
+
+@KtConfig
+data class GameConfig(
+    val difficulty: Difficulty,
+    val allowedDifficulties: List<Difficulty>,
+    val difficultyMap: Map<Difficulty, Int>  // Enum is Keyable
+)
+```
+
+YAML:
+
+```yaml
+difficulty: NORMAL
+allowedDifficulties:
+  - EASY
+  - HARD
+difficultyMap:
+  EASY: 1
+  HARD: 3
+```
+
+---
+
+## `@SerialName` for Custom YAML Keys
+
+```kotlin
+@KtConfig
+data class Config(
+    @SerialName("max-players")    // kebab-case key in YAML
+    val maxPlayers: Int,
+
+    @SerialName("spawn-location")
+    val spawnLocation: FormattedLocation,
+)
+```
+
+---
+
+## Error Handling
+
+All exceptions extend `KtConfigException : Exception`.
+
+| Exception | When thrown |
+|---|---|
+| `NotFoundValueException(path)` | Required path is missing from the YAML file |
+| `NullValueException` | A non-nullable property received null |
+| `InvalidFormatException(text, expected)` | String could not be parsed (e.g. bad vector format) |
+| `InvalidDiscriminatorException(discriminator)` | Sealed class discriminator value not recognized |
+| `UnsupportedConvertException(actual, expected)` | YAML value cannot be cast to the expected Kotlin type |
+
+Handling in plugin code:
+
+```kotlin
+try {
+    val config = MyConfigLoader.load(file)
+} catch (e: NotFoundValueException) {
+    logger.severe("Missing config key: ${e.path}")
+} catch (e: InvalidFormatException) {
+    logger.severe("Bad value '${e.text}', expected: ${e.expected}")
+} catch (e: KtConfigException) {
+    logger.severe("Config error: ${e.message}")
+}
+```
+
+---
+
+## Troubleshooting
+
+### "Unsupported type: java.util.Date" (KSP log)
+
+The type is not natively supported. Either:
+
+1. Provide a custom serializer:
+
+   ```kotlin
+   object DateSerializer : Serializer<java.util.Date> {
+       override fun deserialize(value: Any) = java.util.Date(value as Long)
+       override fun serialize(value: java.util.Date) = value.time
+   }
+
+   @KtConfig
+   data class Config(
+       val date: @UseSerializer(DateSerializer::class) java.util.Date
+   )
+   ```
+
+2. Use a supported type and convert externally:
+
+   ```kotlin
+   @KtConfig
+   data class Config(val instant: java.time.Instant) {
+       val date get() = java.util.Date.from(instant)
+   }
+   ```
+
+### "Unresolved reference" in generated loader
+
+Check that:
+
+- Properties use `val`/`var` — not bare constructor parameters without `val`/`var`.
+- Custom serializers are `object` declarations, not `class`.
+- After adding new config classes, run `./gradlew kspKotlin` to regenerate loaders.
+
+### Kotlin / KSP version mismatch
+
+Error example:
+```
+'org.gradle.api.provider.Property org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions.getJvmDefault()'
+```
+
+Ensure the KSP plugin version matches the Kotlin version:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.2.21"        // Kotlin version
+    id("com.google.devtools.ksp") version "2.3.2"  // KSP version — must match Kotlin
+}
+```
+
+### `@PathName` deprecation
+
+`@PathName` is removed-at-compile-level since v2.1.0 (`DeprecationLevel.ERROR`). Replace with `@SerialName`.
+
+```kotlin
+// Before (v2.0 — now fails to compile)
+@KtConfig
+data class Config(@PathName("my-key") val myKey: String)
+
+// After (v2.1+)
+@KtConfig
+data class Config(@SerialName("my-key") val myKey: String)
+```
+
+---
+
+## Complete Example
+
+The following shows most ktConfig features together:
+
+```kotlin
+package com.example.myplugin
+
+import dev.s7a.ktconfig.Comment
+import dev.s7a.ktconfig.KtConfig
+import dev.s7a.ktconfig.SerialName
+import dev.s7a.ktconfig.UseSerializer
+import dev.s7a.ktconfig.serializer.IntSerializer
+import dev.s7a.ktconfig.serializer.TransformSerializer
+import dev.s7a.ktconfig.type.FormattedLocation
+import dev.s7a.ktconfig.type.FormattedVector
+import java.util.UUID
+
+// ── Custom type with its own serializer ─────────────────────────────────────
+
+@UseSerializer(Reward.Serializer::class)
+data class Reward(val points: Int) {
+    object Serializer : TransformSerializer<Reward, Int>(IntSerializer) {
+        override fun decode(value: Int) = Reward(value)
+        override fun encode(value: Reward) = value.points
+    }
+}
+
+// ── Sealed interface for polymorphic config entries ──────────────────────────
+
+@KtConfig(discriminator = "mode")
+sealed interface SpawnMode {
+    @KtConfig
+    @SerialName("fixed")
+    data class Fixed(val location: FormattedLocation) : SpawnMode
+
+    @KtConfig
+    @SerialName("random")
+    data class Random(val radius: Double) : SpawnMode
+}
+
+// ── Nested config section ────────────────────────────────────────────────────
+
+@KtConfig(hasDefault = true)
+data class DatabaseConfig(
+    val host: String = "localhost",
+    val port: Int = 3306,
+    val name: String = "myplugin"
+)
+
+// ── Root config ──────────────────────────────────────────────────────────────
+
+@KtConfig
+@Comment("MyPlugin configuration")
+data class PluginConfig(
+    @Comment("Plugin display name")
+    val pluginName: String,
+
+    @Comment("Admin player UUID")
+    val adminUuid: UUID,
+
+    @SerialName("spawn-mode")
+    val spawnMode: SpawnMode,
+
+    val database: DatabaseConfig,
+
+    @Comment("List of disabled worlds")
+    @SerialName("disabled-worlds")
+    val disabledWorlds: List<String> = listOf(),
+
+    val reward: Reward
+)
+```
+
+Plugin usage:
+
+```kotlin
+class MyPlugin : JavaPlugin() {
+    lateinit var config: PluginConfig
+        private set
+
+    override fun onEnable() {
+        val file = dataFolder.resolve("config.yml")
+
+        // Create file with defaults on first run, then load
+        config = PluginConfigLoader.loadAndSaveIfNotExists(file)
+
+        // Reload command
+        getCommand("reload")?.setExecutor { _, _, _, _ ->
+            config = PluginConfigLoader.load(file)
+            true
+        }
+    }
+
+    fun saveConfig(updated: PluginConfig) {
+        PluginConfigLoader.save(dataFolder.resolve("config.yml"), updated)
+        config = updated
+    }
+}
+```
+
+Corresponding YAML:
+
+```yaml
+# MyPlugin configuration
+# Plugin display name
+pluginName: "My Plugin"
+# Admin player UUID
+adminUuid: "550e8400-e29b-41d4-a716-446655440000"
+spawn-mode:
+  mode: fixed
+  location: "world, 0.0, 64.0, 0.0"
+database:
+  host: localhost
+  port: 3306
+  name: myplugin
+# List of disabled worlds
+disabled-worlds:
+  - nether_pvp
+reward: 100
+```
+
+---
+
+## Serializer Class Hierarchy (for custom serializer authors)
+
+```
+Serializer<T>                          ← interface; getOrThrow/get/set/deserialize/serialize
+└── Serializer.Keyable<T>              ← marker; T can be used as Map key
+TransformSerializer<T, B>(base)        ← abstract; delegates to base serializer
+└── TransformSerializer.Keyable<T, B>  ← TransformSerializer + Serializer.Keyable
+KtConfigLoader<T>                      ← abstract; file I/O; extends TransformSerializer<T, Map<String,Any?>>
+```
+
+Built-in singleton serializers available for use in `TransformSerializer`:
+
+| Object | Type |
+|---|---|
+| `StringSerializer` | `String` (Keyable) |
+| `IntSerializer` | `Int` (Keyable) |
+| `LongSerializer` | `Long` (Keyable) |
+| `DoubleSerializer` | `Double` (Keyable) |
+| `FloatSerializer` | `Float` (Keyable) |
+| `BooleanSerializer` | `Boolean` |
+| `ByteSerializer` | `Byte` (Keyable) |
+| `ShortSerializer` | `Short` (Keyable) |
+| `CharSerializer` | `Char` (Keyable) |
+| `UIntSerializer` | `UInt` (Keyable) |
+| `ULongSerializer` | `ULong` (Keyable) |
+| `UByteSerializer` | `UByte` (Keyable) |
+| `UShortSerializer` | `UShort` (Keyable) |
+| `UUIDSerializer` | `UUID` (Keyable) |
+| `BigIntegerSerializer` | `BigInteger` (Keyable) |
+| `BigDecimalSerializer` | `BigDecimal` (Keyable) |
+| `ListSerializer(element)` | `List<T>` |
+| `SetSerializer(element)` | `Set<T>` |
+| `MapSerializer(key, value)` | `Map<K, V>` |
+| `ArrayDequeSerializer(element)` | `ArrayDeque<T>` |
+
+Import path: `dev.s7a.ktconfig.serializer.*`
+
+---
+
+## Package Structure
+
+```
+dev.s7a.ktconfig
+├── KtConfig                        ← @KtConfig annotation
+├── Comment                         ← @Comment annotation
+├── SerialName                      ← @SerialName annotation
+├── UseSerializer                   ← @UseSerializer annotation
+├── KtConfigLoader                  ← abstract base for generated loaders
+├── exception/
+│   ├── KtConfigException
+│   ├── InvalidDiscriminatorException
+│   ├── InvalidFormatException
+│   ├── NotFoundValueException
+│   ├── NullValueException
+│   └── UnsupportedConvertException
+├── serializer/
+│   ├── Serializer                  ← interface
+│   ├── TransformSerializer         ← abstract class
+│   ├── StringSerializer, IntSerializer, ...  ← built-in singletons
+│   ├── ListSerializer, SetSerializer, MapSerializer, ...
+│   └── EnumSerializer, NestedSerializer, ValueSerializer, ...
+└── type/
+    ├── FormattedVector             ← typealias + FormattedVectorSerializer
+    ├── FormattedLocation           ← typealias + FormatedLocationSerializer
+    ├── FormattedBlock              ← typealias + FormattedBlockSerializer
+    ├── FormattedBlockVector        ← typealias + FormattedBlockVectorSerializer
+    ├── FormattedColor              ← typealias + FormattedColorSerializer
+    └── FormattedWorld              ← typealias + FormattedWorldSerializer
+```
+
+---
+
+## Version History
+
+| Version | Notable Changes |
+|---|---|
+| 2.1.0 | Sealed classes/interfaces, `@SerialName` (replaces `@PathName`), `loaderName`, `loadAndSave`, `loadAndSaveIfNotExists`, `saveIfNotExists`, BigInteger/BigDecimal fix, alpha color fix |
+| 2.0.0 | Initial release |
+
+---
+
+## License
+
+MIT License — Copyright (c) 2025 sya-ri
