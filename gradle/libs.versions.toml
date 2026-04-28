@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 ksp = "2.3.7"
 kover = "0.9.8"
 kotlinter = "5.4.2"
