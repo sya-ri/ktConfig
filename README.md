@@ -35,6 +35,29 @@ dependencies {
 - Auto generate configuration loaders on build: `./gradlew build`.
 - Manually generate loaders: `./gradlew kspKotlin` (maybe required)
 
+## 🤖 Agent Skill
+
+This repository also includes a distributable agent skill for ktConfig at `skills/ktconfig`.
+It summarizes how to use ktConfig in Kotlin Bukkit/Spigot/Paper projects, including generated loaders, annotations, default values, sealed classes, custom serializers, and common KSP pitfalls.
+
+### Install with `gh skill`
+
+`gh skill` can discover skills from repositories that follow the `skills/*/SKILL.md` layout, which this repository does.
+
+```bash
+gh skill preview sya-ri/ktConfig skills/ktconfig
+```
+
+### Install with `npx skills`
+
+`npx skills` can install the repository directly and lets you select just the `ktconfig` skill.
+
+```bash
+npx skills add sya-ri/ktConfig --skill ktconfig
+```
+
+After installing a skill, restart your agent tool so it reloads available skills.
+
 ## 📝 Quick Example
 
 Add the `@KtConfig` annotation to your data class
@@ -497,4 +520,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-

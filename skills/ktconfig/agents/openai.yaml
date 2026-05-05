@@ -1,0 +1,4 @@
+interface:
+  display_name: "ktConfig"
+  short_description: "Use ktConfig in Kotlin Bukkit config code"
+  default_prompt: "Use $ktconfig to add or fix Kotlin Bukkit configuration code built on ktConfig."
