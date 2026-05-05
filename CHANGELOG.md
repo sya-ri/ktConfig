@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.1.1
+
+### Added
+- Added a distributable `ktconfig` agent skill under `skills/ktconfig`.
+  - Includes installation metadata for agent tools.
+  - Includes a focused reference covering annotations, generated loaders, serializers, sealed classes, and KSP usage notes.
+
 ## v2.1.0
 
 ### Added
