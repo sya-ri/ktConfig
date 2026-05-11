@@ -2,6 +2,7 @@ package dev.s7a.ktconfig.ksp
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
+import com.google.devtools.ksp.symbol.KSTypeAlias
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
 
 /**
@@ -32,6 +33,11 @@ fun getLoaderName(declaration: KSClassDeclaration): String? {
     val fullName = getFullName(declaration).joinToString("")
     val annotation = declaration.getKtConfigAnnotation() ?: return null
     return annotation.loaderName.replace("{CLASS_NAME}", fullName)
+}
+
+fun getLoaderName(declaration: KSTypeAlias): String? {
+    val annotation = declaration.getKtConfigAnnotation() ?: return null
+    return annotation.loaderName.replace("{CLASS_NAME}", declaration.simpleName.asString())
 }
 
 /**

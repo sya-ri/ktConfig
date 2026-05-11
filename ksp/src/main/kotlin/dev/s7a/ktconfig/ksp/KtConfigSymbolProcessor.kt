@@ -10,9 +10,11 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import com.google.devtools.ksp.symbol.KSTypeArgument
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.Variance
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -52,12 +54,13 @@ class KtConfigSymbolProcessor(
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver
             .getSymbolsWithAnnotation(KT_CONFIG)
-            .filterIsInstance<KSClassDeclaration>()
-            .forEach { it.accept(Visitor(), Unit) }
+            .forEach { it.accept(Visitor(resolver), Unit) }
         return emptyList()
     }
 
-    private inner class Visitor : KSVisitorVoid() {
+    private inner class Visitor(
+        private val resolver: Resolver,
+    ) : KSVisitorVoid() {
         private val loaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
         private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer.Serializer", "Keyable")
@@ -116,6 +119,60 @@ class KtConfigSymbolProcessor(
                 .writeTo(codeGenerator, false)
         }
 
+        override fun visitTypeAlias(
+            typeAlias: KSTypeAlias,
+            data: Unit,
+        ) {
+            val ktConfig = typeAlias.getKtConfigAnnotation()
+            if (ktConfig == null) {
+                logger.error("Type aliases must be annotated with @KtConfig", typeAlias)
+                return
+            }
+
+            val resolvedType = typeAlias.type.resolve()
+            val classDeclaration = resolvedType.declaration as? KSClassDeclaration
+            if (classDeclaration == null) {
+                logger.error("@KtConfig type aliases must resolve to a class", typeAlias)
+                return
+            }
+
+            val packageName = typeAlias.packageName.asString()
+            val className = ClassName(packageName, typeAlias.simpleName.asString())
+            val loaderSimpleName = getLoaderName(typeAlias)
+            if (loaderSimpleName == null) {
+                logger.error("Type aliases must be annotated with @KtConfig", typeAlias)
+                return
+            }
+
+            val file =
+                typeAlias.containingFile
+                    ?: throw IllegalStateException(
+                        "Containing file not found for type alias: ${typeAlias.simpleName.asString()}",
+                    )
+
+            FileSpec
+                .builder(packageName, loaderSimpleName)
+                .apply {
+                    addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
+
+                    val sealedSubclasses = classDeclaration.getSealedSubclassesDeeply()
+                    if (sealedSubclasses.isNotEmpty()) {
+                        logger.error("@KtConfig type aliases for sealed classes are not supported", typeAlias)
+                        return@apply
+                    }
+
+                    addDefaultLoader(
+                        classDeclaration,
+                        className,
+                        loaderSimpleName,
+                        file,
+                        ktConfig,
+                        classDeclaration.typeParameters.toTypeSubstitutions(resolvedType.arguments),
+                    )
+                }.build()
+                .writeTo(codeGenerator, false)
+        }
+
         /**
          * Generates a default loader class for non-sealed configuration classes.
          * Creates implementations for load, save, decode, and encode functions that handle
@@ -133,8 +190,9 @@ class KtConfigSymbolProcessor(
             loaderSimpleName: String,
             file: KSFile,
             ktConfig: KtConfigAnnotation,
+            typeSubstitutions: Map<String, KSType> = emptyMap(),
         ) {
-            val parameters = getParameters(classDeclaration) ?: return
+            val parameters = getParameters(classDeclaration, typeSubstitutions) ?: return
 
             // Add properties for nested type serializer classes like ListOfString
             addInitializableSerializerProperties(parameters)
@@ -567,7 +625,10 @@ class KtConfigSymbolProcessor(
                 }
         }
 
-        private fun getParameters(declaration: KSClassDeclaration): List<Parameter>? {
+        private fun getParameters(
+            declaration: KSClassDeclaration,
+            typeSubstitutions: Map<String, KSType> = emptyMap(),
+        ): List<Parameter>? {
             // Get primary constructor from data class
             val primaryConstructor = declaration.primaryConstructor
             if (primaryConstructor == null) {
@@ -576,7 +637,7 @@ class KtConfigSymbolProcessor(
             }
 
             // Get parameters from data class constructor
-            return primaryConstructor.parameters.map { createParameter(it) ?: return null }
+            return primaryConstructor.parameters.map { createParameter(it, typeSubstitutions) ?: return null }
         }
 
         /**
@@ -607,17 +668,56 @@ class KtConfigSymbolProcessor(
          * Creates a Parameter object from a KSValueParameter, validating the parameter name and type.
          * Returns null if the parameter is invalid or unsupported.
          */
-        private fun createParameter(declaration: KSValueParameter): Parameter? {
+        private fun createParameter(
+            declaration: KSValueParameter,
+            typeSubstitutions: Map<String, KSType> = emptyMap(),
+        ): Parameter? {
             val name = declaration.name?.asString()
             if (name == null) {
                 logger.error("Primary constructor parameters must have a name", declaration)
                 return null
             }
 
-            val serializer = getSerializer(declaration) ?: return null
+            val serializer = getSerializer(substitute(declaration.type.resolve(), typeSubstitutions)) ?: return null
             val pathName = declaration.getSerialNameAnnotation()?.name
             val comment = declaration.getCommentAnnotation()?.content
             return Parameter(pathName ?: name, name, serializer, comment)
+        }
+
+        private fun List<KSTypeParameter>.toTypeSubstitutions(arguments: List<KSTypeArgument>): Map<String, KSType> =
+            zip(arguments)
+                .mapNotNull { (parameter, argument) ->
+                    val type = argument.type?.resolve() ?: return@mapNotNull null
+                    parameter.name.asString() to type
+                }.toMap()
+
+        private fun substitute(
+            type: KSType,
+            substitutions: Map<String, KSType>,
+        ): KSType {
+            val typeParameter = type.declaration as? KSTypeParameter
+            if (typeParameter != null) {
+                val substituted = substitutions[typeParameter.name.asString()] ?: return type
+                return if (type.isMarkedNullable) substituted.makeNullable() else substituted.makeNotNullable()
+            }
+
+            if (type.arguments.isEmpty()) {
+                return type
+            }
+
+            return type.replace(
+                type.arguments.map { argument ->
+                    val argumentType = argument.type?.resolve()
+                    if (argumentType == null) {
+                        argument
+                    } else {
+                        resolver.getTypeArgument(
+                            resolver.createKSTypeReferenceFromKSType(substitute(argumentType, substitutions)),
+                            if (argument.variance == Variance.STAR) Variance.INVARIANT else argument.variance,
+                        )
+                    }
+                },
+            )
         }
 
         private fun KSType.solveTypeAlias(): Pair<KSType, Serializer.Custom?> {

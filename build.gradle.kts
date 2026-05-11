@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "dev.s7a"
-version = "2.1.1"
+version = "2.2.0-SNAPSHOT"
 
 allprojects {
     apply(plugin = "kotlin")

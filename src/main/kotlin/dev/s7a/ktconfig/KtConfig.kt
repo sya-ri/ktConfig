@@ -12,7 +12,7 @@ package dev.s7a.ktconfig
  * @property loaderName Name of the loader class, default is '{CLASS_NAME}Loader'.
  * @since 2.0.0
  */
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 annotation class KtConfig(
     val hasDefault: Boolean = false,
     val discriminator: String = "$",
