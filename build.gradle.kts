@@ -23,6 +23,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://hub.spigotmc.org/nexus/content/groups/public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
     }
 
     tasks.compileJava {
@@ -39,7 +40,10 @@ allprojects {
 dependencies {
     compileOnly(libs.spigot)
     testImplementation(kotlin("test"))
-    testImplementation(libs.spigot)
+    testImplementation(gradleTestKit())
+    testImplementation(libs.mockbukkit)
+    testImplementation(libs.adventure.api)
+    testImplementation(libs.paper.api)
     kspTest(project(":ksp"))
 }
 
