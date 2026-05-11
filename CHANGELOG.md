@@ -5,6 +5,9 @@
 ### Added
 - Added KSP support for applying `@KtConfig` to type aliases, including generic type substitution for generated loaders.
 
+### Fixed
+- Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.
+
 ## v2.1.1
 
 ### Added
