@@ -4,6 +4,46 @@
 
 ### Added
 - Added KSP support for applying `@KtConfig` to type aliases, including generic type substitution for generated loaders.
+- Added KSP support for generating sealed subtype loaders from the concrete parent type alias, so sealed children no longer need their own `@KtConfig` annotation when their types can be inferred.
+  ```kotlin
+  sealed interface Config<T>
+
+  @SerialName("value")
+  data class Value<T>(
+      val value: T,
+  ) : Config<T>
+
+  @KtConfig(discriminator = "type")
+  typealias StringConfig = Config<String>
+
+  // Generated:
+  // - StringConfigLoader for Config<String>
+  // - Value<String> handling inside StringConfigLoader
+  //
+  // StringConfigLoader.load(...) dispatches "type: value" to the inlined
+  // Value<String> handling even though Value is not annotated with @KtConfig.
+  ```
+  If a sealed child is explicitly annotated with `@KtConfig`, that child loader's settings are used instead of inheriting settings from the parent type alias.
+  ```kotlin
+  sealed interface ExplicitConfig
+
+  @KtConfig(hasDefault = true)
+  @SerialName("value")
+  data class ExplicitValue(
+      val value: String = "default",
+  ) : ExplicitConfig
+
+  @KtConfig(discriminator = "type", hasDefault = false)
+  typealias ExplicitConfigAlias = ExplicitConfig
+
+  // Generated:
+  // - ExplicitConfigAliasLoader for ExplicitConfig
+  // - ExplicitValue handling inside ExplicitConfigAliasLoader
+  //
+  // ExplicitConfigAliasLoader.load("type: value") uses the ExplicitValue @KtConfig
+  // settings in its inlined subtype handling, so the missing "value" property uses
+  // ExplicitValue's default even though the parent type alias has hasDefault = false.
+  ```
 
 ### Fixed
 - Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.

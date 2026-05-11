@@ -4,6 +4,7 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
@@ -17,6 +18,7 @@ import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Variance
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -24,6 +26,7 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
@@ -33,6 +36,27 @@ import dev.s7a.ktconfig.ksp.KtConfigAnnotation.SerialName.Companion.getSerialNam
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.UseSerializer.Companion.getUseSerializerAnnotation
 import dev.s7a.ktconfig.ksp.Serializer.Companion.extractInitializableSerializers
 import kotlin.collections.map
+
+private data class LoaderTarget(
+    val declaration: KSClassDeclaration,
+    val packageName: String,
+    val typeName: TypeName,
+    val loaderSimpleName: String,
+    val file: KSFile,
+    val ktConfig: KtConfigAnnotation,
+    val typeSubstitutions: Map<String, KSType> = emptyMap(),
+    val headerCommentDeclaration: KSClassDeclaration = declaration,
+)
+
+private data class SealedSubclassTarget(
+    val declaration: KSClassDeclaration,
+    val checkTypeName: ClassName,
+    val valueTypeName: TypeName,
+    val loaderTypeName: ClassName,
+    val discriminator: String,
+    val requiresValueCast: Boolean,
+    val generatedLoaderTarget: LoaderTarget?,
+)
 
 /**
  * Symbol processor that generates loader classes for configurations annotated with @KtConfig.
@@ -80,10 +104,13 @@ class KtConfigSymbolProcessor(
             classDeclaration: KSClassDeclaration,
             data: Unit,
         ) {
-            // Get @KtConfig annotation
             val ktConfig = classDeclaration.getKtConfigAnnotation()
             if (ktConfig == null) {
                 logger.error("Classes must be annotated with @KtConfig", classDeclaration)
+                return
+            }
+
+            if (classDeclaration.typeParameters.isNotEmpty()) {
                 return
             }
 
@@ -102,21 +129,16 @@ class KtConfigSymbolProcessor(
                         "Containing file not found for class declaration: ${classDeclaration.simpleName.asString()}",
                     )
 
-            FileSpec
-                .builder(packageName, loaderSimpleName)
-                .apply {
-                    addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
-
-                    // sealed interface/class
-                    val sealedSubclasses = classDeclaration.getSealedSubclassesDeeply()
-                    if (sealedSubclasses.isNotEmpty()) {
-                        return@apply addSealedLoader(classDeclaration, className, loaderSimpleName, file, ktConfig, sealedSubclasses)
-                    }
-
-                    // default
-                    addDefaultLoader(classDeclaration, className, loaderSimpleName, file, ktConfig)
-                }.build()
-                .writeTo(codeGenerator, false)
+            generateLoader(
+                LoaderTarget(
+                    declaration = classDeclaration,
+                    packageName = packageName,
+                    typeName = className,
+                    loaderSimpleName = loaderSimpleName,
+                    file = file,
+                    ktConfig = ktConfig,
+                ),
+            )
         }
 
         override fun visitTypeAlias(
@@ -135,6 +157,13 @@ class KtConfigSymbolProcessor(
                 logger.error("@KtConfig type aliases must resolve to a class", typeAlias)
                 return
             }
+            val classKtConfig = classDeclaration.getKtConfigAnnotation()
+            if (ktConfig.hasDefault && classKtConfig?.hasDefault != true) {
+                logger.warn(
+                    "@KtConfig(hasDefault = ...) on type aliases is ignored. Put @KtConfig(hasDefault = ...) on the aliased class instead.",
+                    typeAlias,
+                )
+            }
 
             val packageName = typeAlias.packageName.asString()
             val className = ClassName(packageName, typeAlias.simpleName.asString())
@@ -150,25 +179,48 @@ class KtConfigSymbolProcessor(
                         "Containing file not found for type alias: ${typeAlias.simpleName.asString()}",
                     )
 
+            val typeSubstitutions = classDeclaration.typeParameters.toTypeSubstitutions(resolvedType.arguments)
+            generateLoader(
+                LoaderTarget(
+                    declaration = classDeclaration,
+                    packageName = packageName,
+                    typeName = className,
+                    loaderSimpleName = loaderSimpleName,
+                    file = file,
+                    ktConfig =
+                        ktConfig.copy(
+                            hasDefault = classKtConfig?.hasDefault ?: false,
+                        ),
+                    typeSubstitutions = typeSubstitutions,
+                ),
+            )
+        }
+
+        private fun generateLoader(target: LoaderTarget) {
+            val addedInitializableSerializerNames = mutableSetOf<String>()
             FileSpec
-                .builder(packageName, loaderSimpleName)
+                .builder(target.packageName, target.loaderSimpleName)
                 .apply {
                     addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
 
-                    val sealedSubclasses = classDeclaration.getSealedSubclassesDeeply()
+                    val sealedSubclasses = target.declaration.getSealedSubclassesDeeply()
                     if (sealedSubclasses.isNotEmpty()) {
-                        logger.error("@KtConfig type aliases for sealed classes are not supported", typeAlias)
-                        return@apply
+                        val sealedSubclassTargets = sealedSubclasses.flatMap { it.toSealedSubclassTargets(target) }
+                        if (sealedSubclassTargets.isEmpty()) {
+                            logger.error("No compatible sealed subclasses found for generated loader", target.declaration)
+                            return@apply
+                        }
+                        val generatedSubclassParameters = mutableMapOf<SealedSubclassTarget, List<Parameter>>()
+                        sealedSubclassTargets.forEach { subclass ->
+                            val generatedTarget = subclass.generatedLoaderTarget ?: return@forEach
+                            val parameters = getParameters(generatedTarget.declaration, generatedTarget.typeSubstitutions) ?: return@apply
+                            addInitializableSerializerProperties(parameters, addedInitializableSerializerNames)
+                            generatedSubclassParameters[subclass] = parameters
+                        }
+                        return@apply addSealedLoader(target, sealedSubclassTargets, generatedSubclassParameters)
                     }
 
-                    addDefaultLoader(
-                        classDeclaration,
-                        className,
-                        loaderSimpleName,
-                        file,
-                        ktConfig,
-                        classDeclaration.typeParameters.toTypeSubstitutions(resolvedType.arguments),
-                    )
+                    addDefaultLoader(target, addedInitializableSerializerNames)
                 }.build()
                 .writeTo(codeGenerator, false)
         }
@@ -178,47 +230,40 @@ class KtConfigSymbolProcessor(
          * Creates implementations for load, save, decode, and encode functions that handle
          * serialization and deserialization of configuration properties.
          *
-         * @param classDeclaration The configuration class declaration to generate a loader for
-         * @param className The fully qualified class name
-         * @param loaderSimpleName The name for the generated loader class
-         * @param file The source file containing the class
-         * @param ktConfig The KtConfig annotation configuration including default value settings
+         * @param target The class, type, loader name, source file, annotation, and type substitutions to generate a loader for
+         * @param addedInitializableSerializerNames Serializer property names already added to this generated file
          */
         private fun FileSpec.Builder.addDefaultLoader(
-            classDeclaration: KSClassDeclaration,
-            className: ClassName,
-            loaderSimpleName: String,
-            file: KSFile,
-            ktConfig: KtConfigAnnotation,
-            typeSubstitutions: Map<String, KSType> = emptyMap(),
+            target: LoaderTarget,
+            addedInitializableSerializerNames: MutableSet<String>,
         ) {
-            val parameters = getParameters(classDeclaration, typeSubstitutions) ?: return
+            val parameters = getParameters(target.declaration, target.typeSubstitutions) ?: return
 
             // Add properties for nested type serializer classes like ListOfString
-            addInitializableSerializerProperties(parameters)
+            addInitializableSerializerProperties(parameters, addedInitializableSerializerNames)
 
             addType(
                 TypeSpec
-                    .objectBuilder(loaderSimpleName)
-                    .addOriginatingKSFile(file)
-                    .superclass(loaderClassName.parameterizedBy(className))
+                    .objectBuilder(target.loaderSimpleName)
+                    .addOriginatingKSFile(target.file)
+                    .superclass(loaderClassName.parameterizedBy(target.typeName))
                     .apply {
-                        if (ktConfig.hasDefault) {
+                        if (target.ktConfig.hasDefault) {
                             addProperty(
                                 PropertySpec
-                                    .builder("defaultValue", className)
+                                    .builder("defaultValue", target.typeName)
                                     .addModifiers(KModifier.PRIVATE)
-                                    .initializer("%T()", className)
+                                    .initializer("%T()", target.typeName)
                                     .build(),
                             )
                         }
-                    }.addLoadFunSpec(className) {
+                    }.addLoadFunSpec(target.typeName) {
                         addCode(
                             "return %T(\n%L)",
-                            className,
+                            target.typeName,
                             buildCodeBlock {
                                 parameters.forEach { parameter ->
-                                    if (ktConfig.hasDefault) {
+                                    if (target.ktConfig.hasDefault) {
                                         addStatement(
                                             "${parameter.serializer.refKey}.get(configuration, \"%L%L\") ?: defaultValue.%N,",
                                             parameter.serializer.ref,
@@ -238,7 +283,7 @@ class KtConfigSymbolProcessor(
                                 }
                             },
                         )
-                    }.addSaveFunSpec(classDeclaration, className) {
+                    }.addSaveFunSpec(target.headerCommentDeclaration, target.typeName) {
                         parameters.forEach { parameter ->
                             addStatement(
                                 "${parameter.serializer.refKey}.set(configuration, \"%L%L\", value.%N)",
@@ -259,14 +304,14 @@ class KtConfigSymbolProcessor(
                                 )
                             }
                         }
-                    }.addDecodeFunSpec(className) {
+                    }.addDecodeFunSpec(target.typeName) {
                         addCode(
                             "return %T(\n%L)",
-                            className,
+                            target.typeName,
                             buildCodeBlock {
                                 parameters.forEach { parameter ->
                                     when {
-                                        ktConfig.hasDefault -> {
+                                        target.ktConfig.hasDefault -> {
                                             addStatement(
                                                 "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: defaultValue.%N,",
                                                 parameter.pathName,
@@ -296,7 +341,7 @@ class KtConfigSymbolProcessor(
                                 }
                             },
                         )
-                    }.addEncodeFunSpec(className) {
+                    }.addEncodeFunSpec(target.typeName) {
                         addCode(
                             "return mapOf(\n%L)",
                             buildCodeBlock {
@@ -327,128 +372,290 @@ class KtConfigSymbolProcessor(
          * Generates a loader class for sealed interfaces/classes.
          * Creates a loader that handles polymorphic deserialization based on a discriminator field.
          *
-         * @param classDeclaration The sealed class or interface declaration
-         * @param className The fully qualified class name
-         * @param loaderSimpleName The name for the generated loader class
-         * @param file The source file containing the class
-         * @param ktConfig The KtConfig annotation configuration
-         * @param sealedSubclasses List of sealed subclasses to support in the loader
+         * @param target The sealed class or interface target to generate a loader for
+         * @param sealedSubclasses List of sealed subclass targets to support in the loader
+         * @param generatedSubclassParameters Constructor parameters for synthetic sealed subclass handling
          */
         private fun FileSpec.Builder.addSealedLoader(
-            classDeclaration: KSClassDeclaration,
-            className: ClassName,
-            loaderSimpleName: String,
-            file: KSFile,
-            ktConfig: KtConfigAnnotation,
-            sealedSubclasses: List<KSClassDeclaration>,
+            target: LoaderTarget,
+            sealedSubclasses: List<SealedSubclassTarget>,
+            generatedSubclassParameters: Map<SealedSubclassTarget, List<Parameter>>,
         ) {
-            val sealedSubclassDiscriminators =
-                sealedSubclasses.associateWith { subclass ->
-                    getDiscriminator(subclass) ?: return
-                }
-
             addType(
                 TypeSpec
-                    .objectBuilder(loaderSimpleName)
-                    .addOriginatingKSFile(file)
-                    .superclass(loaderClassName.parameterizedBy(className))
-                    .addLoadFunSpec(className) {
+                    .objectBuilder(target.loaderSimpleName)
+                    .addOriginatingKSFile(target.file)
+                    .superclass(loaderClassName.parameterizedBy(target.typeName))
+                    .apply {
+                        generatedSubclassParameters.forEach { (subclass, _) ->
+                            val generatedTarget = subclass.generatedLoaderTarget ?: return@forEach
+                            if (generatedTarget.ktConfig.hasDefault) {
+                                addProperty(
+                                    PropertySpec
+                                        .builder(generatedTarget.defaultValuePropertyName(), generatedTarget.typeName)
+                                        .addModifiers(KModifier.PRIVATE)
+                                        .initializer("%T()", generatedTarget.typeName)
+                                        .build(),
+                                )
+                            }
+                        }
+                    }
+                    .addLoadFunSpec(target.typeName) {
                         addControlFlowCode(
                             "return when (val discriminator = %T.getOrThrow(configuration, \"%L%L\"))",
                             stringSerializerClassName,
                             $$"${parentPath}",
-                            ktConfig.discriminator,
+                            target.ktConfig.discriminator,
                         ) {
-                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                addControlFlow("%S ->", discriminator) {
-                                    val subclassLoaderName = getLoaderName(subclass)
-                                    if (subclassLoaderName == null) {
-                                        logger.error("Classes must be annotated with @KtConfig", subclass)
-                                        return@addControlFlow
+                            sealedSubclasses.forEach { subclass ->
+                                addControlFlow("%S ->", subclass.discriminator) {
+                                    val generatedTarget = subclass.generatedLoaderTarget
+                                    if (generatedTarget == null) {
+                                        addStatement("%T.load(configuration, parentPath)", subclass.loaderTypeName)
+                                    } else {
+                                        addGeneratedLoadExpression(generatedTarget, generatedSubclassParameters.getValue(subclass))
                                     }
-                                    addStatement("%T.load(configuration, parentPath)", ClassName(packageName, subclassLoaderName))
                                 }
                             }
                             addControlFlow("else ->") {
                                 addStatement("throw %T(discriminator)", invalidDiscriminatorExceptionClassName)
                             }
                         }
-                    }.addSaveFunSpec(classDeclaration, className) {
+                    }.addSaveFunSpec(target.declaration, target.typeName) {
                         addControlFlowCode("when (value)") {
-                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                val subclassLoaderName = getLoaderName(subclass)
-                                if (subclassLoaderName == null) {
-                                    logger.error("Classes must be annotated with @KtConfig", subclass)
-                                    return@addControlFlowCode
-                                }
-
-                                addControlFlowCode(
-                                    "is %T ->",
-                                    ClassName(subclass.packageName.asString(), getFullName(subclass)),
-                                ) {
+                            sealedSubclasses.forEach { subclass ->
+                                addSealedSubclassControlFlow(subclass) {
                                     addStatement(
                                         "%T.set(configuration, \"%L%L\", %S)",
                                         stringSerializerClassName,
                                         $$"${parentPath}",
-                                        ktConfig.discriminator,
-                                        discriminator,
+                                        target.ktConfig.discriminator,
+                                        subclass.discriminator,
                                     )
-                                    addStatement(
-                                        "%T.save(configuration, value, parentPath)",
-                                        ClassName(packageName, subclassLoaderName),
-                                    )
+                                    val generatedTarget = subclass.generatedLoaderTarget
+                                    if (generatedTarget == null) {
+                                        addSealedSubclassLoaderStatement(subclass, "save(configuration, %L, parentPath)")
+                                    } else {
+                                        addGeneratedSaveStatements(generatedTarget, generatedSubclassParameters.getValue(subclass), subclass.valueCode())
+                                    }
                                 }
                             }
                         }
-                    }.addDecodeFunSpec(className) {
+                    }.addDecodeFunSpec(target.typeName) {
                         addControlFlowCode(
                             "return when (val discriminator = value[%S]?.let(%T::deserialize) ?: throw %T(%S))",
-                            ktConfig.discriminator,
+                            target.ktConfig.discriminator,
                             stringSerializerClassName,
                             notFoundValueExceptionClassName,
-                            ktConfig.discriminator,
+                            target.ktConfig.discriminator,
                         ) {
-                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                val subclassLoaderName = getLoaderName(subclass)
-                                if (subclassLoaderName == null) {
-                                    logger.error("Classes must be annotated with @KtConfig", subclass)
-                                    return@addControlFlowCode
-                                }
-
-                                addControlFlow("%S ->", discriminator) {
-                                    addStatement("%T.decode(value)", ClassName(packageName, subclassLoaderName))
+                            sealedSubclasses.forEach { subclass ->
+                                addControlFlow("%S ->", subclass.discriminator) {
+                                    val generatedTarget = subclass.generatedLoaderTarget
+                                    if (generatedTarget == null) {
+                                        addStatement("%T.decode(value)", subclass.loaderTypeName)
+                                    } else {
+                                        addGeneratedDecodeExpression(generatedTarget, generatedSubclassParameters.getValue(subclass))
+                                    }
                                 }
                             }
                             addControlFlow("else ->") {
                                 addStatement("throw %T(discriminator)", invalidDiscriminatorExceptionClassName)
                             }
                         }
-                    }.addEncodeFunSpec(className) {
+                    }.addEncodeFunSpec(target.typeName) {
                         addControlFlowCode("return when (value)") {
-                            sealedSubclassDiscriminators.forEach { (subclass, discriminator) ->
-                                val subclassLoaderName = getLoaderName(subclass)
-                                if (subclassLoaderName == null) {
-                                    logger.error("Classes must be annotated with @KtConfig", subclass)
-                                    return@addControlFlowCode
-                                }
-
-                                addControlFlowCode(
-                                    "is %T ->",
-                                    ClassName(subclass.packageName.asString(), getFullName(subclass)),
-                                ) {
-                                    addStatement(
-                                        "mapOf(%S to %T.serialize(%S)) + %T.encode(value)",
-                                        ktConfig.discriminator,
-                                        stringSerializerClassName,
-                                        discriminator,
-                                        ClassName(packageName, subclassLoaderName),
-                                    )
+                            sealedSubclasses.forEach { subclass ->
+                                addSealedSubclassControlFlow(subclass) {
+                                    val generatedTarget = subclass.generatedLoaderTarget
+                                    if (generatedTarget == null) {
+                                        addStatement(
+                                            "mapOf(%S to %T.serialize(%S)) + %T.encode(%L)",
+                                            target.ktConfig.discriminator,
+                                            stringSerializerClassName,
+                                            subclass.discriminator,
+                                            subclass.loaderTypeName,
+                                            subclass.valueCode(),
+                                        )
+                                    } else {
+                                        addGeneratedEncodeExpression(
+                                            target.ktConfig.discriminator,
+                                            subclass.discriminator,
+                                            generatedSubclassParameters.getValue(subclass),
+                                            subclass.valueCode(),
+                                        )
+                                    }
                                 }
                             }
                         }
                     }.build(),
             )
         }
+
+        private fun CodeBlock.Builder.addGeneratedLoadExpression(
+            target: LoaderTarget,
+            parameters: List<Parameter>,
+        ) {
+            add(
+                "%T(\n%L)",
+                target.typeName,
+                buildCodeBlock {
+                    parameters.forEach { parameter ->
+                        if (target.ktConfig.hasDefault) {
+                            addStatement(
+                                "${parameter.serializer.refKey}.get(configuration, \"%L%L\") ?: %N.%N,",
+                                parameter.serializer.ref,
+                                $$"${parentPath}",
+                                parameter.pathName,
+                                target.defaultValuePropertyName(),
+                                parameter.name,
+                            )
+                        } else {
+                            addStatement(
+                                "${parameter.serializer.refKey}.%N(configuration, \"%L%L\"),",
+                                parameter.serializer.ref,
+                                parameter.serializer.getFn,
+                                $$"${parentPath}",
+                                parameter.pathName,
+                            )
+                        }
+                    }
+                },
+            )
+        }
+
+        private fun CodeBlock.Builder.addGeneratedSaveStatements(
+            target: LoaderTarget,
+            parameters: List<Parameter>,
+            valueCode: CodeBlock,
+        ) {
+            parameters.forEach { parameter ->
+                addStatement(
+                    "${parameter.serializer.refKey}.set(configuration, \"%L%L\", (%L).%N)",
+                    parameter.serializer.ref,
+                    $$"${parentPath}",
+                    parameter.pathName,
+                    valueCode,
+                    parameter.name,
+                )
+
+                val comment = parameter.comment
+                if (comment != null) {
+                    addStatement(
+                        "setComment(configuration, \"%L%L\", %L)",
+                        $$"${parentPath}",
+                        parameter.pathName,
+                        comment.asLiteralList(),
+                    )
+                }
+            }
+        }
+
+        private fun CodeBlock.Builder.addGeneratedDecodeExpression(
+            target: LoaderTarget,
+            parameters: List<Parameter>,
+        ) {
+            add(
+                "%T(\n%L)",
+                target.typeName,
+                buildCodeBlock {
+                    parameters.forEach { parameter ->
+                        when {
+                            target.ktConfig.hasDefault -> {
+                                addStatement(
+                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: %N.%N,",
+                                    parameter.pathName,
+                                    parameter.serializer.ref,
+                                    target.defaultValuePropertyName(),
+                                    parameter.name,
+                                )
+                            }
+
+                            parameter.isNullable -> {
+                                addStatement(
+                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize),",
+                                    parameter.pathName,
+                                    parameter.serializer.ref,
+                                )
+                            }
+
+                            else -> {
+                                addStatement(
+                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S),",
+                                    parameter.pathName,
+                                    parameter.serializer.ref,
+                                    notFoundValueExceptionClassName,
+                                    parameter.pathName,
+                                )
+                            }
+                        }
+                    }
+                },
+            )
+        }
+
+        private fun CodeBlock.Builder.addGeneratedEncodeExpression(
+            discriminatorKey: String,
+            discriminator: String,
+            parameters: List<Parameter>,
+            valueCode: CodeBlock,
+        ) {
+            add(
+                "mapOf(\n%L)",
+                buildCodeBlock {
+                    addStatement("%S to %T.serialize(%S),", discriminatorKey, stringSerializerClassName, discriminator)
+                    parameters.forEach { parameter ->
+                        if (parameter.isNullable) {
+                            addStatement(
+                                "%S to (%L).%N?.let(${parameter.serializer.refKey}::serialize),",
+                                parameter.pathName,
+                                valueCode,
+                                parameter.name,
+                                parameter.serializer.ref,
+                            )
+                        } else {
+                            addStatement(
+                                "%S to ${parameter.serializer.refKey}.serialize((%L).%N),",
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                                valueCode,
+                                parameter.name,
+                            )
+                        }
+                    }
+                },
+            )
+        }
+
+        private fun CodeBlock.Builder.addSealedSubclassControlFlow(
+            subclass: SealedSubclassTarget,
+            block: CodeBlock.Builder.() -> Unit,
+        ) {
+            val typeParameterCount = subclass.declaration.typeParameters.size
+            if (typeParameterCount == 0) {
+                addControlFlowCode("is %T ->", subclass.checkTypeName, block = block)
+            } else {
+                addControlFlowCode("is %T<${List(typeParameterCount) { "*" }.joinToString(", ")}> ->", subclass.checkTypeName, block = block)
+            }
+        }
+
+        private fun CodeBlock.Builder.addSealedSubclassLoaderStatement(
+            subclass: SealedSubclassTarget,
+            statement: String,
+        ) {
+            addStatement("%T.$statement", subclass.loaderTypeName, subclass.valueCode())
+        }
+
+        private fun SealedSubclassTarget.valueCode() =
+            buildCodeBlock {
+                if (requiresValueCast) {
+                    add("value as %T", valueTypeName)
+                } else {
+                    add("value")
+            }
+        }
+
+        private fun LoaderTarget.defaultValuePropertyName() = "${loaderSimpleName}DefaultValue"
 
         /**
          * Adds a load function to the TypeSpec builder by creating and adding the function specification.
@@ -459,7 +666,7 @@ class KtConfigSymbolProcessor(
          * @return This TypeSpec.Builder for chaining
          */
         private fun TypeSpec.Builder.addLoadFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = addFunction(createLoadFunSpec(className, block))
 
@@ -472,7 +679,7 @@ class KtConfigSymbolProcessor(
          * @return A function specification for the load method
          */
         private fun createLoadFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = FunSpec
             .builder("load")
@@ -494,7 +701,7 @@ class KtConfigSymbolProcessor(
          */
         private fun TypeSpec.Builder.addSaveFunSpec(
             classDeclaration: KSClassDeclaration,
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = addFunction(createSaveFunSpec(classDeclaration, className, block))
 
@@ -510,7 +717,7 @@ class KtConfigSymbolProcessor(
          */
         private fun createSaveFunSpec(
             classDeclaration: KSClassDeclaration,
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = FunSpec
             .builder("save")
@@ -541,7 +748,7 @@ class KtConfigSymbolProcessor(
          * @return This TypeSpec.Builder for chaining
          */
         private fun TypeSpec.Builder.addDecodeFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = addFunction(createDecodeFunSpec(className, block))
 
@@ -555,7 +762,7 @@ class KtConfigSymbolProcessor(
          * @return A function specification for the decode method
          */
         private fun createDecodeFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = FunSpec
             .builder("decode")
@@ -578,7 +785,7 @@ class KtConfigSymbolProcessor(
          * @return This TypeSpec.Builder for chaining
          */
         private fun TypeSpec.Builder.addEncodeFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = addFunction(createEncodeFunSpec(className, block))
 
@@ -592,7 +799,7 @@ class KtConfigSymbolProcessor(
          * @return A function specification for the encode method
          */
         private fun createEncodeFunSpec(
-            className: ClassName,
+            className: TypeName,
             block: FunSpec.Builder.() -> Unit,
         ) = FunSpec
             .builder("encode")
@@ -608,11 +815,16 @@ class KtConfigSymbolProcessor(
          * private properties for them in the generated loader class.
          *
          * @param parameters List of configuration parameters that may contain nested serializers
+         * @param addedInitializableSerializerNames Serializer property names already added to this generated file
          */
-        private fun FileSpec.Builder.addInitializableSerializerProperties(parameters: List<Parameter>) {
+        private fun FileSpec.Builder.addInitializableSerializerProperties(
+            parameters: List<Parameter>,
+            addedInitializableSerializerNames: MutableSet<String>,
+        ) {
             parameters
                 .map(Parameter::serializer)
                 .extractInitializableSerializers()
+                .filter { addedInitializableSerializerNames.add(it.uniqueName) }
                 .forEach { serializer ->
                     val className = if (serializer.keyable) keyableSerializerClassName else serializerClassName
                     addProperty(
@@ -662,6 +874,277 @@ class KtConfigSymbolProcessor(
                 return null
             }
             return qualifiedName
+        }
+
+        private fun KSClassDeclaration.toSealedSubclassTargets(target: LoaderTarget): List<SealedSubclassTarget> {
+            val typeAliasTargets =
+                resolver
+                    .getSymbolsWithAnnotation(KT_CONFIG)
+                    .filterIsInstance<KSTypeAlias>()
+                    .mapNotNull { typeAlias ->
+                        val resolvedType = typeAlias.type.resolve()
+                        if (resolvedType.declaration != this) {
+                            return@mapNotNull null
+                        }
+
+                        val typeSubstitutions = typeParameters.toTypeSubstitutions(resolvedType.arguments)
+                        if (!isCompatibleSealedSubclass(target, typeSubstitutions)) {
+                            return@mapNotNull null
+                        }
+
+                        val loaderName = getLoaderName(typeAlias) ?: return@mapNotNull null
+                        val discriminator = getDiscriminator(this) ?: return@mapNotNull null
+                        val aliasTypeName = ClassName(typeAlias.packageName.asString(), typeAlias.simpleName.asString())
+                        val typeAliasKtConfig = typeAlias.getKtConfigAnnotation() ?: return@mapNotNull null
+                        val childKtConfig = getKtConfigAnnotation()
+                        SealedSubclassTarget(
+                            declaration = this,
+                            checkTypeName = ClassName(packageName.asString(), getFullName(this)),
+                            valueTypeName = aliasTypeName,
+                            loaderTypeName = ClassName(typeAlias.packageName.asString(), loaderName),
+                            discriminator = discriminator,
+                            requiresValueCast = typeParameters.isNotEmpty(),
+                            generatedLoaderTarget =
+                                LoaderTarget(
+                                    declaration = this,
+                                    packageName = target.packageName,
+                                    typeName = aliasTypeName,
+                                    loaderSimpleName = loaderName,
+                                    file = target.file,
+                                    ktConfig = childKtConfig ?: typeAliasKtConfig.copy(hasDefault = false),
+                                    typeSubstitutions = typeSubstitutions,
+                                    headerCommentDeclaration = this,
+                                ),
+                        )
+                    }.toList()
+            if (typeAliasTargets.isNotEmpty()) {
+                if (typeAliasTargets.size > 1 && typeParameters.isNotEmpty()) {
+                    logger.error(
+                        "Cannot generate sealed loader for generic subtype ${qualifiedName?.asString()} because multiple compatible concrete aliases cannot be distinguished at runtime",
+                        this,
+                    )
+                    return emptyList()
+                }
+                return typeAliasTargets
+            }
+
+            val inferredTypeSubstitutions = inferTypeSubstitutions(target) ?: return emptyList()
+            if (!validateResolvedTypeParameters(inferredTypeSubstitutions, target)) {
+                return emptyList()
+            }
+            val classTarget =
+                if (isCompatibleSealedSubclass(target, inferredTypeSubstitutions)) {
+                    val childKtConfig = getKtConfigAnnotation()
+                    val discriminator = getDiscriminator(this)
+                    if (discriminator == null) {
+                        null
+                    } else {
+                        val className = ClassName(packageName.asString(), getFullName(this))
+                        val valueTypeName =
+                            if (typeParameters.isEmpty()) {
+                                className
+                            } else {
+                                val typeNames =
+                                    typeParameters.map { parameter ->
+                                        inferredTypeSubstitutions[parameter.name.asString()]?.toTypeName()
+                                            ?: return emptyList()
+                                    }
+                                className.parameterizedBy(
+                                    typeNames,
+                                )
+                            }
+                        val loaderName = target.syntheticSubclassLoaderName(this)
+                        val loaderTypeName = ClassName(target.packageName, loaderName)
+                        val generatedLoaderTarget =
+                            LoaderTarget(
+                                declaration = this,
+                                packageName = target.packageName,
+                                typeName = valueTypeName,
+                                loaderSimpleName = loaderName,
+                                file = target.file,
+                                ktConfig = childKtConfig ?: target.ktConfig,
+                                typeSubstitutions = inferredTypeSubstitutions,
+                                headerCommentDeclaration = this,
+                            )
+                        SealedSubclassTarget(
+                            declaration = this,
+                            checkTypeName = className,
+                            valueTypeName = valueTypeName,
+                            loaderTypeName = loaderTypeName,
+                            discriminator = discriminator,
+                            requiresValueCast = typeParameters.isNotEmpty(),
+                            generatedLoaderTarget = generatedLoaderTarget,
+                        )
+                    }
+                } else {
+                    null
+                }
+
+            return listOfNotNull(classTarget)
+        }
+
+        private fun KSClassDeclaration.validateResolvedTypeParameters(
+            typeSubstitutions: Map<String, KSType>,
+            target: LoaderTarget,
+        ): Boolean {
+            val unresolvedTypeParameters =
+                typeParameters
+                    .map { it.name.asString() }
+                    .filterNot(typeSubstitutions::containsKey)
+            if (unresolvedTypeParameters.isEmpty()) {
+                return true
+            }
+
+            logger.error(
+                "Cannot generate sealed loader for generic subtype ${qualifiedName?.asString()} because type parameter(s) ${unresolvedTypeParameters.joinToString()} are not resolved by ${target.typeName}",
+                this,
+            )
+            return false
+        }
+
+        private fun LoaderTarget.syntheticSubclassLoaderName(declaration: KSClassDeclaration) =
+            buildString {
+                append(loaderSimpleName)
+                append(getFullName(declaration).joinToString(""))
+                append("Loader")
+            }
+
+        private fun KSType.toTypeName(): TypeName {
+            val qualifiedName = declaration.qualifiedName?.asString()
+            val className =
+                if (qualifiedName == null) {
+                    ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
+                } else {
+                    ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
+                }
+            val typeName =
+                if (arguments.isEmpty()) {
+                    className
+                } else {
+                    className.parameterizedBy(
+                        arguments.map { argument ->
+                            argument.type?.resolve()?.toTypeName() ?: STAR
+                        },
+                    )
+                }
+            return typeName.copy(nullable = isMarkedNullable)
+        }
+
+        private val STAR = com.squareup.kotlinpoet.STAR
+
+        private fun KSClassDeclaration.inferTypeSubstitutions(target: LoaderTarget): Map<String, KSType>? {
+            if (typeParameters.isEmpty()) {
+                return emptyMap()
+            }
+
+            val targetQualifiedName = target.declaration.qualifiedName?.asString() ?: return null
+            val superType =
+                getAllSuperTypes().firstOrNull {
+                    it.declaration.qualifiedName?.asString() == targetQualifiedName
+                } ?: return null
+
+            val substitutions = mutableMapOf<String, KSType>()
+            target.declaration.typeParameters.zip(superType.arguments).forEach { (parameter, argument) ->
+                val expectedType = target.typeSubstitutions[parameter.name.asString()] ?: return@forEach
+                val patternType = argument.type?.resolve() ?: return null
+                if (!inferTypeSubstitution(patternType, expectedType, substitutions)) {
+                    return null
+                }
+            }
+            return substitutions
+        }
+
+        private fun KSClassDeclaration.inferTypeSubstitution(
+            patternType: KSType,
+            expectedType: KSType,
+            substitutions: MutableMap<String, KSType>,
+        ): Boolean {
+            val typeParameter = patternType.declaration as? KSTypeParameter
+            if (typeParameter != null && typeParameters.any { it.name.asString() == typeParameter.name.asString() }) {
+                if (patternType.isMarkedNullable && !expectedType.isMarkedNullable) {
+                    logger.error(
+                        "Sealed subtype ${qualifiedName?.asString()} is not compatible with the requested parent type because nullable type parameter ${typeParameter.name.asString()}? cannot match non-null type ${expectedType.toTypeName()}",
+                        this,
+                    )
+                    return false
+                }
+                val substitution =
+                    if (patternType.isMarkedNullable && expectedType.isMarkedNullable) {
+                        expectedType.makeNotNullable()
+                    } else {
+                        expectedType
+                    }
+                val name = typeParameter.name.asString()
+                val previous = substitutions[name]
+                if (previous != null) {
+                    return previous.isSameType(substitution)
+                }
+                substitutions[name] = substitution
+                return true
+            }
+
+            if (patternType.isMarkedNullable != expectedType.isMarkedNullable) {
+                return false
+            }
+            if (patternType.declaration.qualifiedName?.asString() != expectedType.declaration.qualifiedName?.asString()) {
+                return false
+            }
+            if (patternType.arguments.size != expectedType.arguments.size) {
+                return false
+            }
+
+            return patternType.arguments.zip(expectedType.arguments).all { (patternArgument, expectedArgument) ->
+                val patternArgumentType = patternArgument.type?.resolve()
+                val expectedArgumentType = expectedArgument.type?.resolve()
+                when {
+                    patternArgumentType == null && expectedArgumentType == null -> true
+                    patternArgumentType == null || expectedArgumentType == null -> false
+                    else -> inferTypeSubstitution(patternArgumentType, expectedArgumentType, substitutions)
+                }
+            }
+        }
+
+        private fun KSClassDeclaration.isCompatibleSealedSubclass(
+            target: LoaderTarget,
+            subclassTypeSubstitutions: Map<String, KSType>,
+        ): Boolean {
+            if (target.typeSubstitutions.isEmpty()) {
+                return true
+            }
+
+            val targetQualifiedName = target.declaration.qualifiedName?.asString() ?: return true
+            val superType =
+                getAllSuperTypes().firstOrNull {
+                    it.declaration.qualifiedName?.asString() == targetQualifiedName
+                } ?: return true
+
+            return target.declaration.typeParameters.zip(superType.arguments).all { (parameter, argument) ->
+                val expectedType = target.typeSubstitutions[parameter.name.asString()] ?: return@all true
+                val argumentType = argument.type?.resolve() ?: return@all false
+                val actualType = substitute(argumentType, subclassTypeSubstitutions)
+                actualType.isSameType(expectedType)
+            }
+        }
+
+        private fun KSType.isSameType(other: KSType): Boolean {
+            if (isMarkedNullable != other.isMarkedNullable) {
+                return false
+            }
+            if (declaration.qualifiedName?.asString() != other.declaration.qualifiedName?.asString()) {
+                return false
+            }
+            if (arguments.size != other.arguments.size) {
+                return false
+            }
+            return arguments.zip(other.arguments).all { (actual, expected) ->
+                val actualType = actual.type?.resolve()
+                val expectedType = expected.type?.resolve()
+                when {
+                    actualType == null && expectedType == null -> true
+                    actualType == null || expectedType == null -> false
+                    else -> actualType.isSameType(expectedType)
+                }
+            }
         }
 
         /**

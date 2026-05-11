@@ -8,30 +8,6 @@ import kotlin.test.assertContains
 
 class KtConfigNegativeCompilationTest {
     @Test
-    fun testFailsWhenTypeAliasTargetsSealedClass() {
-        val result =
-            compileKtConfigSourceAndFail(
-                """
-                package negative
-
-                import dev.s7a.ktconfig.KtConfig
-
-                sealed interface SealedConfig {
-                    @KtConfig
-                    data class Child(
-                        val value: String,
-                    ) : SealedConfig
-                }
-
-                @KtConfig
-                typealias SealedAliasConfig = SealedConfig
-                """.trimIndent(),
-            )
-
-        assertContains(result.output, "@KtConfig type aliases for sealed classes are not supported")
-    }
-
-    @Test
     fun testFailsWhenPropertyTypeIsUnsupported() {
         val result =
             compileKtConfigSourceAndFail(
@@ -69,6 +45,87 @@ class KtConfigNegativeCompilationTest {
             )
 
         assertContains(result.output, "Classes annotated with @KtConfig must have a primary constructor")
+    }
+
+    @Test
+    fun testFailsWhenSealedSubtypeNullableGenericDoesNotMatchTypeAlias() {
+        val result =
+            compileKtConfigSourceAndFail(
+                """
+                package negative
+
+                import dev.s7a.ktconfig.KtConfig
+                import dev.s7a.ktconfig.SerialName
+
+                sealed interface Parent<T>
+
+                @SerialName("child")
+                data class Child<T>(
+                    val value: T,
+                ) : Parent<T?>
+
+                @KtConfig(discriminator = "type")
+                typealias StringParent = Parent<String>
+                """.trimIndent(),
+            )
+
+        assertContains(result.output, "cannot match non-null type kotlin.String")
+    }
+
+    @Test
+    fun testFailsWhenSealedSubtypeGenericIsNotResolvedByTypeAlias() {
+        val result =
+            compileKtConfigSourceAndFail(
+                """
+                package negative
+
+                import dev.s7a.ktconfig.KtConfig
+                import dev.s7a.ktconfig.SerialName
+
+                sealed interface Parent
+
+                @SerialName("child")
+                data class Child<T>(
+                    val value: T,
+                ) : Parent
+
+                @KtConfig(discriminator = "type")
+                typealias ParentAlias = Parent
+                """.trimIndent(),
+            )
+
+        assertContains(result.output, "type parameter(s) T are not resolved")
+    }
+
+    @Test
+    fun testFailsWhenMultipleGenericSubtypeAliasesCannotBeDistinguishedAtRuntime() {
+        val result =
+            compileKtConfigSourceAndFail(
+                """
+                package negative
+
+                import dev.s7a.ktconfig.KtConfig
+                import dev.s7a.ktconfig.SerialName
+
+                sealed interface Parent
+
+                @SerialName("child")
+                data class Child<T>(
+                    val value: T,
+                ) : Parent
+
+                @KtConfig
+                typealias StringChild = Child<String>
+
+                @KtConfig
+                typealias IntChild = Child<Int>
+
+                @KtConfig(discriminator = "type")
+                typealias ParentAlias = Parent
+                """.trimIndent(),
+            )
+
+        assertContains(result.output, "multiple compatible concrete aliases cannot be distinguished at runtime")
     }
 
     private fun compileKtConfigSourceAndFail(source: String) =
