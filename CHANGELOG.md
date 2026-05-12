@@ -44,6 +44,21 @@
   // settings in its inlined subtype handling, so the missing "value" property uses
   // ExplicitValue's default even though the parent type alias has hasDefault = false.
   ```
+- Added a user-defined validation DSL for config objects.
+  ```kotlin
+  val validator = validate<ServerConfig> {
+      requireIn(ServerConfig::port, 1..65535)
+      anyOf("host or socketPath must be configured") {
+          requireNotBlank(ServerConfig::host)
+          requireNotBlank(ServerConfig::socketPath)
+      }
+      require("min must be less than or equal to max") {
+          it.min <= it.max
+      }
+  }
+
+  val errors: List<KtConfigError> = validator.validate(config)
+  ```
 
 ### Fixed
 - Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.
