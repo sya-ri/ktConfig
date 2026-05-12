@@ -6,6 +6,7 @@ import dev.s7a.ktconfig.exception.KtConfigLoadException
 import dev.s7a.ktconfig.exception.NotFoundValueException
 import dev.s7a.ktconfig.exception.NullValueException
 import dev.s7a.ktconfig.exception.UnsupportedConvertException
+import org.bukkit.configuration.InvalidConfigurationException
 
 /**
  * Structured error reported by ktConfig validation and future aggregate loading APIs.
@@ -50,6 +51,10 @@ data class KtConfigError(
 
                 is InvalidFormatException -> {
                     listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.InvalidFormat, cause))
+                }
+
+                is InvalidConfigurationException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), "Invalid YAML", Kind.InvalidFormat, cause))
                 }
 
                 is InvalidDiscriminatorException -> {

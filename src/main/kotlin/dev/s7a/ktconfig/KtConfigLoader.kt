@@ -74,13 +74,17 @@ abstract class KtConfigLoader<T> :
      * @since 2.2.0
      */
     fun loadResult(file: File) =
-        loadResult(
-            configuration().apply {
-                if (file.exists()) {
-                    load(file)
-                }
-            },
-        )
+        try {
+            loadResult(
+                configuration().apply {
+                    if (file.exists()) {
+                        load(file)
+                    }
+                },
+            )
+        } catch (e: Throwable) {
+            KtConfigResult.Failure(KtConfigError.fromException("", e))
+        }
 
     /**
      * Loads configuration data from a file and immediately saves it back.
@@ -125,11 +129,15 @@ abstract class KtConfigLoader<T> :
      * @since 2.2.0
      */
     fun loadResultFromString(content: String) =
-        loadResult(
-            configuration().apply {
-                loadFromString(content)
-            },
-        )
+        try {
+            loadResult(
+                configuration().apply {
+                    loadFromString(content)
+                },
+            )
+        } catch (e: Throwable) {
+            KtConfigResult.Failure(KtConfigError.fromException("", e))
+        }
 
     /**
      * Abstract method to load configuration data from a YamlConfiguration object.
