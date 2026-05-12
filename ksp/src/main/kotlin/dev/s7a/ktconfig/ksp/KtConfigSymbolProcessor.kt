@@ -1,10 +1,10 @@
 package dev.s7a.ktconfig.ksp
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
@@ -25,8 +25,8 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
@@ -353,8 +353,7 @@ class KtConfigSymbolProcessor(
                                 )
                             }
                         }
-                    }
-                    .addLoadFunSpec(target.typeName) {
+                    }.addLoadFunSpec(target.typeName) {
                         addControlFlowCode(
                             "return when (val discriminator = %T.getOrThrow(configuration, \"%L%L\"))",
                             stringSerializerClassName,
@@ -367,7 +366,10 @@ class KtConfigSymbolProcessor(
                                     if (generatedTarget == null) {
                                         addStatement("%T.load(configuration, parentPath)", subclass.loaderTypeName)
                                     } else {
-                                        addGeneratedLoadExpression(generatedTarget, generatedSubclassParameters.getValue(subclass))
+                                        addGeneratedLoadExpression(
+                                            generatedTarget,
+                                            generatedSubclassParameters.getValue(subclass),
+                                        )
                                     }
                                 }
                             }
@@ -390,7 +392,11 @@ class KtConfigSymbolProcessor(
                                     if (generatedTarget == null) {
                                         addSealedSubclassLoaderStatement(subclass, "save(configuration, %L, parentPath)")
                                     } else {
-                                        addGeneratedSaveStatements(generatedTarget, generatedSubclassParameters.getValue(subclass), subclass.valueCode())
+                                        addGeneratedSaveStatements(
+                                            generatedTarget,
+                                            generatedSubclassParameters.getValue(subclass),
+                                            subclass.valueCode(),
+                                        )
                                     }
                                 }
                             }
@@ -768,7 +774,12 @@ class KtConfigSymbolProcessor(
             if (typeParameterCount == 0) {
                 addControlFlowCode("is %T ->", subclass.checkTypeName, block = block)
             } else {
-                addControlFlowCode("is %T<${List(typeParameterCount) { "*" }.joinToString(", ")}> ->", subclass.checkTypeName, block = block)
+                val typeProjection = List(typeParameterCount) { "*" }.joinToString(", ")
+                addControlFlowCode(
+                    "is %T<$typeProjection> ->",
+                    subclass.checkTypeName,
+                    block = block,
+                )
             }
         }
 
@@ -785,8 +796,8 @@ class KtConfigSymbolProcessor(
                     add("value as %T", valueTypeName)
                 } else {
                     add("value")
+                }
             }
-        }
 
         private fun LoaderTarget.defaultValuePropertyName() = "${loaderSimpleName}DefaultValue"
 
@@ -1156,14 +1167,14 @@ class KtConfigSymbolProcessor(
                 } else {
                     className.parameterizedBy(
                         arguments.map { argument ->
-                            argument.type?.resolve()?.toTypeName() ?: STAR
+                            argument.type?.resolve()?.toTypeName() ?: star
                         },
                     )
                 }
             return typeName.copy(nullable = isMarkedNullable)
         }
 
-        private val STAR = com.squareup.kotlinpoet.STAR
+        private val star = com.squareup.kotlinpoet.STAR
 
         private fun KSClassDeclaration.inferTypeSubstitutions(target: LoaderTarget): Map<String, KSType>? {
             if (typeParameters.isEmpty()) {
@@ -1379,7 +1390,30 @@ class KtConfigSymbolProcessor(
 
         private fun getSerializer(type: KSType): Parameter.Serializer? {
             val (solvedType, customSerializer) = type.solveTypeAlias()
+            if (customSerializer == null) {
+                val typeAliasSerializer = getKtConfigTypeAliasSerializer(type)
+                if (typeAliasSerializer != null) {
+                    return typeAliasSerializer
+                }
+            }
             return getSerializer(solvedType, customSerializer)
+        }
+
+        private fun getKtConfigTypeAliasSerializer(type: KSType): Parameter.Serializer.Nested? {
+            val typeAlias = type.declaration as? KSTypeAlias ?: return null
+            typeAlias.getKtConfigAnnotation() ?: return null
+            val qualifiedName = typeAlias.qualifiedName?.asString()
+            if (qualifiedName == null) {
+                logger.error("Type alias must have a qualified name", typeAlias)
+                return null
+            }
+            val loaderName = getLoaderName(typeAlias) ?: return null
+            return Parameter.Serializer.Nested(
+                ClassName(typeAlias.packageName.asString(), typeAlias.simpleName.asString()),
+                type.isMarkedNullable,
+                qualifiedName,
+                ClassName(typeAlias.packageName.asString(), loaderName),
+            )
         }
 
         /**

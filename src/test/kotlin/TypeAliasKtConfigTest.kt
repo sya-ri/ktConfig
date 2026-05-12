@@ -38,6 +38,11 @@ data class ClassDefaultTypeAliasConfig(
 @KtConfig(hasDefault = false)
 typealias ClassDefaultTypeAliasConfigAlias = ClassDefaultTypeAliasConfig
 
+@KtConfig
+data class TypeAliasNestedConfig(
+    val child: StringTypeAliasConfig,
+)
+
 class TypeAliasKtConfigTest {
     @Test
     fun testGeneratedLoaderUsesTypeAliasName() {
@@ -84,6 +89,36 @@ class TypeAliasKtConfigTest {
     }
 
     @Test
+    fun testGeneratedLoaderUsesTypeAliasLoaderForNestedProperty() {
+        val expected = TypeAliasNestedConfig(StringTypeAliasConfig("value", listOf("a", "b")))
+
+        assertEquals(
+            expected,
+            TypeAliasNestedConfigLoader.loadFromString(
+                """
+                child:
+                  value: value
+                  list:
+                  - a
+                  - b
+                """.trimIndent(),
+            ),
+        )
+        assertEquals(
+            expected,
+            TypeAliasNestedConfigLoader.decode(
+                mapOf(
+                    "child" to
+                        mapOf(
+                            "value" to "value",
+                            "list" to listOf("a", "b"),
+                        ),
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun testGeneratedLoaderIsDeferredUntilGenericTypeAliasIsConcrete() {
         assertEquals(
             StringDeferredGenericTypeAliasConfig("value"),
@@ -93,9 +128,10 @@ class TypeAliasKtConfigTest {
 
     @Test
     fun testTypeAliasHasDefaultIsIgnored() {
-        val exception = assertFailsWith<KtConfigLoadException> {
-            TypeAliasDefaultIgnoredConfigAliasLoader.loadFromString("")
-        }
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                TypeAliasDefaultIgnoredConfigAliasLoader.loadFromString("")
+            }
 
         assertEquals(
             """
