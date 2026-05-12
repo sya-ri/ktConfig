@@ -600,7 +600,7 @@ class KtConfigSymbolProcessor(
                     }
                 }
                 addControlFlowCode("catch (e: %T)", Throwable::class) {
-                    addStatement("_ktConfigErrors += %T.fromException(%S, e)", ktConfigErrorClassName, parameter.pathName)
+                    addStatement("_ktConfigErrors += %T.fromDecodeException(%S, e)", ktConfigErrorClassName, parameter.pathName)
                 }
             }
             addControlFlowCode("if (_ktConfigErrors.isNotEmpty())") {
@@ -703,7 +703,7 @@ class KtConfigSymbolProcessor(
                     }
                 }
                 addControlFlowCode("catch (e: %T)", Throwable::class) {
-                    addStatement("_ktConfigErrors += %T.fromException(%S, e)", ktConfigErrorClassName, parameter.pathName)
+                    addStatement("_ktConfigErrors += %T.fromDecodeException(%S, e)", ktConfigErrorClassName, parameter.pathName)
                 }
             }
             addControlFlowCode("if (_ktConfigErrors.isNotEmpty())") {

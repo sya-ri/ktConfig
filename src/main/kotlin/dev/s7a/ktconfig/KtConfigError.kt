@@ -64,6 +64,38 @@ data class KtConfigError(
                     listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message ?: cause.toString(), Kind.Unknown, cause))
                 }
             }
+
+        /**
+         * Converts a thrown decoding exception into structured errors under [path].
+         *
+         * Nested decoding can throw [KtConfigLoadException] with child-local paths, so those paths are
+         * prefixed with the parent map key before being reported to callers.
+         *
+         * @param path The map key being decoded when [cause] was thrown.
+         * @param cause The exception thrown while decoding.
+         * @return Structured decoding errors.
+         * @since 2.2.0
+         */
+        fun fromDecodeException(
+            path: String,
+            cause: Throwable,
+        ): List<KtConfigError> =
+            when (cause) {
+                is KtConfigLoadException -> cause.errors.map { it.withParentPath(path) }
+                else -> fromException(path, cause)
+            }
+
+        private fun KtConfigError.withParentPath(parentPath: String): KtConfigError {
+            val formattedParentPath = KtConfigLoader.formatPath(parentPath)
+            return copy(
+                path =
+                    if (path.isEmpty()) {
+                        formattedParentPath
+                    } else {
+                        "$formattedParentPath.$path"
+                    },
+            )
+        }
     }
 
     /**

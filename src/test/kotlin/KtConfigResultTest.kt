@@ -349,6 +349,28 @@ class KtConfigResultTest {
     }
 
     @Test
+    fun testNestedConfigDecodeValidationPrefixesParentPath() {
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                AutoValidationParentConfigLoader.decode(
+                    mapOf(
+                        "child" to mapOf(
+                            "name" to "",
+                        ),
+                    ),
+                )
+            }
+
+        assertErrorMessage(
+            """
+            Failed to load config (1 error):
+            - [child.name] name must not be blank
+            """.trimIndent(),
+            exception.errors,
+        )
+    }
+
+    @Test
     fun testNestedLoadingErrorQuotesPathSegmentContainingDot() {
         val result =
             DecimalPathParentConfigLoader.loadResultFromString(
