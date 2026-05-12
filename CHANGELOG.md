@@ -72,6 +72,7 @@
       val errors: List<KtConfigError> = e.errors
   }
   ```
+- Added `@file:Suppress` to generated loaders to suppress warnings caused by generated implementation details.
 
 ### Fixed
 - Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.

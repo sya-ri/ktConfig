@@ -97,6 +97,17 @@ class KtConfigSymbolProcessor(
         private val stringSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "StringSerializer")
         private val notFoundValueExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "NotFoundValueException")
         private val invalidDiscriminatorExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "InvalidDiscriminatorException")
+        private val generatedLoaderSuppressAnnotation =
+            AnnotationSpec
+                .builder(Suppress::class)
+                .addMember(
+                    "%S, %S, %S, %S, %S",
+                    "ktlint",
+                    "OPT_IN_USAGE",
+                    "OPT_IN_USAGE_ERROR",
+                    "UNCHECKED_CAST",
+                    "USELESS_CAST",
+                ).build()
 
         /**
          * Visits each class declaration and generates a corresponding loader class.
@@ -203,7 +214,7 @@ class KtConfigSymbolProcessor(
             FileSpec
                 .builder(target.packageName, target.loaderSimpleName)
                 .apply {
-                    addAnnotation(AnnotationSpec.builder(Suppress::class).addMember("%S", "ktlint").build())
+                    addAnnotation(generatedLoaderSuppressAnnotation)
 
                     val sealedSubclasses = target.declaration.getSealedSubclassesDeeply()
                     if (sealedSubclasses.isNotEmpty()) {
