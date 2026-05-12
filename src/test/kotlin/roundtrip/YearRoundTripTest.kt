@@ -13,7 +13,16 @@ class YearRoundTripTest {
         val a = Year.of(2026)
         val b = Year.of(2027)
         assertRoundTrip(
-            YearRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+            YearRoundTrip(
+                a,
+                null,
+                listOf(a, b),
+                listOf(null, a),
+                setOf(a, b),
+                ArrayDeque(listOf(a, b)),
+                mapOf("key" to a),
+                mapOf("key" to b),
+            ),
             YearRoundTripLoader::saveToString,
             YearRoundTripLoader::loadFromString,
         )

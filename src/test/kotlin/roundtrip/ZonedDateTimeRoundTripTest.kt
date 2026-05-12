@@ -13,7 +13,16 @@ class ZonedDateTimeRoundTripTest {
         val a = ZonedDateTime.parse("2026-05-11T12:34:56+09:00[Asia/Tokyo]")
         val b = ZonedDateTime.parse("2026-05-12T01:23:45Z")
         assertRoundTrip(
-            ZonedDateTimeRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+            ZonedDateTimeRoundTrip(
+                a,
+                null,
+                listOf(a, b),
+                listOf(null, a),
+                setOf(a, b),
+                ArrayDeque(listOf(a, b)),
+                mapOf("key" to a),
+                mapOf("key" to b),
+            ),
             ZonedDateTimeRoundTripLoader::saveToString,
             ZonedDateTimeRoundTripLoader::loadFromString,
         )

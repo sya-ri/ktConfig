@@ -316,9 +316,10 @@ class TypeAliasSealedKtConfigTest {
 
     @Test
     fun testExplicitSealedSubtypeAnnotationDoesNotInheritParentDefaultValueThroughTypeAlias() {
-        val exception = assertFailsWith<KtConfigLoadException> {
-            ExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: non-default-child")
-        }
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                ExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: non-default-child")
+            }
 
         assertEquals(
             """
@@ -339,9 +340,10 @@ class TypeAliasSealedKtConfigTest {
 
     @Test
     fun testExplicitGenericSealedSubtypeAnnotationDoesNotInheritParentDefaultValueThroughTypeAlias() {
-        val exception = assertFailsWith<KtConfigLoadException> {
-            GenericExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: generic-non-default-child")
-        }
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                GenericExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: generic-non-default-child")
+            }
 
         assertEquals(
             """

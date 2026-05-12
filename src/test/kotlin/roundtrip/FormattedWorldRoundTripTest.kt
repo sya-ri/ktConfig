@@ -13,7 +13,16 @@ class FormattedWorldRoundTripTest {
         withMockBukkit {
             val world = addSimpleWorld("world")
             assertRoundTrip(
-                FormattedWorldRoundTrip(world, null, listOf(world), listOf(null, world), setOf(world), ArrayDeque(listOf(world)), mapOf("key" to world), mapOf("key" to world)),
+                FormattedWorldRoundTrip(
+                    world,
+                    null,
+                    listOf(world),
+                    listOf(null, world),
+                    setOf(world),
+                    ArrayDeque(listOf(world)),
+                    mapOf("key" to world),
+                    mapOf("key" to world),
+                ),
                 FormattedWorldRoundTripLoader::saveToString,
                 FormattedWorldRoundTripLoader::loadFromString,
             )

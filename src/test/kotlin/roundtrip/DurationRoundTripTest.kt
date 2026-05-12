@@ -13,7 +13,16 @@ class DurationRoundTripTest {
         val a = Duration.parse("PT1H2M3S")
         val b = Duration.parse("PT4H5M6S")
         assertRoundTrip(
-            DurationRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+            DurationRoundTrip(
+                a,
+                null,
+                listOf(a, b),
+                listOf(null, a),
+                setOf(a, b),
+                ArrayDeque(listOf(a, b)),
+                mapOf("key" to a),
+                mapOf("key" to b),
+            ),
             DurationRoundTripLoader::saveToString,
             DurationRoundTripLoader::loadFromString,
         )

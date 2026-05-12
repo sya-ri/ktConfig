@@ -1207,8 +1207,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(
  * @since 2.2.0
  */
 @JvmName("requireShortArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, ShortArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, ShortArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1216,8 +1218,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, ShortArr
  * @since 2.2.0
  */
 @JvmName("requireIntArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, IntArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, IntArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1225,8 +1229,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, IntArray
  * @since 2.2.0
  */
 @JvmName("requireLongArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, LongArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, LongArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1234,8 +1240,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, LongArra
  * @since 2.2.0
  */
 @JvmName("requireFloatArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, FloatArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, FloatArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1243,8 +1251,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, FloatArr
  * @since 2.2.0
  */
 @JvmName("requireDoubleArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, DoubleArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, DoubleArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1252,8 +1262,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, DoubleAr
  * @since 2.2.0
  */
 @JvmName("requireBooleanArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, BooleanArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, BooleanArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the collection, map, or array size to equal the expected size.
@@ -1261,8 +1273,10 @@ fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, BooleanA
  * @since 2.2.0
  */
 @JvmName("requireCharArraySize")
-fun <T> KtConfigValidatorBuilder<T>.requireSize(property: KProperty1<T, CharArray>, size: Int) =
-    require(property, "${property.name} size must be $size") { it.size == size }
+fun <T> KtConfigValidatorBuilder<T>.requireSize(
+    property: KProperty1<T, CharArray>,
+    size: Int,
+) = require(property, "${property.name} size must be $size") { it.size == size }
 
 /**
  * Adds a rule that requires the value to be one of the allowed values.

@@ -15,7 +15,16 @@ class FormattedBlockRoundTripTest {
             val a = world.getBlockAt(1, 2, 3)
             val b = world.getBlockAt(4, 5, 6)
             assertRoundTrip(
-                FormattedBlockRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+                FormattedBlockRoundTrip(
+                    a,
+                    null,
+                    listOf(a, b),
+                    listOf(null, a),
+                    setOf(a, b),
+                    ArrayDeque(listOf(a, b)),
+                    mapOf("key" to a),
+                    mapOf("key" to b),
+                ),
                 FormattedBlockRoundTripLoader::saveToString,
                 FormattedBlockRoundTripLoader::loadFromString,
             )

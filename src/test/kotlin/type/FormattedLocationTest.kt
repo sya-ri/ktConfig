@@ -31,6 +31,9 @@ class FormattedLocationTest {
     fun testEncodeWithYawAndPitch() =
         withMockBukkit {
             val world = addSimpleWorld("world")
-            assertEquals("world, 1.25, 2.5, 3.75, 90.0, 45.0", FormatedLocationSerializer.encode(Location(world, 1.25, 2.5, 3.75, 90F, 45F)))
+            assertEquals(
+                "world, 1.25, 2.5, 3.75, 90.0, 45.0",
+                FormatedLocationSerializer.encode(Location(world, 1.25, 2.5, 3.75, 90F, 45F)),
+            )
         }
 }

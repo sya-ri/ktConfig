@@ -354,9 +354,10 @@ class KtConfigResultTest {
             assertFailsWith<KtConfigLoadException> {
                 AutoValidationParentConfigLoader.decode(
                     mapOf(
-                        "child" to mapOf(
-                            "name" to "",
-                        ),
+                        "child" to
+                            mapOf(
+                                "name" to "",
+                            ),
                     ),
                 )
             }

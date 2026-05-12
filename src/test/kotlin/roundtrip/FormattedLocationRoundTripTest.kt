@@ -16,7 +16,16 @@ class FormattedLocationRoundTripTest {
             val a = Location(world, 1.25, 2.5, 3.75, 90F, 45F)
             val b = Location(world, 4.25, 5.5, 6.75)
             assertRoundTrip(
-                FormattedLocationRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+                FormattedLocationRoundTrip(
+                    a,
+                    null,
+                    listOf(a, b),
+                    listOf(null, a),
+                    setOf(a, b),
+                    ArrayDeque(listOf(a, b)),
+                    mapOf("key" to a),
+                    mapOf("key" to b),
+                ),
                 FormattedLocationRoundTripLoader::saveToString,
                 FormattedLocationRoundTripLoader::loadFromString,
             )

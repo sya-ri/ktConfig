@@ -14,7 +14,16 @@ class FormattedVectorRoundTripTest {
         val a = Vector(1.25, 2.5, 3.75)
         val b = Vector(4.25, 5.5, 6.75)
         assertRoundTrip(
-            FormattedVectorRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+            FormattedVectorRoundTrip(
+                a,
+                null,
+                listOf(a, b),
+                listOf(null, a),
+                setOf(a, b),
+                ArrayDeque(listOf(a, b)),
+                mapOf("key" to a),
+                mapOf("key" to b),
+            ),
             FormattedVectorRoundTripLoader::saveToString,
             FormattedVectorRoundTripLoader::loadFromString,
         )

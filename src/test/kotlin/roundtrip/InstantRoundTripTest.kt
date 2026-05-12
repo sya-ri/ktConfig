@@ -13,7 +13,16 @@ class InstantRoundTripTest {
         val a = Instant.parse("2026-05-11T12:34:56Z")
         val b = Instant.parse("2026-05-12T01:23:45Z")
         assertRoundTrip(
-            InstantRoundTrip(a, null, listOf(a, b), listOf(null, a), setOf(a, b), ArrayDeque(listOf(a, b)), mapOf("key" to a), mapOf("key" to b)),
+            InstantRoundTrip(
+                a,
+                null,
+                listOf(a, b),
+                listOf(null, a),
+                setOf(a, b),
+                ArrayDeque(listOf(a, b)),
+                mapOf("key" to a),
+                mapOf("key" to b),
+            ),
             InstantRoundTripLoader::saveToString,
             InstantRoundTripLoader::loadFromString,
         )
