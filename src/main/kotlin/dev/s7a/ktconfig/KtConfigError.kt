@@ -1,5 +1,12 @@
 package dev.s7a.ktconfig
 
+import dev.s7a.ktconfig.exception.InvalidDiscriminatorException
+import dev.s7a.ktconfig.exception.InvalidFormatException
+import dev.s7a.ktconfig.exception.KtConfigLoadException
+import dev.s7a.ktconfig.exception.NotFoundValueException
+import dev.s7a.ktconfig.exception.NullValueException
+import dev.s7a.ktconfig.exception.UnsupportedConvertException
+
 /**
  * Structured error reported by ktConfig validation and future aggregate loading APIs.
  *
@@ -15,6 +22,30 @@ data class KtConfigError(
     val kind: Kind = Kind.InvalidValue,
     val cause: Throwable? = null,
 ) {
+    companion object {
+        /**
+         * Converts a thrown loading exception into structured errors.
+         *
+         * @param path The path being loaded when [cause] was thrown.
+         * @param cause The exception thrown while loading.
+         * @return Structured loading errors.
+         * @since 2.2.0
+         */
+        fun fromException(
+            path: String,
+            cause: Throwable,
+        ): List<KtConfigError> =
+            when (cause) {
+                is KtConfigLoadException -> cause.errors
+                is NotFoundValueException -> listOf(KtConfigError(cause.path, "Not found value", Kind.NotFound, cause))
+                is NullValueException -> listOf(KtConfigError(path, cause.message, Kind.NullValue, cause))
+                is InvalidFormatException -> listOf(KtConfigError(path, cause.message, Kind.InvalidFormat, cause))
+                is InvalidDiscriminatorException -> listOf(KtConfigError(path, cause.message, Kind.InvalidDiscriminator, cause))
+                is UnsupportedConvertException -> listOf(KtConfigError(path, cause.message, Kind.UnsupportedConvert, cause))
+                else -> listOf(KtConfigError(path, cause.message ?: cause.toString(), Kind.Unknown, cause))
+            }
+    }
+
     /**
      * Categories of errors that can be reported by ktConfig.
      *

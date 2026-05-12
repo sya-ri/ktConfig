@@ -1,5 +1,5 @@
 import dev.s7a.ktconfig.KtConfig
-import dev.s7a.ktconfig.exception.NotFoundValueException
+import dev.s7a.ktconfig.exception.KtConfigLoadException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -93,9 +93,17 @@ class TypeAliasKtConfigTest {
 
     @Test
     fun testTypeAliasHasDefaultIsIgnored() {
-        assertFailsWith<NotFoundValueException> {
+        val exception = assertFailsWith<KtConfigLoadException> {
             TypeAliasDefaultIgnoredConfigAliasLoader.loadFromString("")
         }
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - [value] Not found value
+            """.trimIndent(),
+            exception.message,
+        )
     }
 
     @Test

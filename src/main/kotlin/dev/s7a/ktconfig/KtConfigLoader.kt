@@ -1,8 +1,8 @@
 package dev.s7a.ktconfig
 
+import dev.s7a.ktconfig.exception.KtConfigLoadException
 import dev.s7a.ktconfig.serializer.AnySerializer
 import dev.s7a.ktconfig.serializer.MapSerializer
-import dev.s7a.ktconfig.serializer.Serializer
 import dev.s7a.ktconfig.serializer.StringSerializer
 import dev.s7a.ktconfig.serializer.TransformSerializer
 import org.bukkit.configuration.file.YamlConfiguration
@@ -41,8 +41,17 @@ abstract class KtConfigLoader<T> :
      * @return The loaded configuration object of type T
      * @since 2.0.0
      */
-    fun load(file: File) =
-        load(
+    fun load(file: File) = loadResult(file).getOrThrow()
+
+    /**
+     * Loads configuration data from a file and returns either the loaded value or all loading errors.
+     *
+     * @param file The file to load configuration from
+     * @return A result containing the loaded value or collected loading errors
+     * @since 2.2.0
+     */
+    fun loadResult(file: File) =
+        loadResult(
             configuration().apply {
                 if (file.exists()) {
                     load(file)
@@ -83,8 +92,17 @@ abstract class KtConfigLoader<T> :
      * @return The loaded configuration object of type T
      * @since 2.0.0
      */
-    fun loadFromString(content: String) =
-        load(
+    fun loadFromString(content: String) = loadResultFromString(content).getOrThrow()
+
+    /**
+     * Loads configuration data from a string content and returns either the loaded value or all loading errors.
+     *
+     * @param content The YAML content string to load configuration from
+     * @return A result containing the loaded value or collected loading errors
+     * @since 2.2.0
+     */
+    fun loadResultFromString(content: String) =
+        loadResult(
             configuration().apply {
                 loadFromString(content)
             },
@@ -102,6 +120,29 @@ abstract class KtConfigLoader<T> :
         configuration: YamlConfiguration,
         parentPath: String = "",
     ): T
+
+    /**
+     * Loads configuration data from a [YamlConfiguration] and returns either the loaded value or all loading errors.
+     *
+     * Generated loaders override [load] to collect multiple property errors before throwing [KtConfigLoadException].
+     * Custom loaders can override this method directly when they need fully aggregated error reporting.
+     *
+     * @param configuration The YamlConfiguration object to load from
+     * @param parentPath The path of the parent node, or an empty string if there is no parent node
+     * @return A result containing the loaded value or collected loading errors
+     * @since 2.2.0
+     */
+    fun loadResult(
+        configuration: YamlConfiguration,
+        parentPath: String = "",
+    ): KtConfigResult<T> =
+        try {
+            KtConfigResult.Success(load(configuration, parentPath))
+        } catch (e: KtConfigLoadException) {
+            KtConfigResult.Failure(e.errors)
+        } catch (e: Throwable) {
+            KtConfigResult.Failure(KtConfigError.fromException(parentPath, e))
+        }
 
     /**
      * Saves configuration data to a file.

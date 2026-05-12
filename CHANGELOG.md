@@ -59,6 +59,19 @@
 
   val errors: List<KtConfigError> = validator.validate(config)
   ```
+- Added `KtConfigResult` and `KtConfigLoadException` for aggregate loading errors.
+  ```kotlin
+  when (val result = ServerConfigLoader.loadResultFromString(content)) {
+      is KtConfigResult.Success -> result.value
+      is KtConfigResult.Failure -> result.errors
+  }
+
+  try {
+      ServerConfigLoader.loadFromString(content)
+  } catch (e: KtConfigLoadException) {
+      val errors: List<KtConfigError> = e.errors
+  }
+  ```
 
 ### Fixed
 - Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.

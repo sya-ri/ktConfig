@@ -1,7 +1,6 @@
 package dev.s7a.ktconfig.ksp
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSTypeAlias
 import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
 
@@ -14,10 +13,9 @@ import dev.s7a.ktconfig.ksp.KtConfigAnnotation.Companion.getKtConfigAnnotation
  * @return List of class names representing the full hierarchy
  */
 fun getFullName(declaration: KSClassDeclaration): List<String> =
-    if (declaration.parent is KSFile) {
-        listOf(declaration.simpleName.asString())
-    } else {
-        getFullName(declaration.parent as KSClassDeclaration) + declaration.simpleName.asString()
+    when (val parent = declaration.parent) {
+        is KSClassDeclaration -> getFullName(parent) + declaration.simpleName.asString()
+        else -> listOf(declaration.simpleName.asString())
     }
 
 /**

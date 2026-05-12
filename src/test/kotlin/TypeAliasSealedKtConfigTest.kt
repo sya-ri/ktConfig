@@ -1,6 +1,6 @@
 import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.SerialName
-import dev.s7a.ktconfig.exception.NotFoundValueException
+import dev.s7a.ktconfig.exception.KtConfigLoadException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -316,9 +316,17 @@ class TypeAliasSealedKtConfigTest {
 
     @Test
     fun testExplicitSealedSubtypeAnnotationDoesNotInheritParentDefaultValueThroughTypeAlias() {
-        assertFailsWith<NotFoundValueException> {
+        val exception = assertFailsWith<KtConfigLoadException> {
             ExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: non-default-child")
         }
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - [value] Not found value
+            """.trimIndent(),
+            exception.message,
+        )
     }
 
     @Test
@@ -331,9 +339,17 @@ class TypeAliasSealedKtConfigTest {
 
     @Test
     fun testExplicitGenericSealedSubtypeAnnotationDoesNotInheritParentDefaultValueThroughTypeAlias() {
-        assertFailsWith<NotFoundValueException> {
+        val exception = assertFailsWith<KtConfigLoadException> {
             GenericExplicitNonDefaultChildTypeAliasSealedConfigLoader.loadFromString("type: generic-non-default-child")
         }
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - [values] Not found value
+            """.trimIndent(),
+            exception.message,
+        )
     }
 
     @Test

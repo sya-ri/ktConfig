@@ -92,6 +92,8 @@ class KtConfigSymbolProcessor(
         private val stringClassName = ClassName("kotlin", "String")
         private val mapClassName = ClassName("kotlin.collections", "Map")
         private val anyClassName = ClassName("kotlin", "Any")
+        private val ktConfigErrorClassName = ClassName("dev.s7a.ktconfig", "KtConfigError")
+        private val ktConfigLoadExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "KtConfigLoadException")
         private val stringSerializerClassName = ClassName("dev.s7a.ktconfig.serializer", "StringSerializer")
         private val notFoundValueExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "NotFoundValueException")
         private val invalidDiscriminatorExceptionClassName = ClassName("dev.s7a.ktconfig.exception", "InvalidDiscriminatorException")
@@ -258,31 +260,7 @@ class KtConfigSymbolProcessor(
                             )
                         }
                     }.addLoadFunSpec(target.typeName) {
-                        addCode(
-                            "return %T(\n%L)",
-                            target.typeName,
-                            buildCodeBlock {
-                                parameters.forEach { parameter ->
-                                    if (target.ktConfig.hasDefault) {
-                                        addStatement(
-                                            "${parameter.serializer.refKey}.get(configuration, \"%L%L\") ?: defaultValue.%N,",
-                                            parameter.serializer.ref,
-                                            $$"${parentPath}",
-                                            parameter.pathName,
-                                            parameter.name,
-                                        )
-                                    } else {
-                                        addStatement(
-                                            "${parameter.serializer.refKey}.%N(configuration, \"%L%L\"),",
-                                            parameter.serializer.ref,
-                                            parameter.serializer.getFn,
-                                            $$"${parentPath}",
-                                            parameter.pathName,
-                                        )
-                                    }
-                                }
-                            },
-                        )
+                        addAggregatingLoadCode(target, parameters, "defaultValue")
                     }.addSaveFunSpec(target.headerCommentDeclaration, target.typeName) {
                         parameters.forEach { parameter ->
                             addStatement(
@@ -305,42 +283,7 @@ class KtConfigSymbolProcessor(
                             }
                         }
                     }.addDecodeFunSpec(target.typeName) {
-                        addCode(
-                            "return %T(\n%L)",
-                            target.typeName,
-                            buildCodeBlock {
-                                parameters.forEach { parameter ->
-                                    when {
-                                        target.ktConfig.hasDefault -> {
-                                            addStatement(
-                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: defaultValue.%N,",
-                                                parameter.pathName,
-                                                parameter.serializer.ref,
-                                                parameter.name,
-                                            )
-                                        }
-
-                                        parameter.isNullable -> {
-                                            addStatement(
-                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize),",
-                                                parameter.pathName,
-                                                parameter.serializer.ref,
-                                            )
-                                        }
-
-                                        else -> {
-                                            addStatement(
-                                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S),",
-                                                parameter.pathName,
-                                                parameter.serializer.ref,
-                                                notFoundValueExceptionClassName,
-                                                parameter.pathName,
-                                            )
-                                        }
-                                    }
-                                }
-                            },
-                        )
+                        addAggregatingDecodeCode(target, parameters, "defaultValue")
                     }.addEncodeFunSpec(target.typeName) {
                         addCode(
                             "return mapOf(\n%L)",
@@ -524,6 +467,150 @@ class KtConfigSymbolProcessor(
             )
         }
 
+        private fun FunSpec.Builder.addAggregatingLoadCode(
+            target: LoaderTarget,
+            parameters: List<Parameter>,
+            defaultValueName: String,
+        ) {
+            addStatement("val _ktConfigErrors = mutableListOf<%T>()", ktConfigErrorClassName)
+            parameters.forEachIndexed { index, parameter ->
+                val valueName = "_ktConfigValue$index"
+                val valueTypeName = parameter.serializer.typeName.copy(nullable = true)
+                if (target.ktConfig.hasDefault) {
+                    addStatement("var %N: %T = %N.%N", valueName, valueTypeName, defaultValueName, parameter.name)
+                } else {
+                    addStatement("var %N: %T = null", valueName, valueTypeName)
+                }
+                addControlFlowCode("try") {
+                    when {
+                        target.ktConfig.hasDefault -> {
+                            addStatement(
+                                "${parameter.serializer.refKey}.get(configuration, \"%L%L\")?.let { %N = it }",
+                                parameter.serializer.ref,
+                                $$"${parentPath}",
+                                parameter.pathName,
+                                valueName,
+                            )
+                        }
+
+                        parameter.isNullable -> {
+                            addStatement(
+                                "%N = ${parameter.serializer.refKey}.get(configuration, \"%L%L\")",
+                                valueName,
+                                parameter.serializer.ref,
+                                $$"${parentPath}",
+                                parameter.pathName,
+                            )
+                        }
+
+                        else -> {
+                            addStatement(
+                                "%N = ${parameter.serializer.refKey}.getOrThrow(configuration, \"%L%L\")",
+                                valueName,
+                                parameter.serializer.ref,
+                                $$"${parentPath}",
+                                parameter.pathName,
+                            )
+                        }
+                    }
+                }
+                addControlFlowCode("catch (e: %T)", Throwable::class) {
+                    addStatement(
+                        "_ktConfigErrors += %T.fromException(\"%L%L\", e)",
+                        ktConfigErrorClassName,
+                        $$"${parentPath}",
+                        parameter.pathName,
+                    )
+                }
+            }
+            addControlFlowCode("if (_ktConfigErrors.isNotEmpty())") {
+                addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
+            }
+            addCode(
+                "return %T(\n%L)",
+                target.typeName,
+                buildCodeBlock {
+                    parameters.forEachIndexed { index, parameter ->
+                        val valueName = "_ktConfigValue$index"
+                        if (parameter.isNullable) {
+                            addStatement("%N,", valueName)
+                        } else {
+                            addStatement("%N!!,", valueName)
+                        }
+                    }
+                },
+            )
+        }
+
+        private fun FunSpec.Builder.addAggregatingDecodeCode(
+            target: LoaderTarget,
+            parameters: List<Parameter>,
+            defaultValueName: String,
+        ) {
+            addStatement("val _ktConfigErrors = mutableListOf<%T>()", ktConfigErrorClassName)
+            parameters.forEachIndexed { index, parameter ->
+                val valueName = "_ktConfigValue$index"
+                val valueTypeName = parameter.serializer.typeName.copy(nullable = true)
+                if (target.ktConfig.hasDefault) {
+                    addStatement("var %N: %T = %N.%N", valueName, valueTypeName, defaultValueName, parameter.name)
+                } else {
+                    addStatement("var %N: %T = null", valueName, valueTypeName)
+                }
+                addControlFlowCode("try") {
+                    when {
+                        target.ktConfig.hasDefault -> {
+                            addStatement(
+                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize)?.let { %N = it }",
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                                valueName,
+                            )
+                        }
+
+                        parameter.isNullable -> {
+                            addStatement(
+                                "%N = value[%S]?.let(${parameter.serializer.refKey}::deserialize)",
+                                valueName,
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                            )
+                        }
+
+                        else -> {
+                            addStatement(
+                                "%N = value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S)",
+                                valueName,
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                                notFoundValueExceptionClassName,
+                                parameter.pathName,
+                            )
+                        }
+                    }
+                }
+                addControlFlowCode("catch (e: %T)", Throwable::class) {
+                    addStatement("_ktConfigErrors += %T.fromException(%S, e)", ktConfigErrorClassName, parameter.pathName)
+                }
+            }
+            addControlFlowCode("if (_ktConfigErrors.isNotEmpty())") {
+                addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
+            }
+            addCode(
+                "return %T(\n%L)",
+                target.typeName,
+                buildCodeBlock {
+                    parameters.forEachIndexed { index, parameter ->
+                        val valueName = "_ktConfigValue$index"
+                        if (parameter.isNullable) {
+                            addStatement("%N,", valueName)
+                        } else {
+                            addStatement("%N!!,", valueName)
+                        }
+                    }
+                },
+            )
+        }
+
         private fun CodeBlock.Builder.addGeneratedSaveStatements(
             target: LoaderTarget,
             parameters: List<Parameter>,
@@ -555,43 +642,78 @@ class KtConfigSymbolProcessor(
             target: LoaderTarget,
             parameters: List<Parameter>,
         ) {
+            add("run {\n")
+            indent()
+            addStatement("val _ktConfigErrors = mutableListOf<%T>()", ktConfigErrorClassName)
+            parameters.forEachIndexed { index, parameter ->
+                val valueName = "_ktConfigValue$index"
+                val valueTypeName = parameter.serializer.typeName.copy(nullable = true)
+                if (target.ktConfig.hasDefault) {
+                    addStatement(
+                        "var %N: %T = %N.%N",
+                        valueName,
+                        valueTypeName,
+                        target.defaultValuePropertyName(),
+                        parameter.name,
+                    )
+                } else {
+                    addStatement("var %N: %T = null", valueName, valueTypeName)
+                }
+                addControlFlowCode("try") {
+                    when {
+                        target.ktConfig.hasDefault -> {
+                            addStatement(
+                                "value[%S]?.let(${parameter.serializer.refKey}::deserialize)?.let { %N = it }",
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                                valueName,
+                            )
+                        }
+
+                        parameter.isNullable -> {
+                            addStatement(
+                                "%N = value[%S]?.let(${parameter.serializer.refKey}::deserialize)",
+                                valueName,
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                            )
+                        }
+
+                        else -> {
+                            addStatement(
+                                "%N = value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S)",
+                                valueName,
+                                parameter.pathName,
+                                parameter.serializer.ref,
+                                notFoundValueExceptionClassName,
+                                parameter.pathName,
+                            )
+                        }
+                    }
+                }
+                addControlFlowCode("catch (e: %T)", Throwable::class) {
+                    addStatement("_ktConfigErrors += %T.fromException(%S, e)", ktConfigErrorClassName, parameter.pathName)
+                }
+            }
+            addControlFlowCode("if (_ktConfigErrors.isNotEmpty())") {
+                addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
+            }
             add(
                 "%T(\n%L)",
                 target.typeName,
                 buildCodeBlock {
-                    parameters.forEach { parameter ->
-                        when {
-                            target.ktConfig.hasDefault -> {
-                                addStatement(
-                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: %N.%N,",
-                                    parameter.pathName,
-                                    parameter.serializer.ref,
-                                    target.defaultValuePropertyName(),
-                                    parameter.name,
-                                )
-                            }
-
-                            parameter.isNullable -> {
-                                addStatement(
-                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize),",
-                                    parameter.pathName,
-                                    parameter.serializer.ref,
-                                )
-                            }
-
-                            else -> {
-                                addStatement(
-                                    "value[%S]?.let(${parameter.serializer.refKey}::deserialize) ?: throw %T(%S),",
-                                    parameter.pathName,
-                                    parameter.serializer.ref,
-                                    notFoundValueExceptionClassName,
-                                    parameter.pathName,
-                                )
-                            }
+                    parameters.forEachIndexed { index, parameter ->
+                        val valueName = "_ktConfigValue$index"
+                        if (parameter.isNullable) {
+                            addStatement("%N,", valueName)
+                        } else {
+                            addStatement("%N!!,", valueName)
                         }
                     }
                 },
             )
+            unindent()
+            add("\n}")
         }
 
         private fun CodeBlock.Builder.addGeneratedEncodeExpression(
@@ -1264,7 +1386,12 @@ class KtConfigSymbolProcessor(
                 logger.error("Type must have a qualified name", declaration)
                 return null
             }
-            val className = ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
+            val className =
+                if (declaration is KSClassDeclaration) {
+                    ClassName(declaration.packageName.asString(), getFullName(declaration))
+                } else {
+                    ClassName(qualifiedName.substringBeforeLast("."), qualifiedName.substringAfterLast("."))
+                }
 
             // Handle enum class, value class
             val modifiers = declaration.modifiers

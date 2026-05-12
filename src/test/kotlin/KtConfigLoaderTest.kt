@@ -1,5 +1,6 @@
+import dev.s7a.ktconfig.exception.KtConfigLoadException
 import dev.s7a.ktconfig.KtConfigLoader
-import dev.s7a.ktconfig.exception.NotFoundValueException
+import dev.s7a.ktconfig.KtConfigResult
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -59,11 +60,28 @@ class KtConfigLoaderTest {
     @Test
     fun testLoadEmptyConfig() {
         val loader = CustomLoader()
-        assertFailsWith<NotFoundValueException> {
+        assertFailsWith<KtConfigLoadException> {
             loader.loadFromString("")
         }.apply {
-            assertEquals("Not found value: value", message)
+            assertEquals(
+                """
+                Failed to load config (1 error):
+                - [value] Not found value
+                """.trimIndent(),
+                message,
+            )
         }
+    }
+
+    @Test
+    fun testLoadResultReturnsErrors() {
+        val loader = CustomLoader()
+        val result = loader.loadResultFromString("")
+
+        assertEquals(
+            listOf("value"),
+            (result as KtConfigResult.Failure).errors.map { it.path },
+        )
     }
 
     @Test
