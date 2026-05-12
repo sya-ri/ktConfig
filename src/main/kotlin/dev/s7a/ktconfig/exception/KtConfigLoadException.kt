@@ -1,6 +1,7 @@
 package dev.s7a.ktconfig.exception
 
 import dev.s7a.ktconfig.KtConfigError
+import dev.s7a.ktconfig.format
 
 /**
  * Exception thrown when config loading collects one or more errors.
@@ -10,24 +11,7 @@ import dev.s7a.ktconfig.KtConfigError
  */
 class KtConfigLoadException(
     val errors: List<KtConfigError>,
-) : KtConfigException(
-        buildString {
-            append("Failed to load config (")
-            append(errors.size)
-            append(if (errors.size == 1) " error" else " errors")
-            append("):")
-            errors.forEach { error ->
-                appendLine()
-                append("- ")
-                if (error.path.isNotEmpty()) {
-                    append("[")
-                    append(error.path)
-                    append("] ")
-                }
-                append(error.message)
-            }
-        },
-    ) {
+) : KtConfigException(errors.format()) {
     /**
      * Creates an exception for a single aggregated loading error.
      *

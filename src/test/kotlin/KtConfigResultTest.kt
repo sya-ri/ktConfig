@@ -1,8 +1,14 @@
 import dev.s7a.ktconfig.KtConfig
 import dev.s7a.ktconfig.KtConfigError
 import dev.s7a.ktconfig.KtConfigResult
+import dev.s7a.ktconfig.KtConfigValidatable
+import dev.s7a.ktconfig.KtConfigValidatorBuilder
 import dev.s7a.ktconfig.SerialName
 import dev.s7a.ktconfig.exception.KtConfigLoadException
+import dev.s7a.ktconfig.format
+import dev.s7a.ktconfig.requireIn
+import dev.s7a.ktconfig.requireNotBlank
+import dev.s7a.ktconfig.requirePositive
 import dev.s7a.ktconfig.type.FormattedVector
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,6 +35,47 @@ data class UnsupportedBooleanValueConfig(
     val enabled: Boolean,
 )
 
+@KtConfig
+data class AutoValidationConfig(
+    val host: String,
+    val port: Int,
+) : KtConfigValidatable<AutoValidationConfig> {
+    companion object {
+        var validateCount = 0
+    }
+
+    override fun KtConfigValidatorBuilder<AutoValidationConfig>.validate() {
+        validateCount++
+        requireNotBlank(AutoValidationConfig::host)
+        requireIn(AutoValidationConfig::port, 1..65535)
+    }
+}
+
+@KtConfig
+data class AutoValidationParentConfig(
+    val child: Child,
+) {
+    @KtConfig
+    data class Child(
+        val name: String,
+    ) : KtConfigValidatable<Child> {
+        override fun KtConfigValidatorBuilder<Child>.validate() {
+            requireNotBlank(Child::name)
+        }
+    }
+}
+
+@KtConfig
+data class DecimalPathParentConfig(
+    val parent: Child,
+) {
+    @KtConfig
+    data class Child(
+        @SerialName("2.0")
+        val value: String,
+    )
+}
+
 @KtConfig(discriminator = "type")
 sealed interface InvalidDiscriminatorConfig {
     @KtConfig
@@ -36,6 +83,20 @@ sealed interface InvalidDiscriminatorConfig {
     data class Known(
         val value: String,
     ) : InvalidDiscriminatorConfig
+}
+
+@KtConfig(discriminator = "type")
+sealed interface AutoValidationSealedConfig {
+    @KtConfig
+    @SerialName("child")
+    data class Child(
+        val count: Int,
+    ) : AutoValidationSealedConfig,
+        KtConfigValidatable<Child> {
+        override fun KtConfigValidatorBuilder<Child>.validate() {
+            requirePositive(Child::count)
+        }
+    }
 }
 
 class KtConfigResultTest {
@@ -164,9 +225,173 @@ class KtConfigResultTest {
     fun testLoadResultReturnsErrorsWhenLoadFails() {
         val result = RequiredValuesConfigLoader.loadResultFromString("")
 
+        assertErrorMessage(
+            """
+            Failed to load config (2 errors):
+            - [host] Not found value
+            - [port] Not found value
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors,
+        )
+    }
+
+    @Test
+    fun testLoadRunsConfigValidationAutomatically() {
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                AutoValidationConfigLoader.loadFromString(
+                    """
+                    host: ''
+                    port: 70000
+                    """.trimIndent(),
+                )
+            }
+
         assertEquals(
-            listOf("host", "port"),
-            (result as KtConfigResult.Failure).errors.map(KtConfigError::path),
+            """
+            Failed to load config (2 errors):
+            - [host] host must not be blank
+            - [port] port must be in 1..65535
+            """.trimIndent(),
+            exception.message,
+        )
+    }
+
+    @Test
+    fun testLoadResultReturnsAutomaticValidationErrors() {
+        val result =
+            AutoValidationConfigLoader.loadResultFromString(
+                """
+                host: ''
+                port: 70000
+                """.trimIndent(),
+            )
+
+        assertErrorMessage(
+            """
+            Failed to load config (2 errors):
+            - [host] host must not be blank
+            - [port] port must be in 1..65535
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors,
+        )
+    }
+
+    @Test
+    fun testDecodeRunsConfigValidationAutomatically() {
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                AutoValidationConfigLoader.decode(mapOf("host" to "", "port" to 70000))
+            }
+
+        assertErrorMessage(
+            """
+            Failed to load config (2 errors):
+            - [host] host must not be blank
+            - [port] port must be in 1..65535
+            """.trimIndent(),
+            exception.errors,
+        )
+    }
+
+    @Test
+    fun testLoadReturnsValueWhenAutomaticValidationPasses() {
+        AutoValidationConfig.validateCount = 0
+
+        val result =
+            AutoValidationConfigLoader.loadResultFromString(
+                """
+                host: localhost
+                port: 25565
+                """.trimIndent(),
+            )
+
+        assertEquals(KtConfigResult.Success(AutoValidationConfig("localhost", 25565)), result)
+        assertEquals(1, AutoValidationConfig.validateCount)
+    }
+
+    @Test
+    fun testLoadDoesNotRunAutomaticValidationWhenLoadingFails() {
+        AutoValidationConfig.validateCount = 0
+
+        val result = AutoValidationConfigLoader.loadResultFromString("")
+
+        assertErrorMessage(
+            """
+            Failed to load config (2 errors):
+            - [host] Not found value
+            - [port] Not found value
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors,
+        )
+        assertEquals(0, AutoValidationConfig.validateCount)
+    }
+
+    @Test
+    fun testNestedConfigAutomaticValidationPrefixesParentPath() {
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                AutoValidationParentConfigLoader.loadFromString(
+                    """
+                    child:
+                      name: ''
+                    """.trimIndent(),
+                )
+            }
+
+        assertErrorMessage(
+            """
+            Failed to load config (1 error):
+            - [child.name] name must not be blank
+            """.trimIndent(),
+            exception.errors,
+        )
+    }
+
+    @Test
+    fun testNestedLoadingErrorQuotesPathSegmentContainingDot() {
+        val result =
+            DecimalPathParentConfigLoader.loadResultFromString(
+                """
+                parent: {}
+                """.trimIndent(),
+            )
+
+        assertErrorMessage(
+            """
+            Failed to load config (1 error):
+            - [parent.'2.0'] Not found value
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors,
+        )
+    }
+
+    @Test
+    fun testSealedSubtypeAutomaticValidationRunsAfterDispatch() {
+        val result =
+            AutoValidationSealedConfigLoader.loadResultFromString(
+                """
+                type: child
+                count: 0
+                """.trimIndent(),
+            )
+
+        assertErrorMessage(
+            """
+            Failed to load config (1 error):
+            - [count] count must be greater than 0
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors,
+        )
+    }
+
+    private fun assertErrorMessage(
+        expected: String,
+        errors: List<KtConfigError>,
+    ) {
+        assertEquals(
+            expected,
+            errors.format(),
         )
     }
 }

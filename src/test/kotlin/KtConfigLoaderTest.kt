@@ -1,6 +1,7 @@
-import dev.s7a.ktconfig.exception.KtConfigLoadException
 import dev.s7a.ktconfig.KtConfigLoader
 import dev.s7a.ktconfig.KtConfigResult
+import dev.s7a.ktconfig.exception.KtConfigLoadException
+import dev.s7a.ktconfig.format
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -51,6 +52,16 @@ class KtConfigLoaderTest {
     }
 
     @Test
+    fun testFormatPathKeepsSimplePath() {
+        assertEquals("parent.child", KtConfigLoader.formatPath("parent${KtConfigLoader.PATH_SEPARATOR}child"))
+    }
+
+    @Test
+    fun testFormatPathQuotesSegmentContainingDot() {
+        assertEquals("parent.'2.0'", KtConfigLoader.formatPath("parent${KtConfigLoader.PATH_SEPARATOR}2.0"))
+    }
+
+    @Test
     fun testLoadFromString() {
         val loader = CustomLoader()
         val data = loader.loadFromString("value: test")
@@ -79,8 +90,11 @@ class KtConfigLoaderTest {
         val result = loader.loadResultFromString("")
 
         assertEquals(
-            listOf("value"),
-            (result as KtConfigResult.Failure).errors.map { it.path },
+            """
+            Failed to load config (1 error):
+            - [value] Not found value
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors.format(),
         )
     }
 

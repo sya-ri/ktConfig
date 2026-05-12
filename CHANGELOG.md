@@ -72,6 +72,20 @@
       val errors: List<KtConfigError> = e.errors
   }
   ```
+- Added `KtConfigValidatable` for config objects that should validate themselves after loading.
+  Generated loaders automatically call `validate()` on loaded values that implement this interface.
+  ```kotlin
+  @KtConfig
+  data class ServerConfig(
+      val host: String,
+      val port: Int,
+  ) : KtConfigValidatable<ServerConfig> {
+      override fun KtConfigValidatorBuilder<ServerConfig>.validate() {
+          requireNotBlank(ServerConfig::host)
+          requireIn(ServerConfig::port, 1..65535)
+      }
+  }
+  ```
 - Added `@file:Suppress` to generated loaders to suppress warnings caused by generated implementation details.
 
 ### Fixed

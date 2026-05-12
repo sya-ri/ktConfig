@@ -451,7 +451,7 @@ class KtConfigSymbolProcessor(
             parameters: List<Parameter>,
         ) {
             add(
-                "%T(\n%L)",
+                "validateLoadedConfig(%T(\n%L), parentPath)",
                 target.typeName,
                 buildCodeBlock {
                     parameters.forEach { parameter ->
@@ -538,7 +538,7 @@ class KtConfigSymbolProcessor(
                 addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
             }
             addCode(
-                "return %T(\n%L)",
+                "return validateLoadedConfig(%T(\n%L), parentPath)",
                 target.typeName,
                 buildCodeBlock {
                     parameters.forEachIndexed { index, parameter ->
@@ -607,7 +607,7 @@ class KtConfigSymbolProcessor(
                 addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
             }
             addCode(
-                "return %T(\n%L)",
+                "return validateLoadedConfig(%T(\n%L))",
                 target.typeName,
                 buildCodeBlock {
                     parameters.forEachIndexed { index, parameter ->
@@ -710,7 +710,7 @@ class KtConfigSymbolProcessor(
                 addStatement("throw %T(_ktConfigErrors)", ktConfigLoadExceptionClassName)
             }
             add(
-                "%T(\n%L)",
+                "validateLoadedConfig(%T(\n%L))",
                 target.typeName,
                 buildCodeBlock {
                     parameters.forEachIndexed { index, parameter ->

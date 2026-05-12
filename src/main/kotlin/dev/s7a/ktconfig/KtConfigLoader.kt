@@ -27,6 +27,29 @@ abstract class KtConfigLoader<T> :
          * Change the path separator to be able to use Double or Float as a key
          */
         const val PATH_SEPARATOR = 0x00.toChar()
+
+        /**
+         * Converts an internal configuration path to a user-facing path.
+         *
+         * Path segments containing dots are quoted so YAML keys such as `2.0` are not confused with nested paths.
+         *
+         * @since 2.2.0
+         */
+        fun formatPath(path: String): String =
+            if (path.isEmpty()) {
+                ""
+            } else {
+                path
+                    .split(PATH_SEPARATOR)
+                    .joinToString(".") { it.quoteIfNeeded() }
+            }
+
+        private fun String.quoteIfNeeded(): String =
+            if (isEmpty() || contains(".")) {
+                "'${replace("'", "\\'")}'"
+            } else {
+                this
+            }
     }
 
     private fun configuration() =
@@ -120,6 +143,53 @@ abstract class KtConfigLoader<T> :
         configuration: YamlConfiguration,
         parentPath: String = "",
     ): T
+
+    /**
+     * Executes automatic validation for values that implement [KtConfigValidatable].
+     *
+     * Generated loaders call this after constructing a config value. Validation errors are reported
+     * as loading errors so [load], [loadResult], [decode], and [deserialize] share the same failure model.
+     *
+     * @param value The loaded value to validate
+     * @param parentPath The path of the parent node, or an empty string if there is no parent node
+     * @return [value] when validation succeeds
+     * @throws KtConfigLoadException if validation returns one or more errors
+     * @since 2.2.0
+     */
+    protected fun validateLoadedConfig(
+        value: T,
+        parentPath: String = "",
+    ): T {
+        @Suppress("UNCHECKED_CAST")
+        val validatable = value as? KtConfigValidatable<T> ?: return value
+        val errors =
+            KtConfigValidatorBuilder<T>()
+                .apply {
+                    with(validatable) {
+                        validate()
+                    }
+                }.build()
+                .validate(value)
+        if (errors.isNotEmpty()) {
+            throw KtConfigLoadException(errors.map { it.withParentPath(parentPath) })
+        }
+        return value
+    }
+
+    private fun KtConfigError.withParentPath(parentPath: String): KtConfigError {
+        if (parentPath.isEmpty()) {
+            return copy(path = formatPath(path))
+        }
+        val parent = parentPath.removeSuffix(PATH_SEPARATOR.toString())
+        return copy(
+            path =
+                if (path.isEmpty()) {
+                    formatPath(parent)
+                } else {
+                    formatPath("$parentPath$path")
+                },
+        )
+    }
 
     /**
      * Loads configuration data from a [YamlConfiguration] and returns either the loaded value or all loading errors.

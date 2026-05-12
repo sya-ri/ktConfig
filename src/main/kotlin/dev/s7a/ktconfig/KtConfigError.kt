@@ -36,13 +36,33 @@ data class KtConfigError(
             cause: Throwable,
         ): List<KtConfigError> =
             when (cause) {
-                is KtConfigLoadException -> cause.errors
-                is NotFoundValueException -> listOf(KtConfigError(cause.path, "Not found value", Kind.NotFound, cause))
-                is NullValueException -> listOf(KtConfigError(path, cause.message, Kind.NullValue, cause))
-                is InvalidFormatException -> listOf(KtConfigError(path, cause.message, Kind.InvalidFormat, cause))
-                is InvalidDiscriminatorException -> listOf(KtConfigError(path, cause.message, Kind.InvalidDiscriminator, cause))
-                is UnsupportedConvertException -> listOf(KtConfigError(path, cause.message, Kind.UnsupportedConvert, cause))
-                else -> listOf(KtConfigError(path, cause.message ?: cause.toString(), Kind.Unknown, cause))
+                is KtConfigLoadException -> {
+                    cause.errors
+                }
+
+                is NotFoundValueException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(cause.path), "Not found value", Kind.NotFound, cause))
+                }
+
+                is NullValueException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.NullValue, cause))
+                }
+
+                is InvalidFormatException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.InvalidFormat, cause))
+                }
+
+                is InvalidDiscriminatorException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.InvalidDiscriminator, cause))
+                }
+
+                is UnsupportedConvertException -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.UnsupportedConvert, cause))
+                }
+
+                else -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message ?: cause.toString(), Kind.Unknown, cause))
+                }
             }
     }
 
@@ -74,3 +94,26 @@ data class KtConfigError(
         Unknown,
     }
 }
+
+/**
+ * Formats loading or validation errors as a human-readable message.
+ *
+ * @since 2.2.0
+ */
+fun List<KtConfigError>.format(): String =
+    buildString {
+        append("Failed to load config (")
+        append(size)
+        append(if (size == 1) " error" else " errors")
+        append("):")
+        this@format.forEach { error ->
+            appendLine()
+            append("- ")
+            if (error.path.isNotEmpty()) {
+                append("[")
+                append(error.path)
+                append("] ")
+            }
+            append(error.message)
+        }
+    }

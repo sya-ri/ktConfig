@@ -1,4 +1,4 @@
-import dev.s7a.ktconfig.KtConfigError
+import dev.s7a.ktconfig.format
 import dev.s7a.ktconfig.requireAll
 import dev.s7a.ktconfig.requireAtLeast
 import dev.s7a.ktconfig.requireContainsKey
@@ -15,7 +15,6 @@ import dev.s7a.ktconfig.requireUnique
 import dev.s7a.ktconfig.validate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 data class ValidationServerConfig(
     val host: String,
@@ -63,8 +62,15 @@ class KtConfigValidationTest {
 
         val errors = validator.validate(ValidationServerConfig("", 70000, 0))
 
-        assertEquals(listOf("host", "port", "maxPlayers"), errors.map(KtConfigError::path))
-        assertTrue(errors.all { it.kind == KtConfigError.Kind.InvalidValue })
+        assertEquals(
+            """
+            Failed to load config (3 errors):
+            - [host] host must not be blank
+            - [port] port must be in 1..65535
+            - [maxPlayers] maxPlayers must be greater than 0
+            """.trimIndent(),
+            errors.format(),
+        )
     }
 
     @Test
@@ -75,7 +81,13 @@ class KtConfigValidationTest {
             }
 
         assertEquals(emptyList(), validator.validate(ValidationNullableStringConfig(null)))
-        assertEquals("name", validator.validate(ValidationNullableStringConfig("")).single().path)
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - [name] name must be null or not blank
+            """.trimIndent(),
+            validator.validate(ValidationNullableStringConfig("")).format(),
+        )
     }
 
     @Test
@@ -100,7 +112,17 @@ class KtConfigValidationTest {
                 ),
             )
 
-        assertEquals(listOf("names", "names", "aliases", "ports", "metadata"), errors.map(KtConfigError::path))
+        assertEquals(
+            """
+            Failed to load config (5 errors):
+            - [names] names must contain unique values
+            - [names] names must not be blank
+            - [aliases] aliases size must be at least 2
+            - [ports] ports size must be 2
+            - [metadata] metadata must contain key required
+            """.trimIndent(),
+            errors.format(),
+        )
     }
 
     @Test
@@ -116,7 +138,15 @@ class KtConfigValidationTest {
 
         val errors = validator.validate(ValidationRangeConfig(10, 1))
 
-        assertEquals(listOf("", "", ""), errors.map(KtConfigError::path))
+        assertEquals(
+            """
+            Failed to load config (3 errors):
+            - min must be less than or equal to max
+            - min must be less than or equal to max
+            - max must be greater than or equal to min
+            """.trimIndent(),
+            errors.format(),
+        )
     }
 
     @Test
@@ -144,7 +174,12 @@ class KtConfigValidationTest {
 
         val errors = validator.validate(ValidationServerConfig("", 0, 20))
 
-        assertEquals(listOf(""), errors.map(KtConfigError::path))
-        assertEquals(listOf("host or positive port is required"), errors.map(KtConfigError::message))
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - host or positive port is required
+            """.trimIndent(),
+            errors.format(),
+        )
     }
 }
