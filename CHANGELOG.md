@@ -91,6 +91,11 @@
 ### Fixed
 - Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.
 
+## v2.1.2
+
+### Fixed
+- Fixed generated loaders for `@Comment` values written as Kotlin raw strings.
+
 ## v2.1.1
 
 ### Added

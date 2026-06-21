@@ -7,7 +7,15 @@ import com.squareup.kotlinpoet.buildCodeBlock
 /**
  * ["element1", "element2"] -> 'listOf("element1", "element2")'
  */
-fun List<String>.asLiteralList() = "listOf(${joinToString(", ") { "\"$it\"" } })"
+fun List<String>.asLiteralList() =
+    buildCodeBlock {
+        add("listOf(")
+        forEachIndexed { index, value ->
+            if (index > 0) add(", ")
+            add("%S", value)
+        }
+        add(")")
+    }
 
 inline fun FunSpec.Builder.addControlFlowCode(
     controlFlow: String,

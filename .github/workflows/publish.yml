@@ -5,7 +5,6 @@ on:
 env:
   ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
   ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
   ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
 
 jobs:
@@ -13,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
@@ -21,5 +20,8 @@ jobs:
           java-version: 21
           cache: gradle
       - name: Publish
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
           ./gradlew publish --no-daemon --stacktrace

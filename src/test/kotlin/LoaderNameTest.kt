@@ -52,4 +52,31 @@ class LoaderNameTest {
             actual,
         )
     }
+
+    @Test
+    fun testRawStringComment() {
+        val actual =
+            RawStringCommentConfigLoader.saveToString(
+                RawStringCommentConfig(
+                    updaterDelay = "1h",
+                    message = "test",
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                "# Header line",
+                "# Header default",
+                "",
+                "# The amount of time to pass until a new update check occurs.",
+                "# Default: 1h",
+                "updaterDelay: 1h",
+                "# Line one",
+                "# Line two",
+                "message: test",
+                "",
+            ).joinToString("\n"),
+            actual,
+        )
+    }
 }
