@@ -55,7 +55,14 @@ data class KtConfigAnnotation(
                     val content = arguments["content"] as? List<*> ?: return@firstNotNullOfOrNull null
                     if (content.isEmpty()) return@firstNotNullOfOrNull null
                     if (content.first() !is String) return@firstNotNullOfOrNull null
-                    Comment(content.map(Any?::toString))
+                    Comment(content.flatMap { it.toString().asCommentLines() })
+                }
+
+            private fun String.asCommentLines() =
+                if (lineSequence().count() > 1) {
+                    trimIndent().lines()
+                } else {
+                    listOf(this)
                 }
         }
     }

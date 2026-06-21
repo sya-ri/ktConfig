@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.1.2
+
+### Fixed
+- Fixed generated loaders for `@Comment` values written as Kotlin raw strings.
+
 ## v2.1.1
 
 ### Added
