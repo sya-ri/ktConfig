@@ -1,11 +1,12 @@
 package dev.s7a.ktconfig
 
 import dev.s7a.ktconfig.exception.KtConfigLoadException
+import dev.s7a.ktconfig.platform.PlatformYamlConfiguration
+import dev.s7a.ktconfig.platform.PlatformYamlConfigurationAdapter
 import dev.s7a.ktconfig.serializer.AnySerializer
 import dev.s7a.ktconfig.serializer.MapSerializer
 import dev.s7a.ktconfig.serializer.StringSerializer
 import dev.s7a.ktconfig.serializer.TransformSerializer
-import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
 /**
@@ -24,7 +25,9 @@ abstract class KtConfigLoader<T> :
     ) {
     companion object {
         /**
-         * Change the path separator to be able to use Double or Float as a key
+         * Internal path separator used so YAML keys containing dots, such as decimal map keys, remain single segments.
+         *
+         * @since 2.0.0
          */
         const val PATH_SEPARATOR = 0x00.toChar()
 
@@ -33,6 +36,8 @@ abstract class KtConfigLoader<T> :
          *
          * Path segments containing dots are quoted so YAML keys such as `2.0` are not confused with nested paths.
          *
+         * @param path The internal path to format
+         * @return The user-facing dotted path
          * @since 2.2.0
          */
         fun formatPath(path: String): String =
@@ -52,16 +57,14 @@ abstract class KtConfigLoader<T> :
             }
     }
 
-    private fun configuration() =
-        YamlConfiguration().apply {
-            options().pathSeparator(PATH_SEPARATOR)
-        }
+    private fun configuration() = PlatformYamlConfigurationAdapter.create(PATH_SEPARATOR)
 
     /**
      * Loads configuration data from a file.
      *
      * @param file The file to load configuration from
      * @return The loaded configuration object of type T
+     * @throws KtConfigLoadException if the configuration cannot be loaded
      * @since 2.0.0
      */
     fun load(file: File) = loadResult(file).getOrThrow()
@@ -78,7 +81,7 @@ abstract class KtConfigLoader<T> :
             loadResult(
                 configuration().apply {
                     if (file.exists()) {
-                        load(file)
+                        PlatformYamlConfigurationAdapter.load(this, file)
                     }
                 },
             )
@@ -92,6 +95,7 @@ abstract class KtConfigLoader<T> :
      *
      * @param file The file to load configuration from and save back to
      * @return The loaded configuration object of type T
+     * @throws KtConfigLoadException if the configuration cannot be loaded
      * @since 2.1.0
      */
     fun loadAndSave(file: File) =
@@ -105,6 +109,7 @@ abstract class KtConfigLoader<T> :
      *
      * @param file The file to load configuration from
      * @return The loaded configuration object of type T
+     * @throws KtConfigLoadException if the configuration cannot be loaded
      * @since 2.1.0
      */
     fun loadAndSaveIfNotExists(file: File) =
@@ -117,6 +122,7 @@ abstract class KtConfigLoader<T> :
      *
      * @param content The YAML content string to load configuration from
      * @return The loaded configuration object of type T
+     * @throws KtConfigLoadException if the configuration cannot be loaded
      * @since 2.0.0
      */
     fun loadFromString(content: String) = loadResultFromString(content).getOrThrow()
@@ -132,7 +138,7 @@ abstract class KtConfigLoader<T> :
         try {
             loadResult(
                 configuration().apply {
-                    loadFromString(content)
+                    PlatformYamlConfigurationAdapter.loadFromString(this, content)
                 },
             )
         } catch (e: Throwable) {
@@ -140,15 +146,15 @@ abstract class KtConfigLoader<T> :
         }
 
     /**
-     * Abstract method to load configuration data from a YamlConfiguration object.
+     * Abstract method to load configuration data from a platform YAML configuration.
      *
-     * @param configuration The YamlConfiguration object to load from
+     * @param configuration The platform YAML configuration to load from
      * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @return The loaded configuration object of type T
      * @since 2.0.0
      */
     abstract fun load(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         parentPath: String = "",
     ): T
 
@@ -200,18 +206,18 @@ abstract class KtConfigLoader<T> :
     }
 
     /**
-     * Loads configuration data from a [YamlConfiguration] and returns either the loaded value or all loading errors.
+     * Loads configuration data from a [PlatformYamlConfiguration] and returns either the loaded value or all loading errors.
      *
      * Generated loaders override [load] to collect multiple property errors before throwing [KtConfigLoadException].
      * Custom loaders can override this method directly when they need fully aggregated error reporting.
      *
-     * @param configuration The YamlConfiguration object to load from
+     * @param configuration The platform YAML configuration to load from
      * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @return A result containing the loaded value or collected loading errors
      * @since 2.2.0
      */
     fun loadResult(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         parentPath: String = "",
     ): KtConfigResult<T> =
         try {
@@ -232,10 +238,11 @@ abstract class KtConfigLoader<T> :
     fun save(
         file: File,
         value: T,
-    ) = configuration()
-        .apply {
-            save(this, value)
-        }.save(file)
+    ) {
+        val configuration = configuration()
+        save(configuration, value)
+        PlatformYamlConfigurationAdapter.save(configuration, file)
+    }
 
     /**
      * Saves configuration data to a file if not exists.
@@ -261,34 +268,49 @@ abstract class KtConfigLoader<T> :
      * @since 2.0.0
      */
     fun saveToString(value: T) =
-        configuration()
-            .apply {
-                save(this, value)
-            }.saveToString()
+        configuration().let { configuration ->
+            save(configuration, value)
+            PlatformYamlConfigurationAdapter.saveToString(configuration)
+        }
 
     /**
-     * Abstract method to save configuration data to a YamlConfiguration object.
+     * Abstract method to save configuration data to a platform YAML configuration.
      *
-     * @param configuration The YamlConfiguration object to save to
+     * @param configuration The platform YAML configuration to save to
      * @param value The configuration object to save
      * @param parentPath The path of the parent node, or an empty string if there is no parent node
      * @since 2.0.0
      */
     abstract fun save(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         value: T,
         parentPath: String = "",
     )
 
+    /**
+     * Sets the root header comment for [configuration].
+     *
+     * @param configuration The platform YAML configuration to update
+     * @param comment The header comment lines
+     * @since 2.0.0
+     */
     protected fun setHeaderComment(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         comment: List<String>,
     ) {
-        Reflection.setHeaderComment(configuration.options(), comment)
+        PlatformYamlConfigurationAdapter.setHeaderComment(configuration, comment)
     }
 
+    /**
+     * Sets a header comment at [parentPath], or the root header when [parentPath] is empty.
+     *
+     * @param configuration The platform YAML configuration to update
+     * @param parentPath The path of the nested configuration, or an empty string for the root
+     * @param comment The header comment lines
+     * @since 2.0.0
+     */
     protected fun setHeaderComment(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         parentPath: String,
         comment: List<String>,
     ) {
@@ -299,11 +321,19 @@ abstract class KtConfigLoader<T> :
         }
     }
 
+    /**
+     * Sets a comment for [path].
+     *
+     * @param configuration The platform YAML configuration to update
+     * @param path The configuration path to annotate
+     * @param comment The comment lines
+     * @since 2.0.0
+     */
     protected fun setComment(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
         comment: List<String>,
     ) {
-        Reflection.setComment(configuration, path, comment)
+        PlatformYamlConfigurationAdapter.setComment(configuration, path, comment)
     }
 }

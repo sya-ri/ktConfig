@@ -1,33 +1,41 @@
 # ktConfig v2 — LLM Reference Document
 
-> This document is intended as a comprehensive reference for AI assistants generating Kotlin/Bukkit plugin code
-> that uses ktConfig. It covers installation, all annotations, the loader API, supported types, serializers,
-> sealed classes, and common pitfalls with concrete code examples.
+> This document is intended as a comprehensive reference for AI assistants generating Kotlin Bukkit or Fabric code
+> that uses ktConfig. It covers platform-specific installation, all annotations, the shared loader API, supported
+> types, serializers, sealed classes, and common pitfalls with concrete code examples.
 
 ---
 
 ## Overview
 
-ktConfig is a Spigot/Bukkit configuration library for Kotlin.
+ktConfig is a Bukkit and Fabric YAML configuration library for Kotlin.
 It uses **KSP (Kotlin Symbol Processing)** at build time to generate type-safe YAML loader classes from
-annotated Kotlin data classes. There is zero runtime reflection overhead — all loader logic is compiled code.
+annotated Kotlin data classes. Property mapping is generated as compiled code instead of discovering the data-class
+schema at runtime. Bukkit comment compatibility may use reflection internally for API-version compatibility.
 
 Key characteristics:
 - Annotate a data class with `@KtConfig` → KSP generates `<ClassName>Loader` (e.g. `ServerConfigLoader`)
-- The loader reads/writes a YAML file using Bukkit's `YamlConfiguration`
+- Bukkit and Fabric use the same annotations, generated loader API, serializers, and YAML representation
+- The Bukkit backend uses Bukkit's `YamlConfiguration`; the Fabric backend uses Configurate YAML
 - Supports Kotlin default values, nullable types, sealed classes/interfaces, and custom serializers
-- Latest stable version: **2.2.0**
+- Latest stable release: **2.3.0** (Bukkit and Fabric runtimes, KSP, and Minecraft adapters)
+- Fabric support is introduced in the **2.3.0** release line
+
+> `ktConfig` and `ktConfig-fabric` are alternative runtime artifacts with the same shared API. Never install both
+> in the same runtime classpath.
 
 ---
 
 ## Installation
 
+### Bukkit / Spigot / Paper
+
 Add to `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.3.2"
+    kotlin("jvm") version "2.4.10"
+    id("com.google.devtools.ksp") version "2.3.11"
 }
 
 repositories {
@@ -35,15 +43,42 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.2.0")
-    ksp("dev.s7a:ktConfig-ksp:2.2.0")
+    implementation("dev.s7a:ktConfig:2.3.0")
+    ksp("dev.s7a:ktConfig-ksp:2.3.0")
 }
 ```
 
 Run `./gradlew kspKotlin` (or `./gradlew build`) to trigger code generation.
 
-> The KSP version must be compatible with the Kotlin version.
-> Use `2.3.2` (KSP) with `2.2.21` (Kotlin). Mismatches cause cryptic errors.
+> The KSP plugin must support the selected Kotlin compiler. This repository currently tests Kotlin `2.4.10` with
+> KSP `2.3.11`. Do not assume their version strings must be identical; use a pairing supported by the KSP release.
+
+### Fabric
+
+Fabric has no standard user configuration format. ktConfig intentionally keeps YAML so configuration files can be
+moved between Bukkit and Fabric without changing their representation.
+
+```kotlin
+dependencies {
+    ksp("dev.s7a:ktConfig-ksp:2.3.0")
+
+    // Loom's include configuration is not transitive, so include every runtime piece explicitly.
+    include(implementation("dev.s7a:ktConfig-fabric:2.3.0")!!)
+    include(implementation("org.spongepowered:configurate-yaml:4.2.0")!!)
+    include(implementation("org.spongepowered:configurate-core:4.2.0")!!)
+    include(implementation("io.leangen.geantyref:geantyref:1.3.16")!!)
+    include(implementation("net.kyori:option:1.1.0")!!)
+}
+
+ksp {
+    arg("ktconfig.platform", "fabric")
+}
+```
+
+Do not add `dev.s7a:ktConfig` to a Fabric project. `ktConfig-fabric` already contains the shared runtime API.
+The KSP argument is required; without it, generated loaders target Bukkit's `YamlConfiguration`.
+The Fabric backend supports the same nested values and comments, preserves explicit YAML nulls, and keeps dotted map
+keys such as `2.0` as one key rather than interpreting them as nested paths.
 
 ---
 
@@ -61,7 +96,9 @@ data class ServerConfig(
 )
 ```
 
-### 2. Use the generated loader in your plugin
+### 2. Use the generated loader
+
+Bukkit / Paper:
 
 ```kotlin
 class MyPlugin : JavaPlugin() {
@@ -72,6 +109,19 @@ class MyPlugin : JavaPlugin() {
     }
 }
 ```
+
+Fabric:
+
+```kotlin
+import dev.s7a.ktconfig.fabric.FabricConfigFiles
+
+val file = FabricConfigFiles.resolve("config.yml").toFile()
+val config = ServerConfigLoader.loadAndSaveIfNotExists(file)
+```
+
+`FabricConfigFiles.resolve` only accepts paths below Fabric Loader's `config` directory. Absolute paths and `..`
+traversal outside that directory are rejected. Use another explicitly managed `File` only when the configuration
+belongs somewhere else.
 
 ### 3. Corresponding YAML
 
@@ -238,6 +288,10 @@ fun loadAndSaveIfNotExists(file: File): T
 // Load from a raw YAML string
 fun loadFromString(content: String): T
 
+// Non-throwing variants that return Success(value) or Failure(all collected errors)
+fun loadResult(file: File): KtConfigResult<T>
+fun loadResultFromString(content: String): KtConfigResult<T>
+
 // Save an object to a File (creates parent directories automatically)
 fun save(file: File, value: T)
 
@@ -247,6 +301,10 @@ fun saveIfNotExists(file: File, value: T)
 // Serialize an object to a YAML string
 fun saveToString(value: T): String
 ```
+
+The loader implementation is shared by Bukkit and Fabric. Public configuration parameters retain the native
+platform type (`org.bukkit.configuration.file.YamlConfiguration` on Bukkit and
+`dev.s7a.ktconfig.fabric.YamlConfiguration` on Fabric), while file/string methods are identical.
 
 ### Typical usage patterns
 
@@ -268,6 +326,12 @@ MyConfigLoader.save(file, config.copy(maxPlayers = 50))
 // Pattern 5: Serialize to string for logging/debugging
 val yaml = MyConfigLoader.saveToString(config)
 logger.info("Config:\n$yaml")
+
+// Pattern 6: Report every loading/validation error without throwing
+when (val result = MyConfigLoader.loadResult(file)) {
+    is KtConfigResult.Success -> useConfig(result.value)
+    is KtConfigResult.Failure -> logger.severe(result.errors.format())
+}
 ```
 
 ---
@@ -325,6 +389,31 @@ data class AppConfig(
    val config = AppConfigLoader.load(file)
    AppConfigLoader.save(file, config)  // Persist defaults
    ```
+
+---
+
+## Validation
+
+Implement `KtConfigValidatable<T>` to run validation automatically after a generated loader constructs the value.
+Every failing rule is collected into the same `KtConfigLoadException` / `KtConfigResult.Failure` as decoding errors.
+This API is shared by Bukkit and Fabric.
+
+```kotlin
+@KtConfig
+data class ServerConfig(
+    val host: String,
+    val port: Int,
+) : KtConfigValidatable<ServerConfig> {
+    override fun KtConfigValidatorBuilder<ServerConfig>.validate() {
+        requireNotBlank(ServerConfig::host)
+        requireIn(ServerConfig::port, 1..65535)
+    }
+}
+```
+
+The DSL includes custom `require(property, message, predicate)` and object-level `require(message, predicate)`,
+plus helpers for strings, ranges, signs, collection/map/array sizes and contents, uniqueness, allowed values, and
+field-to-field comparisons. `anyOf(message) { ... }` applies OR semantics to a group of rules.
 
 ---
 
@@ -446,6 +535,45 @@ typealias MyVector = @UseSerializer(FormattedVectorSerializer::class) Vector
 
 @KtConfig
 data class Config(val pos: MyVector)
+```
+
+### Fabric Minecraft adapters
+
+Minecraft serializers are separate, versioned artifacts because Minecraft 1.21.x requires remapped JARs while
+26.x is unobfuscated. Always select the artifact matching the exact Minecraft version and use Mojang's official
+mappings.
+
+```kotlin
+dependencies {
+    implementation("dev.s7a:ktConfig-fabric-minecraft-1.21.11:2.3.0")
+}
+```
+
+Supported targets are Minecraft 1.21 through 1.21.11, plus 26.1 and 26.2. Minecraft 1.21.x requires Java 21;
+Minecraft 26.x requires Java 25.
+
+| Serializer | Minecraft type | YAML format | Availability |
+|---|---|---|---|
+| `BlockPosSerializer` | `BlockPos` | `"X, Y, Z"` integers | All supported versions |
+| `Vec3Serializer` | `Vec3` | `"X, Y, Z"` decimals | All supported versions |
+| `DimensionKeySerializer` | `ResourceKey<Level>` | `"namespace:path"` | All supported versions |
+| `ResourceLocationSerializer` | `ResourceLocation` | `"namespace:path"` | 1.21 through 1.21.10 |
+| `IdentifierSerializer` | `Identifier` | `"namespace:path"` | 1.21.11, 26.1, and 26.2 |
+
+`DimensionKeySerializer`, `ResourceLocationSerializer`, and `IdentifierSerializer` are map-key compatible.
+
+```kotlin
+import dev.s7a.ktconfig.fabric.minecraft.BlockPosSerializer
+import dev.s7a.ktconfig.fabric.minecraft.DimensionKeySerializer
+import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.level.Level
+
+@KtConfig
+data class WorldConfig(
+    val spawn: @UseSerializer(BlockPosSerializer::class) BlockPos,
+    val dimension: @UseSerializer(DimensionKeySerializer::class) ResourceKey<Level>,
+)
 ```
 
 ---
@@ -607,7 +735,6 @@ data class CustomData(val value: Int) {
 
 ```kotlin
 import dev.s7a.ktconfig.serializer.Serializer
-import org.bukkit.configuration.file.YamlConfiguration
 
 object MyTypeSerializer : Serializer<MyType> {
     override fun deserialize(value: Any): MyType {
@@ -620,6 +747,9 @@ object MyTypeSerializer : Serializer<MyType> {
     }
 }
 ```
+
+Prefer overriding only `deserialize` and `serialize`; this keeps a custom serializer portable between Bukkit and
+Fabric. The shared `Serializer` defaults route configuration access through the active platform backend.
 
 ### Making a serializer usable as a Map key
 
@@ -724,27 +854,39 @@ data class Config(
 
 ## Error Handling
 
-All exceptions extend `KtConfigException : Exception`.
+All ktConfig exceptions extend `KtConfigException : Exception`. Since 2.2.0, the throwing loader methods collect
+property and validation failures and throw one `KtConfigLoadException` containing `List<KtConfigError>`.
 
 | Exception | When thrown |
 |---|---|
+| `KtConfigLoadException(errors)` | One or more loading or validation errors were collected |
 | `NotFoundValueException(path)` | Required path is missing from the YAML file |
 | `NullValueException` | A non-nullable property received null |
 | `InvalidFormatException(text, expected)` | String could not be parsed (e.g. bad vector format) |
 | `InvalidDiscriminatorException(discriminator)` | Sealed class discriminator value not recognized |
 | `UnsupportedConvertException(actual, expected)` | YAML value cannot be cast to the expected Kotlin type |
 
-Handling in plugin code:
+`KtConfigError` contains `path`, `message`, `kind`, and an optional `cause`. Error kinds are `NotFound`,
+`NullValue`, `InvalidFormat`, `InvalidDiscriminator`, `UnsupportedConvert`, `InvalidValue`, and `Unknown`.
+Malformed Bukkit or Fabric YAML is normalized to `InvalidFormat` with the message `Invalid YAML`.
+Import `dev.s7a.ktconfig.format` to use the `List<KtConfigError>.format()` extension shown below.
+
+Throwing style:
 
 ```kotlin
 try {
     val config = MyConfigLoader.load(file)
-} catch (e: NotFoundValueException) {
-    logger.severe("Missing config key: ${e.path}")
-} catch (e: InvalidFormatException) {
-    logger.severe("Bad value '${e.text}', expected: ${e.expected}")
-} catch (e: KtConfigException) {
-    logger.severe("Config error: ${e.message}")
+} catch (e: KtConfigLoadException) {
+    logger.severe(e.errors.format())
+}
+```
+
+Non-throwing style:
+
+```kotlin
+when (val result = MyConfigLoader.loadResult(file)) {
+    is KtConfigResult.Success -> useConfig(result.value)
+    is KtConfigResult.Failure -> logger.severe(result.errors.format())
 }
 ```
 
@@ -794,12 +936,12 @@ Error example:
 'org.gradle.api.provider.Property org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions.getJvmDefault()'
 ```
 
-Ensure the KSP plugin version matches the Kotlin version:
+Ensure the KSP plugin release supports the Kotlin compiler version. This repository currently uses:
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.21"        // Kotlin version
-    id("com.google.devtools.ksp") version "2.3.2"  // KSP version — must match Kotlin
+    kotlin("jvm") version "2.4.10"
+    id("com.google.devtools.ksp") version "2.3.11"
 }
 ```
 
@@ -821,7 +963,8 @@ data class Config(@SerialName("my-key") val myKey: String)
 
 ## Complete Example
 
-The following shows most ktConfig features together:
+The following Bukkit example shows most ktConfig features together. On Fabric, keep the config model and generated
+loader calls, replace Bukkit-only formatted types, and resolve the file with `FabricConfigFiles.resolve(...)`.
 
 ```kotlin
 package com.example.myplugin
@@ -990,8 +1133,12 @@ dev.s7a.ktconfig
 ├── SerialName                      ← @SerialName annotation
 ├── UseSerializer                   ← @UseSerializer annotation
 ├── KtConfigLoader                  ← abstract base for generated loaders
+├── KtConfigResult                  ← Success(value) or Failure(errors)
+├── KtConfigError                   ← structured loading/validation error
+├── KtConfigValidatable             ← automatic validation contract
 ├── exception/
 │   ├── KtConfigException
+│   ├── KtConfigLoadException
 │   ├── InvalidDiscriminatorException
 │   ├── InvalidFormatException
 │   ├── NotFoundValueException
@@ -1003,9 +1150,16 @@ dev.s7a.ktconfig
 │   ├── StringSerializer, IntSerializer, ...  ← built-in singletons
 │   ├── ListSerializer, SetSerializer, MapSerializer, ...
 │   └── EnumSerializer, NestedSerializer, ValueSerializer, ...
-└── type/
+├── fabric/                          ← Fabric runtime only
+│   ├── FabricConfigFiles           ← safe resolver below Fabric's config directory
+│   └── YamlConfiguration           ← Configurate-backed YAML document
+├── fabric/minecraft/                ← versioned Fabric Minecraft artifacts only
+│   ├── BlockPosSerializer, Vec3Serializer
+│   ├── DimensionKeySerializer
+│   └── ResourceLocationSerializer or IdentifierSerializer
+└── type/                            ← Bukkit runtime only
     ├── FormattedVector             ← typealias + FormattedVectorSerializer
-    ├── FormattedLocation           ← typealias + FormatedLocationSerializer
+    ├── FormattedLocation           ← typealias + FormattedLocationSerializer
     ├── FormattedBlock              ← typealias + FormattedBlockSerializer
     ├── FormattedBlockVector        ← typealias + FormattedBlockVectorSerializer
     ├── FormattedColor              ← typealias + FormattedColorSerializer
@@ -1018,6 +1172,7 @@ dev.s7a.ktconfig
 
 | Version | Notable Changes |
 |---|---|
+| 2.3.0 | Fabric YAML runtime, shared Bukkit/Fabric loader and serializer implementation, Fabric-aware KSP generation, and versioned Minecraft serializers for 1.21.x and 26.x |
 | 2.2.0 | Typealias loaders, validation DSL, aggregate load errors, and broader round-trip coverage |
 | 2.1.2 | Raw string support for `@Comment` values in generated loaders |
 | 2.1.1 | Distributable `ktconfig` agent skill under `skills/ktconfig` |

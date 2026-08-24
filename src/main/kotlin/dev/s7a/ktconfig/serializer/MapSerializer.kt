@@ -1,8 +1,7 @@
 package dev.s7a.ktconfig.serializer
 
 import dev.s7a.ktconfig.exception.NullValueException
-import dev.s7a.ktconfig.exception.UnsupportedConvertException
-import org.bukkit.configuration.MemorySection
+import dev.s7a.ktconfig.platform.PlatformYamlConfigurationAdapter
 
 /**
  * Serializer class that provides serialization functionality for map types.
@@ -31,15 +30,13 @@ class MapSerializer<K, V>(
         val valueSerializer: Serializer<V>,
     ) : Serializer<Map<K, V?>> {
         override fun deserialize(value: Any) =
-            when (value) {
-                is MemorySection -> value.getValues(false)
-                is Map<*, *> -> value
-                else -> throw UnsupportedConvertException(value::class, Map::class)
-            }.mapKeys {
-                keySerializer.deserialize(it.key ?: throw NullValueException())
-            }.mapValues {
-                it.value?.let(valueSerializer::deserialize)
-            }
+            PlatformYamlConfigurationAdapter
+                .asMap(value)
+                .mapKeys {
+                    keySerializer.deserialize(it.key ?: throw NullValueException())
+                }.mapValues {
+                    it.value?.let(valueSerializer::deserialize)
+                }
 
         override fun serialize(value: Map<K, V?>) =
             value
@@ -51,15 +48,13 @@ class MapSerializer<K, V>(
     }
 
     override fun deserialize(value: Any) =
-        when (value) {
-            is MemorySection -> value.getValues(false)
-            is Map<*, *> -> value
-            else -> throw UnsupportedConvertException(value::class, Map::class)
-        }.mapKeys {
-            keySerializer.deserialize(it.key ?: throw NullValueException())
-        }.mapValues {
-            valueSerializer.deserialize(it.value ?: throw NullValueException())
-        }
+        PlatformYamlConfigurationAdapter
+            .asMap(value)
+            .mapKeys {
+                keySerializer.deserialize(it.key ?: throw NullValueException())
+            }.mapValues {
+                valueSerializer.deserialize(it.value ?: throw NullValueException())
+            }
 
     override fun serialize(value: Map<K, V>) =
         value

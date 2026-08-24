@@ -93,6 +93,10 @@ fabric.properties
 # Compiled class file
 *.class
 
+### Python ###
+__pycache__/
+*.py[cod]
+
 # Log file
 *.log
 
