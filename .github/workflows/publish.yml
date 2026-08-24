@@ -2,14 +2,95 @@ name: Publish
 on:
   workflow_dispatch:
 
+concurrency:
+  group: publish-maven-central
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 env:
-  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
   ORG_GRADLE_PROJECT_mavenCentralDeploymentValidation: PUBLISHED
-  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify release branch
+        run: test "$GITHUB_REF" = "refs/heads/releases/v2"
+      - name: Clone repository
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Test release checks
+        run: python -m unittest discover -s scripts/tests
+      - name: Check README versions
+        run: python scripts/sync_readme_versions.py --check
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 25
+          cache: gradle
+      - name: Assemble base publications locally
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
+          ./gradlew :publishMavenPublicationToMavenLocal :ksp:publishMavenPublicationToMavenLocal :fabric:publishMavenPublicationToMavenLocal --no-daemon --stacktrace
+      - name: Validate base publication POMs
+        run: |
+          python scripts/validate_pom_metadata.py --release --artifact-id ktConfig build/publications/maven/pom-default.xml
+          python scripts/validate_pom_metadata.py --release --artifact-id ktConfig-ksp ksp/build/publications/maven/pom-default.xml
+          python scripts/validate_pom_metadata.py --release --artifact-id ktConfig-fabric fabric/build/publications/maven/pom-default.xml
+  preflight-fabric-minecraft:
+    needs: preflight
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.1' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.2' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.3' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.4' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.5' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.6' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.7' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.8' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.9' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.10' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.11' }
+          - { project: fabric-minecraft-unobfuscated, property: unobfuscatedMinecraftVersion, minecraft: '26.1' }
+          - { project: fabric-minecraft-unobfuscated, property: unobfuscatedMinecraftVersion, minecraft: '26.2' }
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 25
+          cache: gradle
+      - name: Assemble publication locally
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
+          ./gradlew :${{ matrix.project }}:publishMavenPublicationToMavenLocal -P${{ matrix.property }}=${{ matrix.minecraft }} --no-daemon --stacktrace
+      - name: Validate publication POM
+        run: python scripts/validate_pom_metadata.py --release --artifact-id ktConfig-fabric-minecraft-${{ matrix.minecraft }} --project-dependency ktConfig-fabric ${{ matrix.project }}/build/publications/maven/pom-default.xml
   publish:
+    needs: [preflight, preflight-fabric-minecraft]
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -23,6 +104,9 @@ jobs:
       - name: Publish
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
           ./gradlew publishAndReleaseToMavenCentral --no-daemon --stacktrace -x :fabric-minecraft-remap:publishAndReleaseToMavenCentral -x :fabric-minecraft-unobfuscated:publishAndReleaseToMavenCentral
@@ -59,6 +143,9 @@ jobs:
       - name: Publish Minecraft adapter
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
           ./gradlew :${{ matrix.project }}:publishAndReleaseToMavenCentral -P${{ matrix.property }}=${{ matrix.minecraft }} --no-daemon --stacktrace

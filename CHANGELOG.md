@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.3.0-SNAPSHOT
+## v2.3.0
 
 ### Added
 - Added the `ktConfig-fabric` YAML runtime and Fabric-aware KSP generation via `ktconfig.platform=fabric`.

@@ -32,4 +32,8 @@ mavenPublishing {
     signAllPublications()
     coordinates("dev.s7a", "ktConfig-fabric-minecraft-$minecraftVersion", version.toString())
     configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"), sourcesJar = true))
+    pom {
+        name.set("ktConfig Fabric Minecraft $minecraftVersion")
+        description.set("Minecraft type serializers for ktConfig Fabric targeting Minecraft $minecraftVersion.")
+    }
 }
