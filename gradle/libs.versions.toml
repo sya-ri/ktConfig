@@ -1,10 +1,10 @@
 [versions]
 # Project
 # Use a non-SNAPSHOT value before running the publish workflow.
-ktConfig = "2.3.0-SNAPSHOT"
+ktConfig = "2.3.0"
 
 # README dependency examples
-ktConfigBukkit = "2.2.0"
+ktConfigBukkit = "2.3.0"
 ktConfigFabric = "2.3.0"
 
 # Plugins

@@ -18,7 +18,7 @@ Key characteristics:
 - Bukkit and Fabric use the same annotations, generated loader API, serializers, and YAML representation
 - The Bukkit backend uses Bukkit's `YamlConfiguration`; the Fabric backend uses Configurate YAML
 - Supports Kotlin default values, nullable types, sealed classes/interfaces, and custom serializers
-- Latest stable release: **2.2.0** (Bukkit runtime and KSP)
+- Latest stable release: **2.3.0** (Bukkit and Fabric runtimes, KSP, and Minecraft adapters)
 - Fabric support is introduced in the **2.3.0** release line
 
 > `ktConfig` and `ktConfig-fabric` are alternative runtime artifacts with the same shared API. Never install both
@@ -43,8 +43,8 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.2.0")
-    ksp("dev.s7a:ktConfig-ksp:2.2.0")
+    implementation("dev.s7a:ktConfig:2.3.0")
+    ksp("dev.s7a:ktConfig-ksp:2.3.0")
 }
 ```
 

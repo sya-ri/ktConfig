@@ -15,8 +15,8 @@ Use versions that match the current library docs:
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.3.2"
+    kotlin("jvm") version "2.4.10"
+    id("com.google.devtools.ksp") version "2.3.11"
 }
 
 repositories {
@@ -24,8 +24,8 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.2.0")
-    ksp("dev.s7a:ktConfig-ksp:2.2.0")
+    implementation("dev.s7a:ktConfig:2.3.0")
+    ksp("dev.s7a:ktConfig-ksp:2.3.0")
 }
 ```
 
@@ -352,8 +352,8 @@ Check these first:
 
 If build errors mention Kotlin compiler APIs, align Kotlin and KSP versions with the documented pair:
 
-- Kotlin `2.2.21`
-- KSP `2.3.2`
+- Kotlin `2.4.10`
+- KSP `2.3.11`
 
 ### `@PathName` deprecation
 

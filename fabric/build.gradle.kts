@@ -42,13 +42,5 @@ mavenPublishing {
     pom {
         name.set("ktConfig Fabric")
         description.set("Fabric-compatible YAML configuration library for Kotlin using class annotations.")
-        inceptionYear.set("2025")
-        url.set("https://github.com/sya-ri/ktConfig")
-        licenses {
-            license {
-                name.set("MIT License")
-                url.set("https://github.com/sya-ri/ktConfig/blob/master/LICENSE")
-            }
-        }
     }
 }

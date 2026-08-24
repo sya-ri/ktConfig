@@ -27,24 +27,6 @@ mavenPublishing {
     )
     pom {
         name.set("ktConfig-ksp")
-        description.set("Spigot configuration library for Kotlin using class annotations.")
-        inceptionYear.set("2025")
-        url.set("https://github.com/sya-ri/ktConfig")
-        licenses {
-            license {
-                name.set("MIT License")
-                url.set("https://github.com/sya-ri/ktConfig/blob/master/LICENSE")
-            }
-        }
-        developers {
-            developer {
-                id.set("sya-ri")
-                name.set("sya-ri")
-                email.set("contact@s7a.dev")
-            }
-        }
-        scm {
-            url.set("https://github.com/sya-ri/ktConfig")
-        }
+        description.set("KSP code generator for the ktConfig Bukkit and Fabric configuration runtimes.")
     }
 }

@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-      - name: Test README version sync
+      - name: Test release scripts
         run: python -m unittest discover -s scripts/tests
       - name: Check README versions
         run: python scripts/sync_readme_versions.py --check
@@ -27,6 +27,13 @@ jobs:
           java-version: 25
       - name: Build
         run: ./gradlew build
+      - name: Generate base publication POMs
+        run: ./gradlew :generatePomFileForMavenPublication :ksp:generatePomFileForMavenPublication :fabric:generatePomFileForMavenPublication
+      - name: Validate base publication POMs
+        run: |
+          python scripts/validate_pom_metadata.py --artifact-id ktConfig build/publications/maven/pom-default.xml
+          python scripts/validate_pom_metadata.py --artifact-id ktConfig-ksp ksp/build/publications/maven/pom-default.xml
+          python scripts/validate_pom_metadata.py --artifact-id ktConfig-fabric fabric/build/publications/maven/pom-default.xml
       - name: Run check
         run: ./gradlew check
       - name: Run server tests (1.8.8)
@@ -42,14 +49,20 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
       - name: Setup Java 21
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: 21
           cache: gradle
-      - name: Compile Minecraft adapter
-        run: ./gradlew :fabric-minecraft-remap:compileKotlin -PremapMinecraftVersion=${{ matrix.minecraft }}
+      - name: Compile Minecraft adapter and generate publication POM
+        run: ./gradlew :fabric-minecraft-remap:compileKotlin :fabric-minecraft-remap:generatePomFileForMavenPublication -PremapMinecraftVersion=${{ matrix.minecraft }}
+      - name: Validate publication POM
+        run: python scripts/validate_pom_metadata.py --artifact-id ktConfig-fabric-minecraft-${{ matrix.minecraft }} --project-dependency ktConfig-fabric fabric-minecraft-remap/build/publications/maven/pom-default.xml
   fabric-unobfuscated:
     runs-on: ubuntu-latest
     strategy:
@@ -59,11 +72,17 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
       - name: Setup Java 25
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: 25
           cache: gradle
-      - name: Compile Minecraft adapter
-        run: ./gradlew :fabric-minecraft-unobfuscated:compileKotlin -PunobfuscatedMinecraftVersion=${{ matrix.minecraft }}
+      - name: Compile Minecraft adapter and generate publication POM
+        run: ./gradlew :fabric-minecraft-unobfuscated:compileKotlin :fabric-minecraft-unobfuscated:generatePomFileForMavenPublication -PunobfuscatedMinecraftVersion=${{ matrix.minecraft }}
+      - name: Validate publication POM
+        run: python scripts/validate_pom_metadata.py --artifact-id ktConfig-fabric-minecraft-${{ matrix.minecraft }} --project-dependency ktConfig-fabric fabric-minecraft-unobfuscated/build/publications/maven/pom-default.xml
