@@ -23,7 +23,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - name: Test release checks
         run: python -m unittest discover -s scripts/tests
       - name: Check README versions
@@ -73,7 +73,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
