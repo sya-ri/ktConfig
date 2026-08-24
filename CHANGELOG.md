@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.3.0-SNAPSHOT
+
+### Added
+- Added the `ktConfig-fabric` YAML runtime and Fabric-aware KSP generation via `ktconfig.platform=fabric`.
+- Added versioned Fabric Minecraft serializers for `BlockPos`, `Vec3`, dimensions, and resource identifiers across Minecraft 1.21.x, 26.1, and 26.2.
+- Added Bukkit-compatible YAML handling for comments, explicit null values, nested values, files, and strings.
+
+### Changed
+- Unified the Bukkit and Fabric loader, error, and serializer implementations behind a shared YAML adapter contract.
+
 ## v2.2.0
 
 ### Added

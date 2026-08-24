@@ -18,11 +18,47 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: 21
+          java-version: 25
           cache: gradle
       - name: Publish
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
-          ./gradlew publishAndReleaseToMavenCentral --no-daemon --stacktrace
+          ./gradlew publishAndReleaseToMavenCentral --no-daemon --stacktrace -x :fabric-minecraft-remap:publishAndReleaseToMavenCentral -x :fabric-minecraft-unobfuscated:publishAndReleaseToMavenCentral
+  publish-fabric-minecraft:
+    needs: publish
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.1' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.2' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.3' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.4' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.5' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.6' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.7' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.8' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.9' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.10' }
+          - { project: fabric-minecraft-remap, property: remapMinecraftVersion, minecraft: '1.21.11' }
+          - { project: fabric-minecraft-unobfuscated, property: unobfuscatedMinecraftVersion, minecraft: '26.1' }
+          - { project: fabric-minecraft-unobfuscated, property: unobfuscatedMinecraftVersion, minecraft: '26.2' }
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 25
+          cache: gradle
+      - name: Publish Minecraft adapter
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="${SIGNING_KEY//\\n/$'\n'}"
+          ./gradlew :${{ matrix.project }}:publishAndReleaseToMavenCentral -P${{ matrix.property }}=${{ matrix.minecraft }} --no-daemon --stacktrace

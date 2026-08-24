@@ -6,10 +6,10 @@ import dev.s7a.ktconfig.exception.KtConfigLoadException
 import dev.s7a.ktconfig.exception.NotFoundValueException
 import dev.s7a.ktconfig.exception.NullValueException
 import dev.s7a.ktconfig.exception.UnsupportedConvertException
-import org.bukkit.configuration.InvalidConfigurationException
+import dev.s7a.ktconfig.platform.PlatformYamlConfigurationAdapter
 
 /**
- * Structured error reported by ktConfig validation and future aggregate loading APIs.
+ * Structured error reported by ktConfig validation and aggregate loading APIs.
  *
  * @property path The configuration path or property name related to the error. Root-level errors use an empty string.
  * @property message A human-readable validation or loading error message.
@@ -53,16 +53,16 @@ data class KtConfigError(
                     listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.InvalidFormat, cause))
                 }
 
-                is InvalidConfigurationException -> {
-                    listOf(KtConfigError(KtConfigLoader.formatPath(path), "Invalid YAML", Kind.InvalidFormat, cause))
-                }
-
                 is InvalidDiscriminatorException -> {
                     listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.InvalidDiscriminator, cause))
                 }
 
                 is UnsupportedConvertException -> {
                     listOf(KtConfigError(KtConfigLoader.formatPath(path), cause.message, Kind.UnsupportedConvert, cause))
+                }
+
+                else if (PlatformYamlConfigurationAdapter.isInvalidYamlException(cause)) -> {
+                    listOf(KtConfigError(KtConfigLoader.formatPath(path), "Invalid YAML", Kind.InvalidFormat, cause))
                 }
 
                 else -> {
@@ -135,6 +135,7 @@ data class KtConfigError(
 /**
  * Formats loading or validation errors as a human-readable message.
  *
+ * @return A formatted multi-line error message
  * @since 2.2.0
  */
 fun List<KtConfigError>.format(): String =

@@ -1,7 +1,8 @@
 package dev.s7a.ktconfig.serializer
 
 import dev.s7a.ktconfig.exception.NotFoundValueException
-import org.bukkit.configuration.file.YamlConfiguration
+import dev.s7a.ktconfig.platform.PlatformYamlConfiguration
+import dev.s7a.ktconfig.platform.PlatformYamlConfigurationAdapter
 
 /**
  * Interface for handling serialization and deserialization of values to/from YAML configuration.
@@ -30,7 +31,7 @@ interface Serializer<T> {
      * @since 2.0.0
      */
     fun getOrThrow(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
     ): T = get(configuration, path) ?: throw NotFoundValueException(path)
 
@@ -43,23 +44,23 @@ interface Serializer<T> {
      * @since 2.0.0
      */
     fun get(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
-    ): T? = configuration.get(path)?.let(::deserialize)
+    ): T? = PlatformYamlConfigurationAdapter.get(configuration, path)?.let(::deserialize)
 
     /**
      * Saves a value to the configuration at the specified path.
      *
      * @param configuration The YAML configuration to write to
      * @param path The configuration path to save the value at
-     * @param value The value to serialize and save, or null to remove the value
+     * @param value The value to serialize and save, or null to write the backend's null representation
      * @since 2.0.0
      */
     fun set(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
         value: T?,
-    ) = configuration.set(path, value?.let(::serialize))
+    ) = PlatformYamlConfigurationAdapter.set(configuration, path, value?.let(::serialize))
 
     /**
      * Deserializes a raw configuration value into type T.

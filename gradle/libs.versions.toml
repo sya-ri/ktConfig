@@ -17,6 +17,9 @@ spigot = "1.21.11-R0.2-SNAPSHOT"
 paper = "1.21.11-R0.1-SNAPSHOT"
 mockbukkit = "4.108.0"
 adventure = "4.26.1"
+configurate = "4.2.0"
+fabricLoader = "0.18.6"
+fabricLoom = "1.17.19"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -29,6 +32,8 @@ shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 dokka-javadoc = { id = "org.jetbrains.dokka-javadoc", version.ref = "dokka" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+fabric-loom-remap = { id = "net.fabricmc.fabric-loom-remap", version.ref = "fabricLoom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabricLoom" }
 
 [libraries]
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -39,3 +44,5 @@ spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
 paper-api = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper" }
 mockbukkit = { group = "org.mockbukkit.mockbukkit", name = "mockbukkit-v1.21", version.ref = "mockbukkit" }
 adventure-api = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
+configurate-yaml = { group = "org.spongepowered", name = "configurate-yaml", version.ref = "configurate" }
+fabric-loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabricLoader" }

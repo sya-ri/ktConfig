@@ -61,10 +61,16 @@ private data class SealedSubclassTarget(
 /**
  * Symbol processor that generates loader classes for configurations annotated with @KtConfig.
  * This processor handles the code generation for configuration classes by creating corresponding loader implementations.
+ *
+ * @param codeGenerator The KSP code generator used to write loader sources
+ * @param logger The KSP logger used to report validation and generation errors
+ * @param platform The target configuration backend, either `bukkit` or `fabric`
+ * @since 2.0.0
  */
 class KtConfigSymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
+    private val platform: String = "bukkit",
 ) : SymbolProcessor {
     companion object {
         private const val KT_CONFIG = "dev.s7a.ktconfig.KtConfig"
@@ -88,7 +94,12 @@ class KtConfigSymbolProcessor(
         private val loaderClassName = ClassName("dev.s7a.ktconfig", "KtConfigLoader")
         private val serializerClassName = ClassName("dev.s7a.ktconfig.serializer", "Serializer")
         private val keyableSerializerClassName = ClassName("dev.s7a.ktconfig.serializer.Serializer", "Keyable")
-        private val yamlConfigurationClassName = ClassName("org.bukkit.configuration.file", "YamlConfiguration")
+        private val yamlConfigurationClassName =
+            if (platform == "fabric") {
+                ClassName("dev.s7a.ktconfig.fabric", "YamlConfiguration")
+            } else {
+                ClassName("org.bukkit.configuration.file", "YamlConfiguration")
+            }
         private val stringClassName = ClassName("kotlin", "String")
         private val mapClassName = ClassName("kotlin.collections", "Map")
         private val anyClassName = ClassName("kotlin", "Any")
