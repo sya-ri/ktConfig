@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "dev.s7a"
-version = "2.3.0-SNAPSHOT"
+version = libs.versions.ktConfig.get()
 
 val testJarDir = providers.systemProperty("ktconfig.testJarDir").orNull
 

@@ -19,8 +19,8 @@ Add the following dependencies to your `build.gradle.kts`
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.3.2"
+    kotlin("jvm") version "2.4.10"
+    id("com.google.devtools.ksp") version "2.3.11"
 }
 
 repositories {

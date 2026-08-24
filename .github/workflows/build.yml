@@ -4,12 +4,22 @@ on:
     branches:
       - master
   pull_request:
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Test README version sync
+        run: python -m unittest discover -s scripts/tests
+      - name: Check README versions
+        run: python scripts/sync_readme_versions.py --check
       - name: Setup java
         uses: actions/setup-java@v5
         with:
