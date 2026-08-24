@@ -103,7 +103,7 @@ data class Parameter(
             qualifiedName: String,
             loaderType: ClassName,
         ) : InitializableSerializer(type, isNullable, "Nested") {
-            override val uniqueName = qualifiedName.replace('.', '_')
+            override val uniqueName = "Nested${qualifiedName.replace('.', '_')}"
             override val ref = uniqueName
             override val keyable = false
             override val initialize =

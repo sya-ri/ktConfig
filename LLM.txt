@@ -16,7 +16,7 @@ Key characteristics:
 - Annotate a data class with `@KtConfig` → KSP generates `<ClassName>Loader` (e.g. `ServerConfigLoader`)
 - The loader reads/writes a YAML file using Bukkit's `YamlConfiguration`
 - Supports Kotlin default values, nullable types, sealed classes/interfaces, and custom serializers
-- Latest stable version: **2.1.2**
+- Latest stable version: **2.2.0**
 
 ---
 
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.1.2")
-    ksp("dev.s7a:ktConfig-ksp:2.1.2")
+    implementation("dev.s7a:ktConfig:2.2.0")
+    ksp("dev.s7a:ktConfig-ksp:2.2.0")
 }
 ```
 
@@ -1018,6 +1018,7 @@ dev.s7a.ktconfig
 
 | Version | Notable Changes |
 |---|---|
+| 2.2.0 | Typealias loaders, validation DSL, aggregate load errors, and broader round-trip coverage |
 | 2.1.2 | Raw string support for `@Comment` values in generated loaders |
 | 2.1.1 | Distributable `ktconfig` agent skill under `skills/ktconfig` |
 | 2.1.0 | Sealed classes/interfaces, `@SerialName` (replaces `@PathName`), `loaderName`, `loadAndSave`, `loadAndSaveIfNotExists`, `saveIfNotExists`, BigInteger/BigDecimal fix, alpha color fix |

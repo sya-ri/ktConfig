@@ -27,8 +27,8 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.s7a:ktConfig:2.1.2")
-    ksp("dev.s7a:ktConfig-ksp:2.1.2")
+    implementation("dev.s7a:ktConfig:2.2.0")
+    ksp("dev.s7a:ktConfig-ksp:2.2.0")
 }
 ```
 

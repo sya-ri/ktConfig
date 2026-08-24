@@ -1,5 +1,96 @@
 # Changelog
 
+## v2.2.0
+
+### Added
+- Added KSP support for applying `@KtConfig` to type aliases, including generic type substitution for generated loaders.
+- Added KSP support for generating sealed subtype loaders from the concrete parent type alias, so sealed children no longer need their own `@KtConfig` annotation when their types can be inferred.
+  ```kotlin
+  sealed interface Config<T>
+
+  @SerialName("value")
+  data class Value<T>(
+      val value: T,
+  ) : Config<T>
+
+  @KtConfig(discriminator = "type")
+  typealias StringConfig = Config<String>
+
+  // Generated:
+  // - StringConfigLoader for Config<String>
+  // - Value<String> handling inside StringConfigLoader
+  //
+  // StringConfigLoader.load(...) dispatches "type: value" to the inlined
+  // Value<String> handling even though Value is not annotated with @KtConfig.
+  ```
+  If a sealed child is explicitly annotated with `@KtConfig`, that child loader's settings are used instead of inheriting settings from the parent type alias.
+  ```kotlin
+  sealed interface ExplicitConfig
+
+  @KtConfig(hasDefault = true)
+  @SerialName("value")
+  data class ExplicitValue(
+      val value: String = "default",
+  ) : ExplicitConfig
+
+  @KtConfig(discriminator = "type", hasDefault = false)
+  typealias ExplicitConfigAlias = ExplicitConfig
+
+  // Generated:
+  // - ExplicitConfigAliasLoader for ExplicitConfig
+  // - ExplicitValue handling inside ExplicitConfigAliasLoader
+  //
+  // ExplicitConfigAliasLoader.load("type: value") uses the ExplicitValue @KtConfig
+  // settings in its inlined subtype handling, so the missing "value" property uses
+  // ExplicitValue's default even though the parent type alias has hasDefault = false.
+  ```
+- Added a user-defined validation DSL for config objects.
+  ```kotlin
+  val validator = validate<ServerConfig> {
+      requireIn(ServerConfig::port, 1..65535)
+      anyOf("host or socketPath must be configured") {
+          requireNotBlank(ServerConfig::host)
+          requireNotBlank(ServerConfig::socketPath)
+      }
+      require("min must be less than or equal to max") {
+          it.min <= it.max
+      }
+  }
+
+  val errors: List<KtConfigError> = validator.validate(config)
+  ```
+- Added `KtConfigResult` and `KtConfigLoadException` for aggregate loading errors.
+  ```kotlin
+  when (val result = ServerConfigLoader.loadResultFromString(content)) {
+      is KtConfigResult.Success -> result.value
+      is KtConfigResult.Failure -> result.errors
+  }
+
+  try {
+      ServerConfigLoader.loadFromString(content)
+  } catch (e: KtConfigLoadException) {
+      val errors: List<KtConfigError> = e.errors
+  }
+  ```
+- Added `KtConfigValidatable` for config objects that should validate themselves after loading.
+  Generated loaders automatically call `validate()` on loaded values that implement this interface.
+  ```kotlin
+  @KtConfig
+  data class ServerConfig(
+      val host: String,
+      val port: Int,
+  ) : KtConfigValidatable<ServerConfig> {
+      override fun KtConfigValidatorBuilder<ServerConfig>.validate() {
+          requireNotBlank(ServerConfig::host)
+          requireIn(ServerConfig::port, 1..65535)
+      }
+  }
+  ```
+- Added `@file:Suppress` to generated loaders to suppress warnings caused by generated implementation details.
+
+### Fixed
+- Fixed `FormattedBlockVectorSerializer` decoding to preserve decimal coordinates by parsing values as doubles.
+
 ## v2.1.2
 
 ### Fixed

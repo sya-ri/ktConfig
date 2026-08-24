@@ -35,9 +35,9 @@ object FormattedBlockVectorSerializer : TransformSerializer.Keyable<BlockVector,
             throw InvalidFormatException(value, "X, Y, Z")
         }
         return BlockVector(
-            split[0].toInt(),
-            split[1].toInt(),
-            split[2].toInt(),
+            split[0].toDouble(),
+            split[1].toDouble(),
+            split[2].toDouble(),
         )
     }
 

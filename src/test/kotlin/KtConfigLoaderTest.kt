@@ -1,5 +1,7 @@
 import dev.s7a.ktconfig.KtConfigLoader
-import dev.s7a.ktconfig.exception.NotFoundValueException
+import dev.s7a.ktconfig.KtConfigResult
+import dev.s7a.ktconfig.exception.KtConfigLoadException
+import dev.s7a.ktconfig.format
 import dev.s7a.ktconfig.serializer.StringSerializer
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -50,6 +52,16 @@ class KtConfigLoaderTest {
     }
 
     @Test
+    fun testFormatPathKeepsSimplePath() {
+        assertEquals("parent.child", KtConfigLoader.formatPath("parent${KtConfigLoader.PATH_SEPARATOR}child"))
+    }
+
+    @Test
+    fun testFormatPathQuotesSegmentContainingDot() {
+        assertEquals("parent.'2.0'", KtConfigLoader.formatPath("parent${KtConfigLoader.PATH_SEPARATOR}2.0"))
+    }
+
+    @Test
     fun testLoadFromString() {
         val loader = CustomLoader()
         val data = loader.loadFromString("value: test")
@@ -59,11 +71,79 @@ class KtConfigLoaderTest {
     @Test
     fun testLoadEmptyConfig() {
         val loader = CustomLoader()
-        assertFailsWith<NotFoundValueException> {
+        assertFailsWith<KtConfigLoadException> {
             loader.loadFromString("")
         }.apply {
-            assertEquals("Not found value: value", message)
+            assertEquals(
+                """
+                Failed to load config (1 error):
+                - [value] Not found value
+                """.trimIndent(),
+                message,
+            )
         }
+    }
+
+    @Test
+    fun testLoadResultReturnsErrors() {
+        val loader = CustomLoader()
+        val result = loader.loadResultFromString("")
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - [value] Not found value
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors.format(),
+        )
+    }
+
+    @Test
+    fun testLoadResultFromStringReturnsFailureWhenYamlIsMalformed() {
+        val loader = CustomLoader()
+        val result = loader.loadResultFromString("value: [")
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - Invalid YAML
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors.format(),
+        )
+    }
+
+    @Test
+    fun testLoadResultReturnsFailureWhenYamlFileIsMalformed() {
+        val loader = CustomLoader()
+        val tempDir = createTempDirectory().toFile()
+        val configFile = File(tempDir, "config.yml")
+        configFile.writeText("value: [")
+        val result = loader.loadResult(configFile)
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - Invalid YAML
+            """.trimIndent(),
+            (result as KtConfigResult.Failure).errors.format(),
+        )
+    }
+
+    @Test
+    fun testLoadFromStringWrapsMalformedYaml() {
+        val loader = CustomLoader()
+        val exception =
+            assertFailsWith<KtConfigLoadException> {
+                loader.loadFromString("value: [")
+            }
+
+        assertEquals(
+            """
+            Failed to load config (1 error):
+            - Invalid YAML
+            """.trimIndent(),
+            exception.message,
+        )
     }
 
     @Test
