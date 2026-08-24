@@ -1,5 +1,6 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
+import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -14,14 +15,30 @@ plugins {
 }
 
 group = "dev.s7a"
-version = "2.2.0"
+version = "2.3.0-SNAPSHOT"
+
+val testJarDir = providers.systemProperty("ktconfig.testJarDir").orNull
+
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("src/bukkit/kotlin")
+    }
+}
 
 allprojects {
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
 
+    if (testJarDir != null) {
+        val projectJarDir = path.removePrefix(":").replace(':', '/').ifEmpty { "root" }
+        tasks.named<Jar>("jar") {
+            destinationDirectory.set(rootProject.file("$testJarDir/$projectJarDir"))
+        }
+    }
+
     repositories {
         mavenCentral()
+        maven("https://maven.fabricmc.net/")
         maven("https://hub.spigotmc.org/nexus/content/groups/public/")
         maven("https://repo.papermc.io/repository/maven-public/")
     }

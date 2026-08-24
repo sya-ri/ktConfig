@@ -1,7 +1,8 @@
 package dev.s7a.ktconfig.serializer
 
 import dev.s7a.ktconfig.KtConfigLoader
-import org.bukkit.configuration.file.YamlConfiguration
+import dev.s7a.ktconfig.platform.PlatformYamlConfiguration
+import dev.s7a.ktconfig.platform.PlatformYamlConfigurationAdapter
 
 /**
  * A serializer implementation for handling nested configuration objects.
@@ -15,22 +16,22 @@ class NestedSerializer<T>(
     val loader: KtConfigLoader<T>,
 ) : Serializer<T> {
     override fun get(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
     ): T? =
-        if (configuration.contains(path)) {
+        if (PlatformYamlConfigurationAdapter.contains(configuration, path)) {
             loader.load(configuration, "${path}${KtConfigLoader.PATH_SEPARATOR}")
         } else {
             null
         }
 
     override fun set(
-        configuration: YamlConfiguration,
+        configuration: PlatformYamlConfiguration,
         path: String,
         value: T?,
     ) {
         if (value == null) {
-            configuration.set(path, null)
+            PlatformYamlConfigurationAdapter.set(configuration, path, null)
         } else {
             loader.save(configuration, value, "${path}${KtConfigLoader.PATH_SEPARATOR}")
         }

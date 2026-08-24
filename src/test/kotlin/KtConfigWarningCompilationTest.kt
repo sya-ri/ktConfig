@@ -66,6 +66,7 @@ class KtConfigWarningCompilationTest {
                 .withArguments(
                     "--project-cache-dir",
                     projectDir.resolve("cache").toString(),
+                    "-Dktconfig.testJarDir=${projectDir.resolve("included-jars").invariantSeparatorsPath()}",
                     "compileKotlin",
                 ).build()
         }
