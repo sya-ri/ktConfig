@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.2.0-SNAPSHOT
+## v2.2.0
 
 ### Added
 - Added KSP support for applying `@KtConfig` to type aliases, including generic type substitution for generated loaders.
