@@ -15,7 +15,7 @@ mavenPublish = "0.37.0"
 spigot8 = "1.8.8-R0.1-SNAPSHOT"
 spigot = "1.21.11-R0.2-SNAPSHOT"
 paper = "1.21.11-R0.1-SNAPSHOT"
-mockbukkit = "4.108.0"
+mockbukkit = "4.116.3"
 adventure = "4.26.1"
 
 [plugins]
