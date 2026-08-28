@@ -29,7 +29,7 @@ jobs:
       - name: Check README versions
         run: python scripts/sync_readme_versions.py --check
       - name: Setup JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 25
@@ -75,7 +75,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Setup JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 25
@@ -135,7 +135,7 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v7
       - name: Setup JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 25

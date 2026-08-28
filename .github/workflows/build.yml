@@ -54,7 +54,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Setup Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 21
@@ -77,7 +77,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Setup Java 25
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 25
