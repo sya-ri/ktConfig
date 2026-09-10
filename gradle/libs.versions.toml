@@ -8,7 +8,7 @@ ktConfigBukkit = "2.3.0"
 ktConfigFabric = "2.3.0"
 
 # Plugins
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 ksp = "2.3.11"
 kover = "0.9.9"
 kotlinter = "5.7.0"
