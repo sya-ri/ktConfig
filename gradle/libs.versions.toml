@@ -9,7 +9,7 @@ ktConfigFabric = "2.3.0"
 
 # Plugins
 kotlin = "2.4.10"
-ksp = "2.3.11"
+ksp = "2.3.12"
 kover = "0.9.9"
 kotlinter = "5.7.0"
 pluginYml = "0.9.0"
