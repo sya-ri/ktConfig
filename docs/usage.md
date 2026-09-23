@@ -1,6 +1,6 @@
 # Configuration guide
 
-Start with the [installation guide](installation.md) and [quick example](../README.md#-quick-example).
+Start with the [installation instructions](../README.md#-installation) and [quick example](../README.md#-quick-example).
 
 ## Generated loaders
 
