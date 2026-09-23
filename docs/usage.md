@@ -68,61 +68,9 @@ data class AppConfig(
 )
 ```
 
-> [!WARNING]
->
-> 1. **All properties MUST have default values.**
->
-> You cannot mix properties with and without default values in a `@KtConfig(hasDefault = true)` annotated class.
->
-> ```kotlin
-> // 👌 This is valid
-> @KtConfig(hasDefault = true)
-> data class AppConfig(
->     val message: String = "Hello"
-> )
->
-> // ❌ This is invalid
-> @KtConfig(hasDefault = true)
-> data class AppConfig(
->     val message: String,
->     val count: Int = 10
-> )
-> ```
->
-> 2. **Default values must be static.**
->
-> Default values are generated once during construction and reused, so they must be static values.
->
-> ```kotlin
-> // 👌 This is valid
-> @KtConfig(hasDefault = true)
-> data class AppConfig(
->     val message: String = "Hello",
->     val count: Int = 10,
->     val list: List<String> = listOf("a", "b")
-> )
->
-> // ❌ This is invalid
-> @KtConfig(hasDefault = true)
-> data class AppConfig(
->     val timestamp: Long = System.currentTimeMillis(), // Not static
->     val random: Int = Random().nextInt(), // Not static
->     val uuid: UUID = UUID.randomUUID()     // Not static
-> )
-> ```
->
-> 3. **No Auto-Save for defaults.**
->
-> If a value is missing in the file and the default value is used during loading, it is **not** automatically written back to the file. You must manually save the configuration if you want to persist the default values.
-> Example of saving manually:
->
-> ```kotlin
-> // Load configuration (uses default values if keys are missing)
-> val config = AppConfigLoader.load(file)
->
-> // Manually save to ensure default values are written to the file
-> AppConfigLoader.save(file, config)
-> ```
+All properties must have defaults when `hasDefault = true`.
+Use stable defaults: the generated loader reuses its default configuration rather than recalculating timestamps or random values on each load.
+Loading does not write missing defaults back to the file; use `loadAndSave(file)` or save the loaded configuration explicitly when that is required.
 
 ### Custom Serializers
 
@@ -149,20 +97,8 @@ object WrapperSerializer : TransformSerializer<Wrapper, String>(StringSerializer
 
 #### 2. Implementing `Serializer` Interface
 
-For full control, implement the `Serializer<T>` interface directly.
-Classes implementing `Serializer.Keyable<T>` can be used as Map keys.
-
-```kotlin
-object MyTypeSerializer : Serializer<MyType> {
-    override fun deserialize(value: Any): MyType {
-        // Convert raw YAML value (Map, String, Int, etc.) to MyType
-    }
-
-    override fun serialize(value: MyType): Any? {
-        // Convert MyType to a YAML-compatible format
-    }
-}
-```
+For direct control over YAML values, implement [`Serializer<T>`](../src/main/kotlin/dev/s7a/ktconfig/serializer/Serializer.kt).
+Implement `Serializer.Keyable<T>` when the type must also work as a map key.
 
 #### Applying the Serializer
 
@@ -305,108 +241,19 @@ These types are automatically serialized to and from their string representation
 
 ### Unsupported type
 
-Log example:
-
-```text
-[ksp] Unsupported type: java.util.Date
-```
-
-If you encounter an error when using a type that is not supported by ktConfig.
-
-```kotlin
-@KtConfig
-class InvalidConfig(
-    val date: java.util.Date, // Unsupported type
-)
-```
-
-Define a custom serializer and specify it using `@UseSerializer` annotation to handle this type.
-
-```kotlin
-object DateSerializer : Serializer<java.util.Date> {
-    // ...
-}
-
-@KtConfig
-data class Config(
-    val date: @UseSerializer(DateSerializer::class) java.util.Date,
-)
-```
-
-Alternatively, handle YAML using supported types and convert them externally.
-
-```kotlin
-@KtConfig
-data class Config(
-    val instant: java.time.Instant, // Supported type
-) {
-    val date
-        get() = Date.from(instant)
-}
-```
+For `[ksp] Unsupported type: java.util.Date` or another unsupported type, use a [custom serializer](#custom-serializers) with `@UseSerializer`.
+Alternatively, store a supported type such as `Instant` and convert it in application code.
 
 ### Unresolve reference properties
 
-Log example:
-
-```
-Unresolved reference 'text'.
-```
-
-If you encounter unresolved reference errors when using ktConfig, make sure your properties are properly declared.
-Properties in Kotlin must be declared using `val` or `var` to be accessible:
-
-```kotlin
-@KtConfig
-class InvalidConfig(
-    text: String,
-)
-```
-
-Using data classes is recommended as they enforce `val`/`var` declarations for all primary constructor properties
-automatically.
-
-```kotlin
-@KtConfig
-data class Config(
-    val text: String,
-)
-```
+Declare constructor properties with `val` or `var` so generated loaders can access them.
+Using a data class enforces this for primary constructor properties.
 
 ### Unresolved reference using custom serializers
 
-Log example:
-
-```
-Unresolved reference 'getOrThrow'
-Unresolved reference 'set'
-Inapplicable candidate(s): fun deserialize(value: Any): Date
-Unresolved reference 'serialize'
-```
-
-If you encounter unresolved reference errors when using custom serializers, make sure you use objects instead of classes.
-
-```kotlin
-class DateSerializer : Serializer<java.util.Date> {
-    // ...
-}
-```
-
-Should be:
-
-```kotlin
-object DateSerializer : Serializer<java.util.Date> {
-    // ...
-}
-```
+Declare serializers as Kotlin `object`s, not classes.
+Incorrect declarations can produce unresolved `getOrThrow`, `set`, or `serialize` references in generated code.
 
 ### Mismatched dependency versions
 
-Log example:
-
-```
-'org.gradle.api.provider.Property org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions.getJvmDefault()'
-```
-
-This error might occur due to version incompatibility between Kotlin and KSP. Please check and ensure that your Kotlin
-and KSP versions are compatible.
+If Gradle reports a missing `KotlinJvmCompilerOptions.getJvmDefault()` method, check the Kotlin/KSP combination against the [installation example](../README.md#-installation).
